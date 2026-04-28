@@ -50,3 +50,8 @@ dump/
 
 # Generated reports
 *.pdf
+
+# env files
+.env
+.env.*
+!.env.example
