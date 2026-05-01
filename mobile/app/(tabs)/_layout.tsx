@@ -23,7 +23,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Overview" }}
+        options={{ title: "Dashboard" }}
       />
       <Tabs.Screen
         name="appointments"
@@ -43,7 +43,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="reports"
-        options={{ title: "Reports" }}
+        options={{ title: "PDF Reports" }}
       />
     </Tabs>
   );
