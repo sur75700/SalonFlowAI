@@ -10,5 +10,5 @@ python-jose[cryptography]
 email-validator
 python-multipart
 pyjwt
-bcrypt
 reportlab
+bcrypt==4.0.1
