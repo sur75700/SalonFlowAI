@@ -223,7 +223,7 @@ export default function ServicesScreen() {
     return (
       <DevLoginCard
         title="Services"
-        subtitle="Session expired or missing. Sign in to continue."
+        subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
   }
@@ -254,8 +254,8 @@ export default function ServicesScreen() {
         />
 
         <SessionStatusBanner
-          title="Service Catalog Connected"
-          subtitle="Your session is active and can safely manage pricing, duration, and service visibility."
+          title="Catalog Ready"
+          subtitle="Your session is active and can manage pricing, duration, and service visibility."
         />
 
         {screenError ? (

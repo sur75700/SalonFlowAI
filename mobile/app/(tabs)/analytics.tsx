@@ -139,7 +139,7 @@ export default function AnalyticsScreen() {
     return (
       <DevLoginCard
         title="Analytics"
-        subtitle="Session expired or missing. Sign in to continue."
+        subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
   }
@@ -167,8 +167,8 @@ export default function AnalyticsScreen() {
         />
 
         <SessionStatusBanner
-          title="Analytics Session Ready"
-          subtitle="Revenue, service performance, and booking signals are connected to your active admin session."
+          title="Analytics Ready"
+          subtitle="Revenue, service performance, and booking signals are now synced with your active session."
         />
 
         {error ? (

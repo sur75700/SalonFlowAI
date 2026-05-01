@@ -18,15 +18,15 @@ export default function SessionActionBar({
     <View style={styles.wrap}>
       <View style={styles.info}>
         <Text style={styles.label}>SESSION</Text>
-        <Text style={styles.title}>Admin Access Active</Text>
+        <Text style={styles.title}>Admin Session Active</Text>
         <Text style={styles.subtitle}>
-          {email ? `Signed in as ${email}` : "Signed in to SalonFlow AI admin"}
+          {email ? `Authorized as ${email}` : "Authorized inside SalonFlow AI admin"}
         </Text>
       </View>
 
       <View style={styles.actions}>
         <ActionButton
-          title={loggingOut ? "Signing out..." : "Logout"}
+          title={loggingOut ? "Closing Session..." : "Close Session"}
           onPress={onLogout}
           disabled={loggingOut}
           tone="danger"

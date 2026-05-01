@@ -152,7 +152,7 @@ export default function ReportsScreen() {
     return (
       <DevLoginCard
         title="Reports"
-        subtitle="Session expired or missing. Sign in to continue."
+        subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
   }
@@ -180,8 +180,8 @@ export default function ReportsScreen() {
         />
 
         <SessionStatusBanner
-          title="Reports Access Active"
-          subtitle="Your session can generate and export protected PDF summaries from the backend."
+          title="Reports Ready"
+          subtitle="Your session can generate and export protected daily PDF summaries."
         />
 
         {error ? (

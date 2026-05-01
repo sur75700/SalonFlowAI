@@ -27,7 +27,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="appointments"
-        options={{ title: "Appointments" }}
+        options={{ title: "Bookings" }}
       />
       <Tabs.Screen
         name="clients"
@@ -39,7 +39,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Analytics" }}
+        options={{ title: "Insights" }}
       />
       <Tabs.Screen
         name="reports"

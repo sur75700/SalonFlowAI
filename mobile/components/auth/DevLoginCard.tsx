@@ -21,8 +21,8 @@ type DevLoginCardProps = {
 };
 
 export default function DevLoginCard({
-  title = "Sign in",
-  subtitle = "Your session is missing or expired. Sign in to continue using the admin panel.",
+  title = "Admin Access",
+  subtitle = "Restore your active session to continue managing SalonFlow AI.",
 }: DevLoginCardProps) {
   const { setToken } = useSession();
   const { showToast } = useToast();
@@ -50,7 +50,7 @@ export default function DevLoginCard({
       );
 
       setToken(token);
-      showToast("Signed in successfully", "success");
+      showToast("Admin session restored", "success");
     } catch (err: any) {
       const message = getErrorMessage(err, "Failed to sign in");
       setError(message);
@@ -64,7 +64,7 @@ export default function DevLoginCard({
     setEmail(DEFAULTS.adminEmail);
     setPassword(DEFAULTS.adminPassword);
     setError("");
-    showToast("Demo admin credentials filled", "info");
+    showToast("Admin credentials loaded", "info");
   };
 
   return (
@@ -102,19 +102,19 @@ export default function DevLoginCard({
 
       <View style={styles.actions}>
         <ActionButton
-          title={loading ? "Signing in..." : "Sign In"}
+          title={loading ? "Restoring Session..." : "Restore Session"}
           onPress={handleSignIn}
           disabled={loading}
           tone="success"
         />
-        <ActionButton title="Use Demo Admin" onPress={useDemoAccount} />
+        <ActionButton title="Load Admin Access" onPress={useDemoAccount} />
       </View>
 
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Session UX</Text>
+        <Text style={styles.infoTitle}>Session Recovery</Text>
         <Text style={styles.infoText}>
-          When your token expires, the admin screen will bring you back here so
-          you can restore access quickly.
+          If your access token expires, SalonFlow AI returns you here so you can
+          restore admin access without losing momentum.
         </Text>
       </View>
 

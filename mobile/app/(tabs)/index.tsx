@@ -76,7 +76,7 @@ export default function OverviewScreen() {
     return (
       <DevLoginCard
         title="Overview"
-        subtitle="Session expired or missing. Sign in to continue."
+        subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
   }
@@ -97,8 +97,8 @@ export default function OverviewScreen() {
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
           <Text style={styles.heroTitle}>Overview</Text>
           <Text style={styles.heroText}>
-            Premium salon admin command center with bookings, clients, services,
-            analytics, and reporting split into clean dedicated sections.
+            Premium salon command center for bookings, clients, services, analytics,
+            and reporting—organized into focused operational sections.
           </Text>
         </View>
 
@@ -109,8 +109,8 @@ export default function OverviewScreen() {
         />
 
         <SessionStatusBanner
-          title="Session Active"
-          subtitle="Your admin session is live. Pull to refresh any time to sync the latest salon activity."
+          title="Operations Ready"
+          subtitle="Your admin session is active. Pull to refresh and sync the latest salon activity."
         />
 
         {error ? (
@@ -127,7 +127,7 @@ export default function OverviewScreen() {
 
         <SectionCard
           title="Admin Navigation"
-          subtitle="Your dashboard is now split into focused tabs."
+          subtitle="Navigate the platform through focused operational workspaces."
         >
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>Analytics</Text>
