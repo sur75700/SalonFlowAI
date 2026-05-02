@@ -311,6 +311,26 @@ export default function ServicesScreen() {
         </SectionCard>
 
         <SectionCard
+          title="Catalog Snapshot"
+          subtitle="Fast visibility into your current service mix."
+        >
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryValue}>{services.length}</Text>
+              <Text style={styles.summaryLabel}>Total</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryValue}>{services.filter((item) => item.is_active).length}</Text>
+              <Text style={styles.summaryLabel}>Active</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryValue}>{services.filter((item) => !item.is_active).length}</Text>
+              <Text style={styles.summaryLabel}>Inactive</Text>
+            </View>
+          </View>
+        </SectionCard>
+
+        <SectionCard
           title="Service Catalog"
           subtitle="Search, edit, activate, deactivate, and manage salon services."
         >
