@@ -14,6 +14,7 @@ import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import SectionCard from "../../components/dashboard/SectionCard";
+import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useSummaryData } from "../../hooks/useDashboardData";
@@ -163,6 +164,34 @@ export default function OverviewScreen() {
             <Text style={styles.infoText}>
               Manage your premium service catalog, pricing strategy, duration, and activation state.
             </Text>
+          </View>
+        </SectionCard>
+
+        <SectionCard
+          title="Quick Actions"
+          subtitle="Jump directly into your most important admin workflows."
+        >
+          <View style={styles.quickActionsGrid}>
+            <ActionButton
+              title="Open Bookings"
+              onPress={() => router.navigate("/(tabs)/appointments")}
+            />
+            <ActionButton
+              title="Open Clients"
+              onPress={() => router.navigate("/(tabs)/clients")}
+            />
+            <ActionButton
+              title="Open Service Catalog"
+              onPress={() => router.navigate("/(tabs)/services")}
+            />
+            <ActionButton
+              title="Open Insights"
+              onPress={() => router.navigate("/(tabs)/analytics")}
+            />
+            <ActionButton
+              title="Open PDF Reports"
+              onPress={() => router.navigate("/(tabs)/reports")}
+            />
           </View>
         </SectionCard>
 
