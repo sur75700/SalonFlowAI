@@ -525,6 +525,45 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
+          title="Booking Filters"
+          subtitle="Switch between operational booking states instantly."
+        >
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryValue}>{todayAppointments.length}</Text>
+              <Text style={styles.summaryLabel}>Today</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryValue}>{upcomingAppointments.length}</Text>
+              <Text style={styles.summaryLabel}>Upcoming</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryValue}>{appointments.length}</Text>
+              <Text style={styles.summaryLabel}>Total</Text>
+            </View>
+          </View>
+
+          <View style={styles.filterActions}>
+            <ActionButton
+              title="All"
+              onPress={() => setAppointmentFilter("all")}
+            />
+            <ActionButton
+              title="Scheduled"
+              onPress={() => setAppointmentFilter("scheduled")}
+            />
+            <ActionButton
+              title="Completed"
+              onPress={() => setAppointmentFilter("completed")}
+            />
+            <ActionButton
+              title="Cancelled"
+              onPress={() => setAppointmentFilter("cancelled")}
+            />
+          </View>
+        </SectionCard>
+
+        <SectionCard
           title="Booking Registry"
           subtitle="Search, filter, update, complete, cancel, or remove bookings from one control surface."
         >
