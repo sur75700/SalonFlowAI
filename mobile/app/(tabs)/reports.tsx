@@ -191,7 +191,7 @@ export default function ReportsScreen() {
         ) : null}
 
         <SectionCard
-          title="Daily PDF Summary"
+          title="Daily PDF Export"
           subtitle="Generate and download a polished daily salon summary report."
         >
           <TextInput
@@ -228,6 +228,23 @@ export default function ReportsScreen() {
               {exportingPdf ? "Exporting..." : "Export PDF Report"}
             </Text>
           </TouchableOpacity>
+        </SectionCard>
+
+        <SectionCard
+          title="Export Readiness"
+          subtitle="Fast visibility before generating your PDF summary."
+        >
+          <View style={styles.readinessCard}>
+            <Text style={styles.readinessLabel}>Selected date</Text>
+            <Text style={styles.readinessValue}>{reportDate}</Text>
+          </View>
+
+          <View style={styles.readinessCard}>
+            <Text style={styles.readinessLabel}>Export state</Text>
+            <Text style={styles.readinessValue}>
+              {exportingPdf ? "Generating PDF..." : "Ready to export"}
+            </Text>
+          </View>
         </SectionCard>
 
         <SectionCard
