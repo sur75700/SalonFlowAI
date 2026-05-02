@@ -232,7 +232,7 @@ export default function ReportsScreen() {
 
         <SectionCard
           title="Report Workflow"
-          subtitle="Quick explanation of the reporting flow."
+          subtitle="Simple export flow for daily reporting."
         >
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>1. Pick a date</Text>

@@ -200,8 +200,8 @@ export default function ClientsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Clients"
-        subtitle="Session expired or missing. Sign in to continue."
+        title="Client Registry"
+        subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
   }
@@ -219,7 +219,7 @@ export default function ClientsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Clients</Text>
+          <Text style={styles.heroTitle}>Client Registry</Text>
           <Text style={styles.heroText}>
             Manage your client registry, update details, and add new salon leads.
           </Text>
