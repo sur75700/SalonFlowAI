@@ -189,6 +189,34 @@ export default function AnalyticsScreen() {
         </View>
 
         <ChartBlock
+          title="Executive Snapshot"
+          subtitle="High-level financial visibility for the active salon session."
+        >
+          <View style={styles.executiveGrid}>
+            <View style={styles.executiveCard}>
+              <Text style={styles.executiveLabel}>Completed Revenue</Text>
+              <Text style={styles.executiveValue}>
+                {money(analytics?.totals?.completed_revenue, analytics?.currency || "AMD")}
+              </Text>
+            </View>
+
+            <View style={styles.executiveCard}>
+              <Text style={styles.executiveLabel}>Scheduled Pipeline</Text>
+              <Text style={styles.executiveValue}>
+                {money(analytics?.totals?.scheduled_pipeline, analytics?.currency || "AMD")}
+              </Text>
+            </View>
+
+            <View style={styles.executiveCard}>
+              <Text style={styles.executiveLabel}>Cancelled Value</Text>
+              <Text style={styles.executiveValue}>
+                {money(analytics?.totals?.cancelled_value, analytics?.currency || "AMD")}
+              </Text>
+            </View>
+          </View>
+        </ChartBlock>
+
+        <ChartBlock
           title="Revenue Trendline"
           subtitle="Completed revenue movement across the last 7 days."
         >
