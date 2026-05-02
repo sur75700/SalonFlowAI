@@ -132,7 +132,7 @@ export default function OverviewScreen() {
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>Insights</Text>
             <Text style={styles.infoText}>
-              Revenue intelligence, charts, service performance, and status distribution.
+              Revenue intelligence, charts, service performance, and booking status distribution.
             </Text>
           </View>
 
@@ -158,9 +158,9 @@ export default function OverviewScreen() {
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Services</Text>
+            <Text style={styles.infoTitle}>Service Catalog</Text>
             <Text style={styles.infoText}>
-              Manage service catalog, prices, duration, and active state.
+              Manage your premium service catalog, pricing strategy, duration, and activation state.
             </Text>
           </View>
         </SectionCard>

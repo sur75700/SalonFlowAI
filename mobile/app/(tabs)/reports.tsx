@@ -192,7 +192,7 @@ export default function ReportsScreen() {
 
         <SectionCard
           title="Daily PDF Summary"
-          subtitle="Generate and download a daily salon summary report."
+          subtitle="Generate and download a polished daily salon summary report."
         >
           <TextInput
             style={styles.input}

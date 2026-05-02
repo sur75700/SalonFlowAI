@@ -138,7 +138,7 @@ export default function ServicesScreen() {
 
     if (ok) {
       createForm.reset();
-      showToast("Service created successfully", "success");
+      showToast("Service added to catalog successfully", "success");
     }
   };
 
@@ -181,7 +181,7 @@ export default function ServicesScreen() {
 
     if (ok) {
       cancelEditService();
-      showToast("Service updated successfully", "success");
+      showToast("Service catalog entry updated successfully", "success");
     }
   };
 
@@ -198,7 +198,7 @@ export default function ServicesScreen() {
     const ok = await deleteService(service.id);
 
     if (ok) {
-      showToast("Service deleted successfully", "success");
+      showToast("Service removed from catalog successfully", "success");
     }
   };
 
@@ -265,7 +265,7 @@ export default function ServicesScreen() {
         ) : null}
 
         <SectionCard
-          title="Create Service"
+          title="Create Service Entry"
           subtitle="Add a premium salon service to your catalog."
         >
           <TextInput

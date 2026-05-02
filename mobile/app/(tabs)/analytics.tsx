@@ -189,7 +189,7 @@ export default function AnalyticsScreen() {
         </View>
 
         <ChartBlock
-          title="Revenue Trend"
+          title="Revenue Trendline"
           subtitle="Completed revenue across the last 7 days."
         >
           {!lineChartData.length ? (
@@ -228,7 +228,7 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title="Top Services"
+          title="Top Performing Services"
           subtitle="Best-performing services by revenue."
         >
           {!barChartData.length ? (

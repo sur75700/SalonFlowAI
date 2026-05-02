@@ -224,7 +224,7 @@ export default function AppointmentsScreen() {
 
       if (ok) {
         cancelEditAppointment();
-        showToast("Booking updated successfully", "success");
+        showToast("Booking details updated successfully", "success");
       }
     } finally {
       setSavingAppointmentId("");
@@ -303,7 +303,7 @@ export default function AppointmentsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Bookings Hub"
+        title="Bookings Control"
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -319,7 +319,7 @@ export default function AppointmentsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Bookings</Text>
+          <Text style={styles.heroTitle}>Bookings Control</Text>
           <Text style={styles.heroText}>
             Manage bookings, create reservations, update statuses, and keep
             daily salon flow under control.
@@ -525,8 +525,8 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="All Bookings"
-          subtitle="Search, filter, update, complete, cancel, or remove bookings."
+          title="Booking Registry"
+          subtitle="Search, filter, update, complete, cancel, or remove bookings from one control surface."
         >
           <TextInput
             style={styles.searchInput}
