@@ -138,7 +138,7 @@ export default function AnalyticsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Analytics"
+        title="Insights"
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -154,9 +154,9 @@ export default function AnalyticsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Analytics</Text>
+          <Text style={styles.heroTitle}>Insights</Text>
           <Text style={styles.heroText}>
-            Revenue, service performance, and appointment status intelligence.
+            Revenue intelligence, service performance, and booking status insights.
           </Text>
         </View>
 

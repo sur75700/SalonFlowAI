@@ -222,7 +222,7 @@ export default function ServicesScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Services"
+        title="Service Catalog"
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -241,9 +241,9 @@ export default function ServicesScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Services</Text>
+          <Text style={styles.heroTitle}>Service Catalog</Text>
           <Text style={styles.heroText}>
-            Manage service catalog, pricing, duration, and activation state.
+            Manage your premium service catalog, pricing strategy, duration, and activation state.
           </Text>
         </View>
 

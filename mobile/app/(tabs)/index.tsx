@@ -61,7 +61,7 @@ export default function OverviewScreen() {
   const statCards = [
     { label: "Clients", value: summary?.total_clients ?? 0 },
     { label: "Services", value: summary?.total_services ?? 0 },
-    { label: "Bookings", value: summary?.total_appointments ?? 0 },
+    { label: "Total Bookings", value: summary?.total_appointments ?? 0 },
     { label: "Scheduled", value: summary?.scheduled_appointments ?? 0 },
     { label: "Completed", value: summary?.completed_appointments ?? 0 },
     { label: "Cancelled", value: summary?.cancelled_appointments ?? 0 },
@@ -75,7 +75,7 @@ export default function OverviewScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Overview"
+        title="Dashboard"
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -95,7 +95,7 @@ export default function OverviewScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Overview</Text>
+          <Text style={styles.heroTitle}>Dashboard</Text>
           <Text style={styles.heroText}>
             Premium salon command center for bookings, clients, services, analytics,
             and reporting—organized into focused operational sections.
@@ -126,18 +126,18 @@ export default function OverviewScreen() {
         </View>
 
         <SectionCard
-          title="Admin Navigation"
+          title="Command Navigation"
           subtitle="Navigate the platform through focused operational workspaces."
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Analytics</Text>
+            <Text style={styles.infoTitle}>Insights</Text>
             <Text style={styles.infoText}>
               Revenue intelligence, charts, service performance, and status distribution.
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Reports</Text>
+            <Text style={styles.infoTitle}>PDF Reports</Text>
             <Text style={styles.infoText}>
               Export daily PDF summary files for selected dates.
             </Text>
@@ -166,8 +166,8 @@ export default function OverviewScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Quick Business Snapshot"
-          subtitle="High-level operational summary."
+          title="Executive Snapshot"
+          subtitle="Real-time view of your current salon operating picture."
         >
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total clients</Text>

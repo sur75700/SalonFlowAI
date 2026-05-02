@@ -151,7 +151,7 @@ export default function ReportsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Reports"
+        title="PDF Reports"
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -167,9 +167,9 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Reports</Text>
+          <Text style={styles.heroTitle}>PDF Reports</Text>
           <Text style={styles.heroText}>
-            Export daily PDF summaries for operations, finance review, and salon reporting.
+            Export polished daily PDF summaries for operations, finance review, and management reporting.
           </Text>
         </View>
 
@@ -231,7 +231,7 @@ export default function ReportsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="How It Works"
+          title="Report Workflow"
           subtitle="Quick explanation of the reporting flow."
         >
           <View style={styles.infoBlock}>

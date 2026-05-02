@@ -35,7 +35,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="services"
-        options={{ title: "Services" }}
+        options={{ title: "Service Catalog" }}
       />
       <Tabs.Screen
         name="analytics"
