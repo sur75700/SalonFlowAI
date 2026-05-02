@@ -21,7 +21,7 @@ type DevLoginCardProps = {
 };
 
 export default function DevLoginCard({
-  title = "Admin Access",
+  title = "Admin Session Recovery",
   subtitle = "Restore your active session to continue managing SalonFlow AI.",
 }: DevLoginCardProps) {
   const { setToken } = useSession();
@@ -70,7 +70,7 @@ export default function DevLoginCard({
   return (
     <AuthScreenShell title={title} subtitle={subtitle}>
       <View style={styles.badge}>
-        <Text style={styles.badgeText}>ADMIN ACCESS</Text>
+        <Text style={styles.badgeText}>ADMIN RECOVERY</Text>
       </View>
 
       {error ? (

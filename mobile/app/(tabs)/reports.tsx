@@ -248,7 +248,7 @@ export default function ReportsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Report Workflow"
+          title="Reporting Workflow"
           subtitle="Simple export flow for daily reporting."
         >
           <View style={styles.infoBlock}>
