@@ -243,7 +243,7 @@ export default function ClientsScreen() {
         ) : null}
 
         <SectionCard
-          title="Create Client"
+          title="Create Client Entry"
           subtitle="Add a polished client profile to the salon system."
         >
           <TextInput
