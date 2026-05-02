@@ -224,7 +224,7 @@ export default function AppointmentsScreen() {
 
       if (ok) {
         cancelEditAppointment();
-        showToast("Appointment updated successfully", "success");
+        showToast("Booking updated successfully", "success");
       }
     } finally {
       setSavingAppointmentId("");
@@ -233,12 +233,12 @@ export default function AppointmentsScreen() {
 
   const handleCompleteAppointment = async (appointmentId: string) => {
     const ok = await updateAppointmentStatus(appointmentId, "completed");
-    if (ok) showToast("Appointment marked completed", "success");
+    if (ok) showToast("Booking marked completed", "success");
   };
 
   const handleCancelAppointment = async (appointmentId: string) => {
     const ok = await updateAppointmentStatus(appointmentId, "cancelled");
-    if (ok) showToast("Appointment cancelled", "success");
+    if (ok) showToast("Booking cancelled", "success");
   };
 
   const handleDeleteAppointment = async (appointment: AppointmentItem) => {
@@ -252,7 +252,7 @@ export default function AppointmentsScreen() {
     if (!approved) return;
 
     const ok = await deleteAppointment(appointment.id);
-    if (ok) showToast("Appointment deleted successfully", "success");
+    if (ok) showToast("Booking deleted successfully", "success");
   };
 
   const filteredAppointments = useMemo(() => {
@@ -303,8 +303,8 @@ export default function AppointmentsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Appointments"
-        subtitle="Session expired or missing. Sign in to continue."
+        title="Bookings Hub"
+        subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
   }
@@ -319,9 +319,9 @@ export default function AppointmentsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Appointments</Text>
+          <Text style={styles.heroTitle}>Bookings</Text>
           <Text style={styles.heroText}>
-            Manage bookings, create new reservations, update statuses, and keep
+            Manage bookings, create reservations, update statuses, and keep
             daily salon flow under control.
           </Text>
         </View>
@@ -525,8 +525,8 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="All Appointments"
-          subtitle="Search, filter, edit, complete, cancel, or delete bookings."
+          title="All Bookings"
+          subtitle="Search, filter, update, complete, cancel, or remove bookings."
         >
           <TextInput
             style={styles.searchInput}
