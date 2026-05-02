@@ -26,7 +26,7 @@ export default function SessionActionBar({
 
       <View style={styles.actions}>
         <ActionButton
-          title={loggingOut ? "Closing Session..." : "End Session"}
+          title={loggingOut ? "Closing Session..." : "Close Session"}
           onPress={onLogout}
           disabled={loggingOut}
           tone="danger"

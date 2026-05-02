@@ -200,7 +200,7 @@ export default function ClientsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Client Registry"
+        title="Client Snapshot"
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -286,7 +286,7 @@ export default function ClientsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Client Registry"
+          title="Client Snapshot"
           subtitle="Search, edit, and manage all salon clients."
         >
           <TextInput
