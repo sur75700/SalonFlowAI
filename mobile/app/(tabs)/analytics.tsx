@@ -190,7 +190,7 @@ export default function AnalyticsScreen() {
 
         <ChartBlock
           title="Revenue Trendline"
-          subtitle="Completed revenue across the last 7 days."
+          subtitle="Completed revenue movement across the last 7 days."
         >
           {!lineChartData.length ? (
             <EmptyState
@@ -229,7 +229,7 @@ export default function AnalyticsScreen() {
 
         <ChartBlock
           title="Top Performing Services"
-          subtitle="Best-performing services by revenue."
+          subtitle="Highest-performing services ranked by revenue contribution."
         >
           {!barChartData.length ? (
             <EmptyState
