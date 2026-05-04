@@ -1,7 +1,8 @@
 import React from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { useAppLanguage } from "../../contexts/LanguageContext";\nimport LanguageSwitcher from "../../components/ui/LanguageSwitcher";
+import { useAppLanguage } from "../../contexts/LanguageContext";
+import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 
 type QuickLinkProps = {
   title: string;
@@ -30,7 +31,8 @@ export default function WorkspaceScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
-      <View style={styles.hero}>\n        <LanguageSwitcher />
+      <View style={styles.hero}>
+        <LanguageSwitcher />
         <Text style={styles.overline}>SALONFLOW AI</Text>
         <Text style={styles.title}>{t.workspace.title}</Text>
         <Text style={styles.subtitle}>

@@ -54,4 +54,4 @@ const styles = StyleSheet.create({
   chipTextActive: {
     color: "#f2d17a",
   },
-});\n
+});

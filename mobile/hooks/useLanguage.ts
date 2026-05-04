@@ -13,4 +13,4 @@ export function useLanguage() {
     setLanguage,
     dictionary,
   };
-}\n
+}

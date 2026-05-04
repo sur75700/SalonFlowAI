@@ -22,7 +22,8 @@ import { useConfirmAction } from "../../hooks/useConfirmAction";
 import { useFormState } from "../../hooks/useFormState";
 import { useClientsData } from "../../hooks/useResourceData";
 import { useClientMutations } from "../../hooks/useMutations";
-import { useSession } from "../../hooks/useSession";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
+import { useSession } from "../../hooks/useSession";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 import type { ClientItem } from "../../types/models";
 
 const emptyClientForm = {
@@ -65,7 +66,8 @@ function ClientsSkeleton() {
   );
 }
 
-export default function ClientsScreen() {\n  const { t } = useAppLanguage();
+export default function ClientsScreen() {
+  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();

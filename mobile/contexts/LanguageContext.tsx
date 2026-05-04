@@ -32,4 +32,4 @@ export function useAppLanguage() {
     throw new Error("useAppLanguage must be used inside LanguageProvider");
   }
   return ctx;
-}\n
+}

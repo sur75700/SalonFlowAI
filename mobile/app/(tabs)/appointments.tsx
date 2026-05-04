@@ -26,6 +26,7 @@ import { useLogout } from "../../hooks/useLogout";
 import { useAppointmentsData } from "../../hooks/useResourceData";
 import { useAppointmentMutations } from "../../hooks/useMutations";
 import { useSession } from "../../hooks/useSession";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 import type {
   AppointmentItem,
   AppointmentStatus,

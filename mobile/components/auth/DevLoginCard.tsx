@@ -13,7 +13,8 @@ import AuthScreenShell from "./AuthScreenShell";
 import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
-import { saveTokenFromCredentials } from "../../lib/api";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
+import { saveTokenFromCredentials } from "../../lib/api";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 
 type DevLoginCardProps = {
   title?: string;
@@ -23,7 +24,8 @@ type DevLoginCardProps = {
 export default function DevLoginCard({
   title = "Admin Session Recovery",
   subtitle = "Restore your active session to continue managing SalonFlow AI.",
-}: DevLoginCardProps) {\n  const { t } = useAppLanguage();
+}: DevLoginCardProps) {
+  const { t } = useAppLanguage();
   const { setToken } = useSession();
   const { showToast } = useToast();
 

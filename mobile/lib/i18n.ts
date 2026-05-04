@@ -9,4 +9,4 @@ export const languageLabels: Record<AppLanguage, string> = {
   hy: "Հայերեն",
   ru: "Русский",
   fr: "Français",
-};\n
+};

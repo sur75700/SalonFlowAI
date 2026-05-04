@@ -16,7 +16,8 @@ import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import SectionCard from "../../components/dashboard/SectionCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
-import { useSession } from "../../hooks/useSession";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
+import { useSession } from "../../hooks/useSession";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 import { API_BASE_URL, isAuthError } from "../../lib/api";
 import {
   todayDateInput,
@@ -57,7 +58,8 @@ function ReportsSkeleton() {
   );
 }
 
-export default function ReportsScreen() {\n  const { t } = useAppLanguage();
+export default function ReportsScreen() {
+  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
 

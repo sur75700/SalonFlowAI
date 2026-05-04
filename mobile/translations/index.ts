@@ -10,4 +10,4 @@ export const translations = {
   fr,
 };
 
-export type TranslationSchema = typeof en;\n
+export type TranslationSchema = typeof en;

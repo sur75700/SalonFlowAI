@@ -1,7 +1,9 @@
 import React from "react";
-import { Tabs } from "expo-router";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
+import { Tabs } from "expo-router";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 
-export default function TabsLayout() {\n  const { t } = useAppLanguage();
+export default function TabsLayout() {
+  const { t } = useAppLanguage();
   return (
     <Tabs
       screenOptions={{

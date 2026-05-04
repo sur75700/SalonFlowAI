@@ -118,7 +118,8 @@ const en = {
       "Simple export flow for daily reporting.",
   },
   workspace: {
-    languageSwitcher: "Language Switch",\n    title: "Workspace",
+    languageSwitcher: "Language Switch",
+    title: "Workspace",
     heroSubtitle:
       "Central utility space for navigation, backend access, and admin operations.",
     quickNavigation: "Quick Navigation",

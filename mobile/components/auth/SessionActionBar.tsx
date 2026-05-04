@@ -1,7 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import ActionButton from "../dashboard/ActionButton";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
+import ActionButton from "../dashboard/ActionButton";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 
 type SessionActionBarProps = {
   email?: string;
@@ -13,7 +14,8 @@ export default function SessionActionBar({
   email,
   onLogout,
   loggingOut = false,
-}: SessionActionBarProps) {\n  const { t } = useAppLanguage();
+}: SessionActionBarProps) {
+  const { t } = useAppLanguage();
   return (
     <View style={styles.wrap}>
       <View style={styles.info}>

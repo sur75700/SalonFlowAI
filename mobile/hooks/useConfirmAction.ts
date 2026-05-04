@@ -1,12 +1,15 @@
 import { Alert, Platform } from "react-native";
 
 export function useConfirmAction() {
-  const confirm = async (title: string, message: string): Promise<boolean> => {
+  const confirm = async (
+    title: string,
+    message: string
+  ): Promise<boolean> => {
     if (Platform.OS === "web") {
       return window.confirm(title + "\n\n" + message);
     }
 
-    return new Promise((resolve) => {
+    return await new Promise<boolean>((resolve) => {
       Alert.alert(title, message, [
         {
           text: "Cancel",
