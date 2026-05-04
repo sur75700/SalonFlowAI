@@ -27,6 +27,7 @@ import { useServiceMutations } from "../../hooks/useMutations";
 import { useSession } from "../../hooks/useSession";
 import type { ServiceItem } from "../../types/models";
 import { money } from "../../utils/formatters";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 
 const emptyCreateForm = {
   name: "",
@@ -77,6 +78,7 @@ function ServicesSkeleton() {
 }
 
 export default function ServicesScreen() {
+  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();
@@ -241,9 +243,9 @@ export default function ServicesScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Service Catalog</Text>
+          <Text style={styles.heroTitle}>{t.services.title}</Text>
           <Text style={styles.heroText}>
-            Manage your premium service catalog, pricing strategy, duration, and activation state.
+            {t.services.heroSubtitle}
           </Text>
         </View>
 
@@ -265,7 +267,7 @@ export default function ServicesScreen() {
         ) : null}
 
         <SectionCard
-          title="Create Service Entry"
+          title={t.services.createServiceEntry}
           subtitle="Add a premium salon service to your catalog."
         >
           <TextInput
@@ -311,21 +313,21 @@ export default function ServicesScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Catalog Snapshot"
-          subtitle="Fast visibility into your current service mix."
+          title={t.services.catalogSnapshot}
+          subtitle={t.services.catalogSnapshotSubtitle}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.length}</Text>
-              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryLabel}>{t.common.total}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.filter((item) => item.is_active).length}</Text>
-              <Text style={styles.summaryLabel}>Active</Text>
+              <Text style={styles.summaryLabel}>{t.common.active}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.filter((item) => !item.is_active).length}</Text>
-              <Text style={styles.summaryLabel}>Inactive</Text>
+              <Text style={styles.summaryLabel}>{t.common.inactive}</Text>
             </View>
           </View>
         </SectionCard>

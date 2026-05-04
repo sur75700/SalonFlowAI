@@ -91,6 +91,7 @@ function AppointmentsSkeleton() {
 }
 
 export default function AppointmentsScreen() {
+  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();
@@ -525,21 +526,21 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Booking Filters"
-          subtitle="Switch between operational booking states instantly."
+          title={t.bookings.bookingFilters}
+          subtitle={t.bookings.bookingFiltersSubtitle}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{todayAppointments.length}</Text>
-              <Text style={styles.summaryLabel}>Today</Text>
+              <Text style={styles.summaryLabel}>{t.common.today}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{upcomingAppointments.length}</Text>
-              <Text style={styles.summaryLabel}>Upcoming</Text>
+              <Text style={styles.summaryLabel}>{t.common.upcoming}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{appointments.length}</Text>
-              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryLabel}>{t.common.total}</Text>
             </View>
           </View>
 
@@ -564,8 +565,8 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Booking Registry"
-          subtitle="Search, filter, update, complete, cancel, or remove bookings from one control surface."
+          title={t.bookings.bookingRegistry}
+          subtitle={t.bookings.bookingRegistrySubtitle}
         >
           <TextInput
             style={styles.searchInput}

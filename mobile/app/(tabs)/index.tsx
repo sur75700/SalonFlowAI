@@ -19,6 +19,7 @@ import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useSummaryData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 
 function OverviewSkeleton() {
   return (
@@ -53,6 +54,7 @@ function OverviewSkeleton() {
 }
 
 export default function OverviewScreen() {
+  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { summary, loading, refreshing, error, refresh } = useSummaryData(
@@ -97,7 +99,7 @@ export default function OverviewScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Dashboard</Text>
+          <Text style={styles.heroTitle}>{t.dashboard.title}</Text>
           <Text style={styles.heroText}>
             Premium salon command center for bookings, clients, services, analytics,
             and reporting—organized into focused operational sections.
@@ -128,8 +130,8 @@ export default function OverviewScreen() {
         </View>
 
         <SectionCard
-          title="Command Navigation"
-          subtitle="Navigate the platform through focused operational workspaces."
+          title={t.dashboard.commandNavigation}
+          subtitle={t.dashboard.commandNavigationSubtitle}
         >
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>Insights</Text>
@@ -168,28 +170,28 @@ export default function OverviewScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Quick Actions"
-          subtitle="Jump directly into your most important admin workflows."
+          title={t.dashboard.quickActions}
+          subtitle={t.dashboard.quickActionsSubtitle}
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
-              title="Open Bookings"
+              title={t.dashboard.openBookings}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
-              title="Open Clients"
+              title={t.dashboard.openClients}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
-              title="Open Service Catalog"
+              title={t.dashboard.openServiceCatalog}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
-              title="Open Insights"
+              title={t.dashboard.openInsights}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
-              title="Open PDF Reports"
+              title={t.dashboard.openPdfReports}
               onPress={() => router.navigate("/(tabs)/reports")}
             />
           </View>
@@ -197,7 +199,7 @@ export default function OverviewScreen() {
 
         <SectionCard
           title="Executive Snapshot"
-          subtitle="Real-time view of your current salon operating picture."
+          subtitle={t.dashboard.executiveSnapshotSubtitle}
         >
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Total clients</Text>

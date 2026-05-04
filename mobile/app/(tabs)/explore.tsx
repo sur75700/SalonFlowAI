@@ -1,6 +1,7 @@
 import React from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { useAppLanguage } from "../../contexts/LanguageContext";
 
 type QuickLinkProps = {
   title: string;
@@ -18,6 +19,7 @@ function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
 }
 
 export default function WorkspaceScreen() {
+  const { t } = useAppLanguage();
   const openDocs = () => {
     Linking.openURL("https://salonflowai-backend.onrender.com/docs");
   };
@@ -30,17 +32,17 @@ export default function WorkspaceScreen() {
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
-        <Text style={styles.title}>Workspace</Text>
+        <Text style={styles.title}>{t.workspace.title}</Text>
         <Text style={styles.subtitle}>
-          Central utility space for navigation, backend access, and admin operations.
+          {t.workspace.heroSubtitle}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Navigation</Text>
+        <Text style={styles.sectionTitle}>{t.workspace.quickNavigation}</Text>
 
         <QuickLink
-          title="Open Dashboard"
+          title={t.workspace.openDashboard}
           subtitle="Return to the executive overview."
           onPress={() => router.navigate("/(tabs)")}
         />
@@ -72,22 +74,22 @@ export default function WorkspaceScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Backend Access</Text>
+        <Text style={styles.sectionTitle}>{t.workspace.backendAccess}</Text>
 
         <QuickLink
-          title="Open API Docs"
+          title={t.workspace.openApiDocs}
           subtitle="Launch the production Swagger documentation."
           onPress={openDocs}
         />
         <QuickLink
-          title="Check Backend Health"
+          title={t.workspace.checkBackendHealth}
           subtitle="Open the production health endpoint."
           onPress={openBackend}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Operator Notes</Text>
+        <Text style={styles.sectionTitle}>{t.workspace.operatorNotes}</Text>
         <View style={styles.noteCard}>
           <Text style={styles.noteText}>
             Use this workspace as a clean replacement for the default Expo starter tab.
