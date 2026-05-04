@@ -118,7 +118,7 @@ const fr = {
       "Flux simple d’export pour le reporting quotidien.",
   },
   workspace: {
-    title: "Espace de travail",
+    languageSwitcher: "Changement de langue",\n    title: "Espace de travail",
     heroSubtitle:
       "Espace utilitaire central pour la navigation, l’accès backend et les opérations administratives.",
     quickNavigation: "Navigation rapide",
