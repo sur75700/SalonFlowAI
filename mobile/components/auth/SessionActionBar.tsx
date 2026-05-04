@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import ActionButton from "../dashboard/ActionButton";
+import ActionButton from "../dashboard/ActionButton";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
 
 type SessionActionBarProps = {
   email?: string;
@@ -13,12 +13,12 @@ export default function SessionActionBar({
   email,
   onLogout,
   loggingOut = false,
-}: SessionActionBarProps) {
+}: SessionActionBarProps) {\n  const { t } = useAppLanguage();
   return (
     <View style={styles.wrap}>
       <View style={styles.info}>
         <Text style={styles.label}>SESSION</Text>
-        <Text style={styles.title}>Admin Session Active</Text>
+        <Text style={styles.title}>{t.session.adminSessionActive}</Text>
         <Text style={styles.subtitle}>
           {email ? `Authorized as ${email}` : "Authorized inside SalonFlow AI admin"}
         </Text>
@@ -26,7 +26,7 @@ export default function SessionActionBar({
 
       <View style={styles.actions}>
         <ActionButton
-          title={loggingOut ? "Closing Session..." : "Close Session"}
+          title={loggingOut ? t.session.closingSession : t.session.closeSession}
           onPress={onLogout}
           disabled={loggingOut}
           tone="danger"

@@ -22,7 +22,7 @@ import { useConfirmAction } from "../../hooks/useConfirmAction";
 import { useFormState } from "../../hooks/useFormState";
 import { useClientsData } from "../../hooks/useResourceData";
 import { useClientMutations } from "../../hooks/useMutations";
-import { useSession } from "../../hooks/useSession";
+import { useSession } from "../../hooks/useSession";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
 import type { ClientItem } from "../../types/models";
 
 const emptyClientForm = {
@@ -65,7 +65,7 @@ function ClientsSkeleton() {
   );
 }
 
-export default function ClientsScreen() {
+export default function ClientsScreen() {\n  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();
@@ -200,7 +200,7 @@ export default function ClientsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Client Snapshot"
+        title={t.common.clientSnapshot}
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -286,7 +286,7 @@ export default function ClientsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Client Snapshot"
+          title={t.common.clientSnapshot}
           subtitle="Search, edit, and manage all salon clients."
         >
           <TextInput

@@ -1,7 +1,7 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Tabs } from "expo-router";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
 
-export default function TabsLayout() {
+export default function TabsLayout() {\n  const { t } = useAppLanguage();
   return (
     <Tabs
       screenOptions={{
@@ -23,27 +23,27 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Dashboard" }}
+        options={{ title: t.nav.dashboard }}
       />
       <Tabs.Screen
         name="appointments"
-        options={{ title: "Bookings" }}
+        options={{ title: t.nav.bookings }}
       />
       <Tabs.Screen
         name="clients"
-        options={{ title: "Clients" }}
+        options={{ title: t.nav.clients }}
       />
       <Tabs.Screen
         name="services"
-        options={{ title: "Service Catalog" }}
+        options={{ title: t.nav.services }}
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Insights" }}
+        options={{ title: t.nav.insights }}
       />
       <Tabs.Screen
         name="reports"
-        options={{ title: "PDF Reports" }}
+        options={{ title: t.nav.reports }}
       />
     </Tabs>
   );

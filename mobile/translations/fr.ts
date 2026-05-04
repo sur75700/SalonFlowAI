@@ -28,6 +28,9 @@ const fr = {
     active: "Actif",
     inactive: "Inactif",
     searchResults: "Résultats de recherche",
+    clientSnapshot: "Résumé clients",
+    executiveSnapshot: "Résumé exécutif",
+    exportReadiness: "Prêt pour l’export",
   },
 };
 export default fr;\n

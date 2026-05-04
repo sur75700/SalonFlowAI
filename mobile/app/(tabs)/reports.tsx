@@ -16,7 +16,7 @@ import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import SectionCard from "../../components/dashboard/SectionCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
-import { useSession } from "../../hooks/useSession";
+import { useSession } from "../../hooks/useSession";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
 import { API_BASE_URL, isAuthError } from "../../lib/api";
 import {
   todayDateInput,
@@ -57,7 +57,7 @@ function ReportsSkeleton() {
   );
 }
 
-export default function ReportsScreen() {
+export default function ReportsScreen() {\n  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
 
@@ -208,7 +208,7 @@ export default function ReportsScreen() {
               style={styles.quickButton}
               onPress={() => setReportDate(todayDateInput())}
             >
-              <Text style={styles.quickButtonText}>Today</Text>
+              <Text style={styles.quickButtonText}>{t.common.today}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -231,7 +231,7 @@ export default function ReportsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Export Readiness"
+          title={t.common.exportReadiness}
           subtitle="Fast visibility before generating your PDF summary."
         >
           <View style={styles.readinessCard}>

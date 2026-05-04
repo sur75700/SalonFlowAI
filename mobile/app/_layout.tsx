@@ -1,12 +1,12 @@
 import React from "react";
 import { Stack } from "expo-router";
 
-import { ToastProvider } from "../components/ui/Toast";
+import { LanguageProvider } from "../contexts/LanguageContext";
 
 export default function RootLayout() {
   return (
-    <ToastProvider>
+    <LanguageProvider>
       <Stack screenOptions={{ headerShown: false }} />
-    </ToastProvider>
+    </LanguageProvider>
   );
-}
+}\n

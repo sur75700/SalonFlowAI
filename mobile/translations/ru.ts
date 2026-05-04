@@ -28,6 +28,9 @@ const ru = {
     active: "Активные",
     inactive: "Неактивные",
     searchResults: "Результаты поиска",
+    clientSnapshot: "Сводка по клиентам",
+    executiveSnapshot: "Главная сводка",
+    exportReadiness: "Готовность к экспорту",
   },
 };
 export default ru;\n

@@ -13,7 +13,7 @@ import AuthScreenShell from "./AuthScreenShell";
 import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
-import { saveTokenFromCredentials } from "../../lib/api";
+import { saveTokenFromCredentials } from "../../lib/api";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
 
 type DevLoginCardProps = {
   title?: string;
@@ -23,7 +23,7 @@ type DevLoginCardProps = {
 export default function DevLoginCard({
   title = "Admin Session Recovery",
   subtitle = "Restore your active session to continue managing SalonFlow AI.",
-}: DevLoginCardProps) {
+}: DevLoginCardProps) {\n  const { t } = useAppLanguage();
   const { setToken } = useSession();
   const { showToast } = useToast();
 
@@ -70,7 +70,7 @@ export default function DevLoginCard({
   return (
     <AuthScreenShell title={title} subtitle={subtitle}>
       <View style={styles.badge}>
-        <Text style={styles.badgeText}>ADMIN RECOVERY</Text>
+        <Text style={styles.badgeText}>{t.auth.adminRecoveryBadge}</Text>
       </View>
 
       {error ? (
@@ -79,7 +79,7 @@ export default function DevLoginCard({
         </View>
       ) : null}
 
-      <Text style={styles.label}>Email</Text>
+      <Text style={styles.label}>{t.auth.email}</Text>
       <TextInput
         style={styles.input}
         placeholder={DEFAULTS.adminEmail}
@@ -90,7 +90,7 @@ export default function DevLoginCard({
         keyboardType="email-address"
       />
 
-      <Text style={styles.label}>Password</Text>
+      <Text style={styles.label}>{t.auth.password}</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter password"
@@ -102,12 +102,12 @@ export default function DevLoginCard({
 
       <View style={styles.actions}>
         <ActionButton
-          title={loading ? "Restoring Session..." : "Restore Session"}
+          title={loading ? t.session.closingSession.replace("Closing", "Restoring").replace("closed", "restored") : t.auth.restoreSession}
           onPress={handleSignIn}
           disabled={loading}
           tone="success"
         />
-        <ActionButton title="Load Admin Access" onPress={useDemoAccount} />
+        <ActionButton title={t.auth.loadAdminAccess} onPress={useDemoAccount} />
       </View>
 
       <View style={styles.infoCard}>

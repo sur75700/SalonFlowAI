@@ -20,7 +20,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useAnalyticsData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
-import { money, shortDay } from "../../utils/formatters";
+import { money, shortDay } from "../../utils/formatters";\nimport { useAppLanguage } from "../../contexts/LanguageContext";
 
 function AnalyticsSkeleton() {
   return (
@@ -54,7 +54,7 @@ function AnalyticsSkeleton() {
   );
 }
 
-export default function AnalyticsScreen() {
+export default function AnalyticsScreen() {\n  const { t } = useAppLanguage();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { summary, analytics, loading, refreshing, error, refresh } =
@@ -189,7 +189,7 @@ export default function AnalyticsScreen() {
         </View>
 
         <ChartBlock
-          title="Executive Snapshot"
+          title={t.common.executiveSnapshot}
           subtitle="High-level financial visibility for the active salon session."
         >
           <View style={styles.executiveGrid}>

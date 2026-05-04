@@ -28,6 +28,9 @@ const hy = {
     active: "Ակտիվ",
     inactive: "Պասիվ",
     searchResults: "Որոնման արդյունքներ",
+    clientSnapshot: "Հաճախորդների ամփոփում",
+    executiveSnapshot: "Գլխավոր ամփոփում",
+    exportReadiness: "Արտահանման պատրաստություն",
   },
 };
 export default hy;\n
