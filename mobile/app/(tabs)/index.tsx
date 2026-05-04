@@ -113,8 +113,8 @@ export default function OverviewScreen() {
         />
 
         <SessionStatusBanner
-          title="Operations Ready"
-          subtitle="Your admin session is active. Pull to refresh and sync the latest salon activity."
+          title={t.common.operationsReady}
+          subtitle={t.common.sessionActiveHelper}
         />
 
         {error ? (

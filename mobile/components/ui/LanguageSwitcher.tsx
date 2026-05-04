@@ -32,7 +32,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 14,
+    marginTop: 10,
+    marginBottom: 10,
   },
   chip: {
     backgroundColor: "#11131a",
@@ -43,13 +44,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   chipActive: {
-    backgroundColor: "#1a1f2b",
+    backgroundColor: "#1f1a10",
     borderColor: "#f2d17a",
   },
   chipText: {
-    color: "#c9c2cf",
-    fontSize: 13,
-    fontWeight: "700",
+    color: "#d2c8af",
+    fontSize: 12,
+    fontWeight: "800",
   },
   chipTextActive: {
     color: "#f2d17a",

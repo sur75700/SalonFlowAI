@@ -2,7 +2,6 @@ import React from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useAppLanguage } from "../../contexts/LanguageContext";
-import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 
 type QuickLinkProps = {
   title: string;
@@ -32,7 +31,6 @@ export default function WorkspaceScreen() {
   return (
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
       <View style={styles.hero}>
-        <LanguageSwitcher />
         <Text style={styles.overline}>SALONFLOW AI</Text>
         <Text style={styles.title}>{t.workspace.title}</Text>
         <Text style={styles.subtitle}>
@@ -49,27 +47,27 @@ export default function WorkspaceScreen() {
           onPress={() => router.navigate("/(tabs)")}
         />
         <QuickLink
-          title="Open Bookings"
+          title={t.dashboard.openBookings}
           subtitle="Manage appointments and daily booking flow."
           onPress={() => router.navigate("/(tabs)/appointments")}
         />
         <QuickLink
-          title="Open Clients"
+          title={t.dashboard.openClients}
           subtitle="Access the client registry and search records."
           onPress={() => router.navigate("/(tabs)/clients")}
         />
         <QuickLink
-          title="Open Service Catalog"
+          title={t.dashboard.openServiceCatalog}
           subtitle="Manage pricing, duration, and active services."
           onPress={() => router.navigate("/(tabs)/services")}
         />
         <QuickLink
-          title="Open Insights"
+          title={t.dashboard.openInsights}
           subtitle="Review analytics, trends, and executive metrics."
           onPress={() => router.navigate("/(tabs)/analytics")}
         />
         <QuickLink
-          title="Open PDF Reports"
+          title={t.dashboard.openPdfReports}
           subtitle="Generate and export daily summary reports."
           onPress={() => router.navigate("/(tabs)/reports")}
         />

@@ -571,7 +571,7 @@ export default function AppointmentsScreen() {
         >
           <TextInput
             style={styles.searchInput}
-            placeholder="Search appointments..."
+            placeholder="placeholder={t.common.searchResults}"
             placeholderTextColor="#9a92a3"
             value={appointmentSearch}
             onChangeText={setAppointmentSearch}

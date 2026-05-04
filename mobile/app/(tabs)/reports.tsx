@@ -234,7 +234,7 @@ export default function ReportsScreen() {
 
         <SectionCard
           title={t.common.exportReadiness}
-          subtitle="Fast visibility before generating your PDF summary."
+          subtitle="{t.common.exportReadiness}"
         >
           <View style={styles.readinessCard}>
             <Text style={styles.readinessLabel}>{t.common.selectedDate}</Text>
