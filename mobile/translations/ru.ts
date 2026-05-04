@@ -11,15 +11,21 @@ const ru = {
   auth: {
     adminRecovery: "Восстановление админ-сессии",
     restoreSession: "Восстановить сессию",
+    restoreSessionLoading: "Восстановление сессии...",
     loadAdminAccess: "Открыть админ-доступ",
     email: "Email",
     password: "Пароль",
     adminRecoveryBadge: "ВОССТАНОВЛЕНИЕ АДМИНА",
+    helperTitle: "Восстановление админа",
+    helperText:
+      "Когда admin token истекает, этот экран помогает быстро восстановить безопасный доступ.",
   },
   session: {
     adminSessionActive: "Админ-сессия активна",
     closeSession: "Закрыть сессию",
     closingSession: "Сессия закрывается...",
+    signedInAsPrefix: "Вход выполнен как",
+    fallbackSignedIn: "Админ-доступ SalonFlow AI активен",
   },
   common: {
     today: "Сегодня",
@@ -31,6 +37,10 @@ const ru = {
     clientSnapshot: "Сводка по клиентам",
     executiveSnapshot: "Главная сводка",
     exportReadiness: "Готовность к экспорту",
+    selectedDate: "Выбранная дата",
+    exportState: "Состояние экспорта",
+    readyToExport: "Готово к экспорту",
+    generatingPdf: "Генерация PDF...",
   },
   dashboard: {
     title: "Панель",
@@ -61,6 +71,16 @@ const ru = {
     bookingRegistrySubtitle:
       "Ищите, фильтруйте, обновляйте, завершайте, отменяйте или удаляйте записи из одной рабочей зоны.",
   },
+  clients: {
+    title: "Реестр клиентов",
+    heroSubtitle:
+      "Управляйте активной клиентской базой салона в одном рабочем пространстве.",
+    snapshotSubtitle:
+      "Быстрый обзор активной клиентской базы салона.",
+    createClientEntry: "Создать клиента",
+    manageClientRegistry: "Управлять реестром клиентов",
+    totalClients: "Всего клиентов",
+  },
   services: {
     title: "Каталог услуг",
     heroSubtitle:
@@ -70,6 +90,32 @@ const ru = {
       "Быстрый обзор текущей структуры ваших услуг.",
     createServiceEntry: "Создать услугу",
     manageCatalogEntries: "Управлять каталогом",
+  },
+  insights: {
+    title: "Аналитика",
+    heroSubtitle:
+      "Аналитика выручки, эффективности услуг и статусов записей.",
+    sessionReady: "Исполнительная аналитика готова",
+    revenueMomentum: "Динамика выручки",
+    revenueMomentumSubtitle:
+      "Движение завершенной выручки за последние 7 дней.",
+    topRevenueServices: "Топ услуг по выручке",
+    topRevenueServicesSubtitle:
+      "Услуги с наибольшим вкладом в выручку.",
+    bookingStatusMix: "Статусы записей",
+    bookingStatusMixSubtitle:
+      "Распределение запланированных, завершенных и отмененных записей.",
+  },
+  reports: {
+    title: "PDF отчеты",
+    heroSubtitle:
+      "Экспортируйте профессиональные ежедневные PDF-отчеты для операций, финансового обзора и управления.",
+    dailyPdfExport: "Ежедневный PDF экспорт",
+    dailyPdfExportSubtitle:
+      "Создайте и скачайте профессиональный PDF-отчет за выбранную дату.",
+    reportingWorkflow: "Процесс отчетности",
+    reportingWorkflowSubtitle:
+      "Простой процесс экспорта ежедневной отчетности.",
   },
   workspace: {
     title: "Рабочее пространство",

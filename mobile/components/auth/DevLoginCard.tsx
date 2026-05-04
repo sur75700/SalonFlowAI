@@ -102,7 +102,7 @@ export default function DevLoginCard({
 
       <View style={styles.actions}>
         <ActionButton
-          title={loading ? t.session.closingSession.replace("Closing", "Restoring").replace("closed", "restored") : t.auth.restoreSession}
+          title={loading ? t.auth.restoreSessionLoading : t.auth.restoreSession}
           onPress={handleSignIn}
           disabled={loading}
           tone="success"

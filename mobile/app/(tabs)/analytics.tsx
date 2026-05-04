@@ -154,9 +154,9 @@ export default function AnalyticsScreen() {\n  const { t } = useAppLanguage();
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Insights</Text>
+          <Text style={styles.heroTitle}>{t.insights.title}</Text>
           <Text style={styles.heroText}>
-            Revenue intelligence, service performance, and booking status insights.
+            {t.insights.heroSubtitle}
           </Text>
         </View>
 
@@ -218,7 +218,7 @@ export default function AnalyticsScreen() {\n  const { t } = useAppLanguage();
 
         <ChartBlock
           title="Revenue Trendline"
-          subtitle="Completed revenue movement across the last 7 days."
+          subtitle={t.insights.revenueMomentumSubtitle}
         >
           {!lineChartData.length ? (
             <EmptyState
@@ -257,7 +257,7 @@ export default function AnalyticsScreen() {\n  const { t } = useAppLanguage();
 
         <ChartBlock
           title="Top Performing Services"
-          subtitle="Highest-performing services ranked by revenue contribution."
+          subtitle={t.insights.topRevenueServicesSubtitle}
         >
           {!barChartData.length ? (
             <EmptyState

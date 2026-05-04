@@ -11,15 +11,21 @@ const fr = {
   auth: {
     adminRecovery: "Récupération de session admin",
     restoreSession: "Restaurer la session",
+    restoreSessionLoading: "Restauration de la session...",
     loadAdminAccess: "Ouvrir l'accès admin",
     email: "Email",
     password: "Mot de passe",
     adminRecoveryBadge: "RÉCUPÉRATION ADMIN",
+    helperTitle: "Récupération admin",
+    helperText:
+      "Lorsque le token admin expire, cet écran aide à restaurer rapidement un accès sécurisé.",
   },
   session: {
     adminSessionActive: "Session admin active",
     closeSession: "Fermer la session",
     closingSession: "Fermeture de la session...",
+    signedInAsPrefix: "Connecté en tant que",
+    fallbackSignedIn: "L'accès admin SalonFlow AI est actif",
   },
   common: {
     today: "Aujourd'hui",
@@ -31,6 +37,10 @@ const fr = {
     clientSnapshot: "Résumé clients",
     executiveSnapshot: "Résumé exécutif",
     exportReadiness: "Prêt pour l’export",
+    selectedDate: "Date sélectionnée",
+    exportState: "État de l’export",
+    readyToExport: "Prêt à exporter",
+    generatingPdf: "Génération du PDF...",
   },
   dashboard: {
     title: "Tableau de bord",
@@ -61,6 +71,16 @@ const fr = {
     bookingRegistrySubtitle:
       "Recherchez, filtrez, mettez à jour, terminez, annulez ou supprimez des réservations depuis une seule interface.",
   },
+  clients: {
+    title: "Registre clients",
+    heroSubtitle:
+      "Gérez votre base active de clients dans un espace de travail ciblé.",
+    snapshotSubtitle:
+      "Vue rapide de votre base active de clients.",
+    createClientEntry: "Créer un client",
+    manageClientRegistry: "Gérer le registre clients",
+    totalClients: "Total clients",
+  },
   services: {
     title: "Catalogue des services",
     heroSubtitle:
@@ -70,6 +90,32 @@ const fr = {
       "Vue rapide de votre structure actuelle de services.",
     createServiceEntry: "Créer un service",
     manageCatalogEntries: "Gérer le catalogue",
+  },
+  insights: {
+    title: "Analytique",
+    heroSubtitle:
+      "Intelligence des revenus, performance des services et analyse des statuts de réservation.",
+    sessionReady: "Analytique exécutive prête",
+    revenueMomentum: "Dynamique des revenus",
+    revenueMomentumSubtitle:
+      "Évolution des revenus finalisés sur les 7 derniers jours.",
+    topRevenueServices: "Meilleurs services par revenu",
+    topRevenueServicesSubtitle:
+      "Services les plus performants classés par contribution au revenu.",
+    bookingStatusMix: "Statuts des réservations",
+    bookingStatusMixSubtitle:
+      "Répartition des réservations planifiées, terminées et annulées.",
+  },
+  reports: {
+    title: "Rapports PDF",
+    heroSubtitle:
+      "Exportez des rapports PDF quotidiens soignés pour l’exploitation, la revue financière et la gestion.",
+    dailyPdfExport: "Export PDF quotidien",
+    dailyPdfExportSubtitle:
+      "Générez et téléchargez un résumé PDF soigné pour la date sélectionnée.",
+    reportingWorkflow: "Flux de reporting",
+    reportingWorkflowSubtitle:
+      "Flux simple d’export pour le reporting quotidien.",
   },
   workspace: {
     title: "Espace de travail",

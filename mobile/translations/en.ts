@@ -11,15 +11,21 @@ const en = {
   auth: {
     adminRecovery: "Admin Session Recovery",
     restoreSession: "Restore Session",
+    restoreSessionLoading: "Restoring Session...",
     loadAdminAccess: "Load Admin Access",
     email: "Email",
     password: "Password",
     adminRecoveryBadge: "ADMIN RECOVERY",
+    helperTitle: "Admin Recovery",
+    helperText:
+      "When your admin token expires, this screen helps you restore secure access quickly.",
   },
   session: {
     adminSessionActive: "Admin Session Active",
     closeSession: "Close Session",
     closingSession: "Closing Session...",
+    signedInAsPrefix: "Signed in as",
+    fallbackSignedIn: "Admin access is active for SalonFlow AI",
   },
   common: {
     today: "Today",
@@ -31,6 +37,10 @@ const en = {
     clientSnapshot: "Client Snapshot",
     executiveSnapshot: "Executive Snapshot",
     exportReadiness: "Export Readiness",
+    selectedDate: "Selected date",
+    exportState: "Export state",
+    readyToExport: "Ready to export",
+    generatingPdf: "Generating PDF...",
   },
   dashboard: {
     title: "Dashboard",
@@ -61,6 +71,16 @@ const en = {
     bookingRegistrySubtitle:
       "Search, filter, update, complete, cancel, or remove bookings from one control surface.",
   },
+  clients: {
+    title: "Client Registry",
+    heroSubtitle:
+      "Manage your active salon client base in one focused workspace.",
+    snapshotSubtitle:
+      "Fast visibility into your active salon client registry.",
+    createClientEntry: "Create Client Entry",
+    manageClientRegistry: "Manage Client Registry",
+    totalClients: "Total Clients",
+  },
   services: {
     title: "Service Catalog",
     heroSubtitle:
@@ -70,6 +90,32 @@ const en = {
       "Fast visibility into your current service mix.",
     createServiceEntry: "Create Service Entry",
     manageCatalogEntries: "Manage Catalog Entries",
+  },
+  insights: {
+    title: "Insights",
+    heroSubtitle:
+      "Revenue intelligence, service performance, and booking status insights.",
+    sessionReady: "Executive Insights Ready",
+    revenueMomentum: "Revenue Momentum",
+    revenueMomentumSubtitle:
+      "Completed revenue movement across the last 7 days.",
+    topRevenueServices: "Top Revenue Services",
+    topRevenueServicesSubtitle:
+      "Highest-performing services ranked by revenue contribution.",
+    bookingStatusMix: "Booking Status Mix",
+    bookingStatusMixSubtitle:
+      "Distribution of scheduled, completed, and cancelled bookings.",
+  },
+  reports: {
+    title: "PDF Reports",
+    heroSubtitle:
+      "Export polished daily PDF summaries for operations, finance review, and management reporting.",
+    dailyPdfExport: "Daily PDF Export",
+    dailyPdfExportSubtitle:
+      "Generate and download a polished PDF summary for the selected date.",
+    reportingWorkflow: "Reporting Workflow",
+    reportingWorkflowSubtitle:
+      "Simple export flow for daily reporting.",
   },
   workspace: {
     title: "Workspace",

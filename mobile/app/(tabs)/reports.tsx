@@ -167,9 +167,9 @@ export default function ReportsScreen() {\n  const { t } = useAppLanguage();
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>PDF Reports</Text>
+          <Text style={styles.heroTitle}>{t.reports.title}</Text>
           <Text style={styles.heroText}>
-            Export polished daily PDF summaries for operations, finance review, and management reporting.
+            {t.reports.heroSubtitle}
           </Text>
         </View>
 
@@ -191,7 +191,7 @@ export default function ReportsScreen() {\n  const { t } = useAppLanguage();
         ) : null}
 
         <SectionCard
-          title="Daily PDF Export"
+          title={t.reports.dailyPdfExport}
           subtitle="Generate and download a polished daily salon summary report."
         >
           <TextInput
@@ -235,21 +235,21 @@ export default function ReportsScreen() {\n  const { t } = useAppLanguage();
           subtitle="Fast visibility before generating your PDF summary."
         >
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>Selected date</Text>
+            <Text style={styles.readinessLabel}>{t.common.selectedDate}</Text>
             <Text style={styles.readinessValue}>{reportDate}</Text>
           </View>
 
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>Export state</Text>
+            <Text style={styles.readinessLabel}>{t.common.exportState}</Text>
             <Text style={styles.readinessValue}>
-              {exportingPdf ? "Generating PDF..." : "Ready to export"}
+              {exportingPdf ? t.common.generatingPdf : t.common.readyToExport}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title="Reporting Workflow"
-          subtitle="Simple export flow for daily reporting."
+          title={t.reports.reportingWorkflow}
+          subtitle={t.reports.reportingWorkflowSubtitle}
         >
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>1. Pick a date</Text>

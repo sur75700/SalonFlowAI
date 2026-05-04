@@ -219,7 +219,7 @@ export default function ClientsScreen() {\n  const { t } = useAppLanguage();
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Client Registry</Text>
+          <Text style={styles.heroTitle}>{t.clients.title}</Text>
           <Text style={styles.heroText}>
             Manage your client registry, update details, and add new salon leads.
           </Text>
@@ -243,7 +243,7 @@ export default function ClientsScreen() {\n  const { t } = useAppLanguage();
         ) : null}
 
         <SectionCard
-          title="Create Client Entry"
+          title={t.clients.createClientEntry}
           subtitle="Add a polished client profile to the salon system."
         >
           <TextInput
