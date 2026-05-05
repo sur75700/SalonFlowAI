@@ -387,4 +387,27 @@ const styles = StyleSheet.create({
     color: "#ffcad3",
     fontSize: 14,
   },
+
+
+  readinessCard: {
+    backgroundColor: "#11131a",
+    borderWidth: 1,
+    borderColor: "#2a3140",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+  },
+  readinessLabel: {
+    color: "#c9c2cf",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  readinessValue: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+  },
 });

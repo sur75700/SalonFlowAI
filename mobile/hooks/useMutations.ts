@@ -85,7 +85,7 @@ export function useClientMutations({
       state.setLoading(true);
       state.setError("");
 
-      await api.post("/clients", payload, {
+      await api.post("/clients/", payload, {
         headers: authHeaders(token),
       });
 
@@ -170,7 +170,7 @@ export function useServiceMutations({
       state.setLoading(true);
       state.setError("");
 
-      await api.post("/services", payload, {
+      await api.post("/services/", payload, {
         headers: authHeaders(token),
       });
 

@@ -50,7 +50,7 @@ export default function LoadingSkeleton({
         styles.base,
         {
           height,
-          width,
+          width: width as any,
           borderRadius: radius,
           opacity,
         },

@@ -338,4 +338,12 @@ const styles = StyleSheet.create({
     color: "#ffcad3",
     fontSize: 14,
   },
+
+
+  quickActionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginTop: 8,
+  },
 });
