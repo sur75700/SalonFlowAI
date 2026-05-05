@@ -919,4 +919,42 @@ const styles = StyleSheet.create({
     color: "#ffcad3",
     fontSize: 14,
   },
+
+
+  summaryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 14,
+  },
+  summaryCard: {
+    flexBasis: "31%",
+    flexGrow: 1,
+    minWidth: 160,
+    backgroundColor: "#11131a",
+    borderWidth: 1,
+    borderColor: "#2a3140",
+    borderRadius: 16,
+    padding: 14,
+  },
+  summaryValue: {
+    color: "#ffffff",
+    fontSize: 22,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  summaryLabel: {
+    color: "#c9c2cf",
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  filterActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 10,
+    marginBottom: 12,
+  },
 });

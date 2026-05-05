@@ -494,4 +494,35 @@ const styles = StyleSheet.create({
     color: "#ffcad3",
     fontSize: 14,
   },
+
+
+  executiveGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginTop: 8,
+  },
+  executiveCard: {
+    flexBasis: "31%",
+    flexGrow: 1,
+    minWidth: 180,
+    backgroundColor: "#11131a",
+    borderWidth: 1,
+    borderColor: "#2a3140",
+    borderRadius: 16,
+    padding: 14,
+  },
+  executiveLabel: {
+    color: "#c9c2cf",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  executiveValue: {
+    color: "#ffffff",
+    fontSize: 22,
+    fontWeight: "900",
+  },
 });

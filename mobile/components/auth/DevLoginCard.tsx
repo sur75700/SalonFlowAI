@@ -29,8 +29,8 @@ export default function DevLoginCard({
   const { setToken } = useSession();
   const { showToast } = useToast();
 
-  const [email, setEmail] = useState(DEFAULTS.adminEmail);
-  const [password, setPassword] = useState(DEFAULTS.adminPassword);
+  const [email, setEmail] = useState<string>(DEFAULTS.adminEmail);
+  const [password, setPassword] = useState<string>(DEFAULTS.adminPassword);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -87,7 +87,7 @@ export default function DevLoginCard({
         placeholder={DEFAULTS.adminEmail}
         placeholderTextColor="#938b9d"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => setEmail(text)}
         autoCapitalize="none"
         keyboardType="email-address"
       />
@@ -98,7 +98,7 @@ export default function DevLoginCard({
         placeholder="Enter password"
         placeholderTextColor="#938b9d"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => setPassword(text)}
         secureTextEntry
       />
 
