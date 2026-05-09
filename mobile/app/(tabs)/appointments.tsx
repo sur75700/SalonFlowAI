@@ -336,8 +336,8 @@ export default function AppointmentsScreen() {
         />
 
         <SessionStatusBanner
-          title="Booking Flow Connected"
-          subtitle="Your active session can create bookings, update statuses, reschedule appointments, and manage salon operations."
+          title={t("common.bookingFlowConnected", locale)}
+          subtitle={t("common.bookingFlowConnected", locale) === "Booking Flow Connected" ? "Your active session can create bookings, update statuses, reschedule appointments, and manage salon operations." : t("common.createAppointmentSubtitle", locale)}
         />
 
         {screenError ? (
@@ -348,7 +348,7 @@ export default function AppointmentsScreen() {
 
         <SectionCard
           title={t("common.createAppointment", locale)}
-          subtitle="Create a new salon booking with client, service, date, and notes."
+          subtitle={t("common.createAppointmentSubtitle", locale)}
         >
           <Text style={styles.label}>Client</Text>
           <View style={styles.pickerWrap}>
@@ -430,7 +430,7 @@ export default function AppointmentsScreen() {
             />
           </View>
 
-          <Text style={styles.label}>Notes</Text>
+          <Text style={styles.label}>{t("common.notes", locale)}</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Booking notes"
@@ -460,13 +460,13 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Today Bookings"
-          subtitle="Live same-day appointment flow."
+          title={t("common.todayBookings", locale)}
+          subtitle={t("common.todayBookingsSubtitle", locale)}
         >
           {todayAppointments.length === 0 ? (
             <EmptyState
-              title="No bookings today"
-              subtitle="Today has no scheduled appointments right now."
+              title={t("common.noBookingsToday", locale)}
+              subtitle={t("common.noBookingsTodaySubtitle", locale)}
             />
           ) : (
             todayAppointments.map((appointment) => (
@@ -494,13 +494,13 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Upcoming Bookings"
-          subtitle="Next scheduled client flow."
+          title={t("common.upcomingBookings", locale)}
+          subtitle={t("common.upcomingBookingsSubtitle", locale)}
         >
           {upcomingAppointments.length === 0 ? (
             <EmptyState
-              title="No upcoming bookings"
-              subtitle="There are no future appointments scheduled yet."
+              title={t("common.noUpcomingBookings", locale)}
+              subtitle={t("common.noUpcomingBookingsSubtitle", locale)}
             />
           ) : (
             upcomingAppointments.map((appointment) => (
@@ -528,8 +528,8 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Booking Filters"
-          subtitle="Switch between operational booking states instantly."
+          title={t("common.bookingFilters", locale)}
+          subtitle={t("common.bookingFiltersSubtitle", locale)}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
@@ -567,8 +567,8 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Booking Registry"
-          subtitle="Search, filter, update, complete, cancel, or remove bookings from one control surface."
+          title={t("common.bookingRegistry", locale)}
+          subtitle={t("common.bookingRegistrySubtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}
@@ -594,12 +594,12 @@ export default function AppointmentsScreen() {
           {noAppointmentsAtAll ? (
             <EmptyState
               title={t("common.noAppointmentsYet", locale)}
-              subtitle="Create your first booking using the appointment form above."
+              subtitle={t("common.noAppointmentsYetSubtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
               title={t("common.noMatchingAppointments", locale)}
-              subtitle="Try another search term or switch the active filter."
+              subtitle={t("common.noMatchingAppointmentsSubtitle", locale)}
             />
           ) : (
             filteredAppointments.map((appointment) => (
@@ -681,10 +681,10 @@ export default function AppointmentsScreen() {
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>Notes</Text>
+                    <Text style={styles.label}>{t("common.notes", locale)}</Text>
                     <TextInput
                       style={[styles.input, styles.textArea]}
-                      placeholder="Notes"
+                      placeholder={t("common.notes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.notes}
                       onChangeText={(value) => editForm.setField("notes", value)}

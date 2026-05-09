@@ -265,7 +265,7 @@ export default function ServicesScreen() {
 
         <SessionStatusBanner
           title={t("common.catalogReady", locale)}
-          subtitle="Your session is active and can manage pricing, duration, and service visibility."
+          subtitle={t("common.servicesSessionReadySubtitle", locale)}
         />
 
         {screenError ? (
@@ -276,7 +276,7 @@ export default function ServicesScreen() {
 
         <SectionCard
           title={t("common.createServiceEntry", locale)}
-          subtitle="Add a premium salon service to your catalog."
+          subtitle={t("common.createServiceEntrySubtitle", locale)}
         >
           <TextInput
             style={styles.input}
@@ -322,7 +322,7 @@ export default function ServicesScreen() {
 
         <SectionCard
           title={t("common.catalogSnapshot", locale)}
-          subtitle="Fast visibility into your current service mix."
+          subtitle={t("common.catalogSnapshotSubtitle", locale)}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
@@ -342,7 +342,7 @@ export default function ServicesScreen() {
 
         <SectionCard
           title={t("common.serviceCatalog", locale)}
-          subtitle="Search, edit, activate, deactivate, and manage salon services."
+          subtitle={t("common.serviceCatalogSubtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}
@@ -355,12 +355,12 @@ export default function ServicesScreen() {
           {noServicesAtAll ? (
             <EmptyState
               title={t("common.noServicesYet", locale)}
-              subtitle="Create your first salon service to start accepting bookings."
+              subtitle={t("common.noServicesYetSubtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
               title={t("common.noMatchingServices", locale)}
-              subtitle="Try another search term or clear the search field."
+              subtitle={t("common.noMatchingServicesSubtitle", locale)}
             />
           ) : (
             filteredServices.map((service) => (
