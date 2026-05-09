@@ -133,8 +133,8 @@ export default function ServicesScreen() {
       !createForm.values.duration_minutes.trim() ||
       !createForm.values.price.trim()
     ) {
-      setMutationError("Service name, duration and price are required");
-      showToast("Service name, duration and price are required", "error");
+      setMutationError(t("common.serviceFieldsRequired", locale));
+      showToast(t("common.serviceFieldsRequired", locale), "error");
       return;
     }
 
@@ -148,7 +148,7 @@ export default function ServicesScreen() {
 
     if (ok) {
       createForm.reset();
-      showToast("Service added to catalog successfully", "success");
+      showToast(t("common.serviceAddedSuccessfully", locale), "success");
     }
   };
 
@@ -176,8 +176,8 @@ export default function ServicesScreen() {
       !editForm.values.duration_minutes.trim() ||
       !editForm.values.price.trim()
     ) {
-      setMutationError("Service name, duration and price are required");
-      showToast("Service name, duration and price are required", "error");
+      setMutationError(t("common.serviceFieldsRequired", locale));
+      showToast(t("common.serviceFieldsRequired", locale), "error");
       return;
     }
 
@@ -191,13 +191,13 @@ export default function ServicesScreen() {
 
     if (ok) {
       cancelEditService();
-      showToast("Service catalog entry updated successfully", "success");
+      showToast(t("common.serviceUpdatedSuccessfully", locale), "success");
     }
   };
 
   const handleDeleteService = async (service: ServiceItem) => {
     const approved = await confirm(
-      "Delete service?",
+      t("common.deleteServiceTitle", locale),
       "This will permanently remove " +
         (service.name || "this service") +
         " from your catalog."
@@ -208,7 +208,7 @@ export default function ServicesScreen() {
     const ok = await deleteService(service.id);
 
     if (ok) {
-      showToast("Service removed from catalog successfully", "success");
+      showToast(t("common.serviceDeletedSuccessfully", locale), "success");
     }
   };
 

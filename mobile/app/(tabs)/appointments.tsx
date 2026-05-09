@@ -150,7 +150,7 @@ export default function AppointmentsScreen() {
       !createForm.values.service_id ||
       !createForm.values.starts_at.trim()
     ) {
-      const message = "Client, service and booking time are required";
+      const message = t("common.bookingFieldsRequired", locale);
       setMutationError(message);
       showToast(message, "error");
       return;
@@ -168,7 +168,7 @@ export default function AppointmentsScreen() {
         ...emptyCreateForm,
         starts_at: nextHourDateTimeInput(),
       });
-      showToast("Appointment created successfully", "success");
+      showToast(t("common.bookingCreatedSuccessfully", locale), "success");
     }
   };
 
@@ -208,7 +208,7 @@ export default function AppointmentsScreen() {
       !editForm.values.service_id ||
       !editForm.values.starts_at.trim()
     ) {
-      const message = "Client, service and start datetime are required";
+      const message = t("common.bookingStartRequired", locale);
       setMutationError(message);
       showToast(message, "error");
       return;
@@ -227,7 +227,7 @@ export default function AppointmentsScreen() {
 
       if (ok) {
         cancelEditAppointment();
-        showToast("Booking details updated successfully", "success");
+        showToast(t("common.bookingUpdatedSuccessfully", locale), "success");
       }
     } finally {
       setSavingAppointmentId("");
@@ -236,17 +236,17 @@ export default function AppointmentsScreen() {
 
   const handleCompleteAppointment = async (appointmentId: string) => {
     const ok = await updateAppointmentStatus(appointmentId, "completed");
-    if (ok) showToast("Booking marked completed", "success");
+    if (ok) showToast(t("common.bookingCompletedSuccessfully", locale), "success");
   };
 
   const handleCancelAppointment = async (appointmentId: string) => {
     const ok = await updateAppointmentStatus(appointmentId, "cancelled");
-    if (ok) showToast("Booking cancelled", "success");
+    if (ok) showToast(t("common.bookingCancelledSuccessfully", locale), "success");
   };
 
   const handleDeleteAppointment = async (appointment: AppointmentItem) => {
     const approved = await confirm(
-      "Delete appointment?",
+      t("common.deleteAppointmentTitle", locale),
       "This booking for " +
         (appointment.client_name || "this client") +
         " will be permanently removed."
@@ -255,7 +255,7 @@ export default function AppointmentsScreen() {
     if (!approved) return;
 
     const ok = await deleteAppointment(appointment.id);
-    if (ok) showToast("Booking deleted successfully", "success");
+    if (ok) showToast(t("common.bookingDeletedSuccessfully", locale), "success");
   };
 
   const filteredAppointments = useMemo(() => {

@@ -76,12 +76,12 @@ export default function ReportsScreen() {
 
   const exportPdfReport = async () => {
     if (!token) {
-      setError("Session expired. Sign in first.");
+      setError(t("common.sessionExpiredSignIn", locale));
       return;
     }
 
     if (typeof window === "undefined") {
-      setError("PDF export from UI is currently enabled for web.");
+      setError(t("common.exportUiWebOnly", locale));
       return;
     }
 
@@ -122,7 +122,7 @@ export default function ReportsScreen() {
           return;
         }
 
-        throw new Error(payload?.detail || "Failed to export PDF");
+        throw new Error(payload?.detail || t("common.failedToExportPdf", locale));
       }
 
       const blob = await response.blob();
@@ -141,7 +141,7 @@ export default function ReportsScreen() {
         return;
       }
 
-      setError(err?.message || "Failed to export PDF");
+      setError(err?.message || t("common.failedToExportPdf", locale));
     } finally {
       setExportingPdf(false);
     }
