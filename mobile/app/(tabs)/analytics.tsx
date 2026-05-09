@@ -21,6 +21,7 @@ import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useAnalyticsData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
 import { money, shortDay } from "../../utils/formatters";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
 
 function AnalyticsSkeleton() {
   return (
@@ -55,6 +56,7 @@ function AnalyticsSkeleton() {
 }
 
 export default function AnalyticsScreen() {
+  const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { summary, analytics, loading, refreshing, error, refresh } =
