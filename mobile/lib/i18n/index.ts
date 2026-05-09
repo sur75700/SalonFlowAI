@@ -87,6 +87,7 @@ const translations: Record<AppLocale, TranslationTree> = {
       reportsReady: "Reports Ready",
       dailyPdfExport: "Daily PDF Export",
       exportReadiness: "Export Readiness",
+      exportPdfReport: "Export PDF Report",
       reportingWorkflow: "Reporting Workflow",
       selectedDate: "Selected date",
       exportState: "Export state",
