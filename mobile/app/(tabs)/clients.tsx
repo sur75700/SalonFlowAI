@@ -24,6 +24,8 @@ import { useClientsData } from "../../hooks/useResourceData";
 import { useClientMutations } from "../../hooks/useMutations";
 import { useSession } from "../../hooks/useSession";
 import type { ClientItem } from "../../types/models";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 
 const emptyClientForm = {
   full_name: "",
@@ -66,6 +68,7 @@ function ClientsSkeleton() {
 }
 
 export default function ClientsScreen() {
+  const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();
@@ -200,7 +203,7 @@ export default function ClientsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Client Snapshot"
+        title={t("common.clientSnapshot", locale)}
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -243,7 +246,7 @@ export default function ClientsScreen() {
         ) : null}
 
         <SectionCard
-          title="Create Client Entry"
+          title={t("common.createClientEntry", locale)}
           subtitle="Add a polished client profile to the salon system."
         >
           <TextInput
@@ -278,7 +281,7 @@ export default function ClientsScreen() {
           />
 
           <ActionButton
-            title={mutationLoading ? "Creating..." : "Create Client"}
+            title={mutationLoading ? t("common.creating", locale) : t("common.createClient", locale)}
             onPress={handleCreateClient}
             disabled={mutationLoading}
             tone="success"
@@ -286,12 +289,12 @@ export default function ClientsScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Client Snapshot"
+          title={t("common.clientSnapshot", locale)}
           subtitle="Search, edit, and manage all salon clients."
         >
           <TextInput
             style={styles.searchInput}
-            placeholder="Search clients..."
+            placeholder={t("common.searchClients", locale)}
             placeholderTextColor="#9a92a3"
             value={clientSearch}
             onChangeText={setClientSearch}
@@ -299,12 +302,12 @@ export default function ClientsScreen() {
 
           {noClientsAtAll ? (
             <EmptyState
-              title="No clients yet"
+              title={t("common.noClientsYet", locale)}
               subtitle="Create your first client profile to start building your salon customer base."
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title="No matching clients"
+              title={t("common.noMatchingClients", locale)}
               subtitle="Try a different search term or clear the search field."
             />
           ) : (
@@ -350,7 +353,7 @@ export default function ClientsScreen() {
                         disabled={workingId === client.id}
                         tone="success"
                       />
-                      <ActionButton title="Cancel" onPress={cancelEditClient} />
+                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditClient} />
                     </View>
                   </>
                 ) : (
@@ -362,7 +365,7 @@ export default function ClientsScreen() {
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title="Edit"
+                        title={t("common.edit", locale)}
                         onPress={() => startEditClient(client)}
                         tone="success"
                       />
