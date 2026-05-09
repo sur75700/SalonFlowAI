@@ -27,19 +27,22 @@ import { useServiceMutations } from "../../hooks/useMutations";
 import { useSession } from "../../hooks/useSession";
 import type { ServiceItem } from "../../types/models";
 import { money } from "../../utils/formatters";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { APP_PREFERENCES } from "../../lib/config/appPreferences";
+import type { AppCurrency } from "../../lib/i18n/types";
 
 const emptyCreateForm = {
   name: "",
   duration_minutes: "",
   price: "",
-  currency: "AMD",
+  currency: APP_PREFERENCES.defaultCurrency,
 };
 
 const emptyEditForm = {
   name: "",
   duration_minutes: "",
   price: "",
-  currency: "AMD",
+  currency: APP_PREFERENCES.defaultCurrency,
   is_active: "true",
 };
 
@@ -76,7 +79,13 @@ function ServicesSkeleton() {
   );
 }
 
+function normalizeCurrency(value: string | null | undefined): AppCurrency {
+  if (value === "USD" || value === "EUR" || value === "AMD") return value;
+  return APP_PREFERENCES.defaultCurrency;
+}
+
 export default function ServicesScreen() {
+  const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();
@@ -148,7 +157,7 @@ export default function ServicesScreen() {
       name: service.name || "",
       duration_minutes: String(service.duration_minutes ?? ""),
       price: String(service.price ?? ""),
-      currency: service.currency || "AMD",
+      currency: normalizeCurrency(service.currency || preferredCurrency),
       is_active: service.is_active ? "true" : "false",
     });
     setMutationError("");
@@ -298,7 +307,7 @@ export default function ServicesScreen() {
             placeholder="Currency"
             placeholderTextColor="#9a92a3"
             value={createForm.values.currency}
-            onChangeText={(value) => createForm.setField("currency", value)}
+            onChangeText={(value) => createForm.setField("currency", normalizeCurrency(value))}
             autoCapitalize="characters"
           />
 
@@ -388,7 +397,7 @@ export default function ServicesScreen() {
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.currency}
                       onChangeText={(value) =>
-                        editForm.setField("currency", value)
+                        editForm.setField("currency", normalizeCurrency(value))
                       }
                       autoCapitalize="characters"
                     />
@@ -424,7 +433,7 @@ export default function ServicesScreen() {
                       Duration: {service.duration_minutes} min
                     </Text>
                     <Text style={styles.item}>
-                      Price: {money(service.price, service.currency)}
+                      Price: {money(service.price, normalizeCurrency(service.currency))}
                     </Text>
                     <View style={{ marginTop: 6, marginBottom: 6 }}>
                       <StatusBadge status={service.is_active ? "active" : "inactive"} />
