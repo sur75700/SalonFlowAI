@@ -19,7 +19,8 @@ import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useSummaryData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
-import { useAppLanguage } from "../../contexts/LanguageContext";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 
 function OverviewSkeleton() {
   return (
@@ -54,7 +55,7 @@ function OverviewSkeleton() {
 }
 
 export default function OverviewScreen() {
-  const { t } = useAppLanguage();
+  const { locale } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { summary, loading, refreshing, error, refresh } = useSummaryData(
@@ -79,7 +80,7 @@ export default function OverviewScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Dashboard"
+        title={t("common.dashboard", locale)}
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -99,7 +100,7 @@ export default function OverviewScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t.dashboard.title}</Text>
+          <Text style={styles.heroTitle}>{t("common.dashboard", locale)}</Text>
           <Text style={styles.heroText}>
             Premium salon command center for bookings, clients, services, analytics,
             and reporting—organized into focused operational sections.
@@ -113,8 +114,8 @@ export default function OverviewScreen() {
         />
 
         <SessionStatusBanner
-          title={t.common.operationsReady}
-          subtitle={t.common.sessionActiveHelper}
+          title={t("common.operationsReady", locale)}
+          subtitle="Your admin session is active. Pull to refresh and sync the latest salon activity."
         />
 
         {error ? (
@@ -130,39 +131,39 @@ export default function OverviewScreen() {
         </View>
 
         <SectionCard
-          title={t.dashboard.commandNavigation}
-          subtitle={t.dashboard.commandNavigationSubtitle}
+          title={t("common.commandNavigation", locale)}
+          subtitle="Navigate the platform through focused operational workspaces."
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Insights</Text>
+            <Text style={styles.infoTitle}>{t("common.insights", locale)}</Text>
             <Text style={styles.infoText}>
               Revenue intelligence, charts, service performance, and booking status distribution.
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>PDF Reports</Text>
+            <Text style={styles.infoTitle}>{t("common.pdfReports", locale)}</Text>
             <Text style={styles.infoText}>
               Export daily PDF summary files for selected dates.
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Appointments</Text>
+            <Text style={styles.infoTitle}>{t("common.appointments", locale)}</Text>
             <Text style={styles.infoText}>
               Search, filter, edit, complete, cancel, and delete bookings.
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Clients</Text>
+            <Text style={styles.infoTitle}>{t("common.clients", locale)}</Text>
             <Text style={styles.infoText}>
               Create and manage your client registry in a dedicated screen.
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>Service Catalog</Text>
+            <Text style={styles.infoTitle}>{t("common.serviceCatalog", locale)}</Text>
             <Text style={styles.infoText}>
               Manage your premium service catalog, pricing strategy, duration, and activation state.
             </Text>
@@ -170,69 +171,69 @@ export default function OverviewScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t.dashboard.quickActions}
-          subtitle={t.dashboard.quickActionsSubtitle}
+          title={t("common.quickActions", locale)}
+          subtitle="Jump directly into your most important admin workflows."
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
-              title={t.dashboard.openBookings}
+              title={t("common.openBookings", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
-              title={t.dashboard.openClients}
+              title={t("common.openClients", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
-              title={t.dashboard.openServiceCatalog}
+              title={t("common.openServiceCatalog", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
-              title={t.dashboard.openInsights}
+              title={t("common.openInsights", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
-              title={t.dashboard.openPdfReports}
+              title={t("common.openPdfReports", locale)}
               onPress={() => router.navigate("/(tabs)/reports")}
             />
           </View>
         </SectionCard>
 
         <SectionCard
-          title="Executive Snapshot"
-          subtitle={t.dashboard.executiveSnapshotSubtitle}
+          title={t("common.executiveSnapshot", locale)}
+          subtitle="Real-time view of your current salon operating picture."
         >
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Total clients</Text>
+            <Text style={styles.metricLabel}>{t("common.totalClients", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Total services</Text>
+            <Text style={styles.metricLabel}>{t("common.totalServices", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Total bookings</Text>
+            <Text style={styles.metricLabel}>{t("common.totalBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Scheduled bookings</Text>
+            <Text style={styles.metricLabel}>{t("common.scheduledBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.scheduled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Completed bookings</Text>
+            <Text style={styles.metricLabel}>{t("common.completedBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.completed_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Cancelled bookings</Text>
+            <Text style={styles.metricLabel}>{t("common.cancelledBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.cancelled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>Today bookings</Text>
+            <Text style={styles.metricLabel}>{t("common.todayBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.today_appointments ?? 0}</Text>
           </View>
         </SectionCard>
