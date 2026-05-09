@@ -1,7 +1,8 @@
 import React from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { useAppLanguage } from "../../contexts/LanguageContext";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 
 type QuickLinkProps = {
   title: string;
@@ -19,7 +20,7 @@ function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
 }
 
 export default function WorkspaceScreen() {
-  const { t } = useAppLanguage();
+  const { locale } = useAppPreferences();
   const openDocs = () => {
     Linking.openURL("https://salonflowai-backend.onrender.com/docs");
   };
@@ -32,64 +33,64 @@ export default function WorkspaceScreen() {
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
-        <Text style={styles.title}>{t.workspace.title}</Text>
+        <Text style={styles.title}>{t("common.workspace", locale)}</Text>
         <Text style={styles.subtitle}>
-          {t.workspace.heroSubtitle}
+          Central utility space for navigation, backend access, and admin operations.
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.workspace.quickNavigation}</Text>
+        <Text style={styles.sectionTitle}>{t("common.quickNavigation", locale)}</Text>
 
         <QuickLink
-          title={t.workspace.openDashboard}
+          title={t("common.openDashboard", locale)}
           subtitle="Return to the executive overview."
           onPress={() => router.navigate("/(tabs)")}
         />
         <QuickLink
-          title={t.dashboard.openBookings}
+          title={t("common.openBookings", locale)}
           subtitle="Manage appointments and daily booking flow."
           onPress={() => router.navigate("/(tabs)/appointments")}
         />
         <QuickLink
-          title={t.dashboard.openClients}
+          title={t("common.openClients", locale)}
           subtitle="Access the client registry and search records."
           onPress={() => router.navigate("/(tabs)/clients")}
         />
         <QuickLink
-          title={t.dashboard.openServiceCatalog}
+          title={t("common.openServiceCatalog", locale)}
           subtitle="Manage pricing, duration, and active services."
           onPress={() => router.navigate("/(tabs)/services")}
         />
         <QuickLink
-          title={t.dashboard.openInsights}
+          title={t("common.openInsights", locale)}
           subtitle="Review analytics, trends, and executive metrics."
           onPress={() => router.navigate("/(tabs)/analytics")}
         />
         <QuickLink
-          title={t.dashboard.openPdfReports}
+          title={t("common.openPdfReports", locale)}
           subtitle="Generate and export daily summary reports."
           onPress={() => router.navigate("/(tabs)/reports")}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.workspace.backendAccess}</Text>
+        <Text style={styles.sectionTitle}>Backend Access</Text>
 
         <QuickLink
-          title={t.workspace.openApiDocs}
+          title={t("common.openApiDocs", locale)}
           subtitle="Launch the production Swagger documentation."
           onPress={openDocs}
         />
         <QuickLink
-          title={t.workspace.checkBackendHealth}
+          title={t("common.checkBackendHealth", locale)}
           subtitle="Open the production health endpoint."
           onPress={openBackend}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t.workspace.operatorNotes}</Text>
+        <Text style={styles.sectionTitle}>Operator Notes</Text>
         <View style={styles.noteCard}>
           <Text style={styles.noteText}>
             Use this workspace as a clean replacement for the default Expo starter tab.
