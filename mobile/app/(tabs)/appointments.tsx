@@ -40,6 +40,8 @@ import {
   tomorrowMorningDateTimeInput,
 } from "../../utils/formatters";
 
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 type FilterType = "all" | AppointmentStatus;
 
 const emptyCreateForm = {
@@ -91,6 +93,7 @@ function AppointmentsSkeleton() {
 }
 
 export default function AppointmentsScreen() {
+  const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { showToast } = useToast();
@@ -344,7 +347,7 @@ export default function AppointmentsScreen() {
         ) : null}
 
         <SectionCard
-          title="Create Appointment"
+          title={t("common.createAppointment", locale)}
           subtitle="Create a new salon booking with client, service, date, and notes."
         >
           <Text style={styles.label}>Client</Text>
@@ -357,7 +360,7 @@ export default function AppointmentsScreen() {
               dropdownIconColor="#f5d27a"
               style={styles.picker}
             >
-              <Picker.Item label="Select client" value="" />
+              <Picker.Item label={t("common.selectClient", locale)} value="" />
               {clients.map((client) => (
                 <Picker.Item
                   key={client.id}
@@ -378,7 +381,7 @@ export default function AppointmentsScreen() {
               dropdownIconColor="#f5d27a"
               style={styles.picker}
             >
-              <Picker.Item label="Select service" value="" />
+              <Picker.Item label={t("common.selectService", locale)} value="" />
               {services.map((service) => (
                 <Picker.Item
                   key={service.id}
@@ -439,13 +442,13 @@ export default function AppointmentsScreen() {
 
           <View style={styles.actionRow}>
             <ActionButton
-              title={mutationLoading ? "Creating..." : "Create Appointment"}
+              title={mutationLoading ? t("common.creating", locale) : t("common.createAppointment", locale)}
               onPress={handleCreateAppointment}
               disabled={mutationLoading}
               tone="success"
             />
             <ActionButton
-              title="Reset Form"
+              title={t("common.resetForm", locale)}
               onPress={() =>
                 createForm.fill({
                   ...emptyCreateForm,
@@ -545,19 +548,19 @@ export default function AppointmentsScreen() {
 
           <View style={styles.filterActions}>
             <ActionButton
-              title="All"
+              title={t("common.all", locale)}
               onPress={() => setAppointmentFilter("all")}
             />
             <ActionButton
-              title="Scheduled"
+              title={t("common.scheduled", locale)}
               onPress={() => setAppointmentFilter("scheduled")}
             />
             <ActionButton
-              title="Completed"
+              title={t("common.completed", locale)}
               onPress={() => setAppointmentFilter("completed")}
             />
             <ActionButton
-              title="Cancelled"
+              title={t("common.cancelled", locale)}
               onPress={() => setAppointmentFilter("cancelled")}
             />
           </View>
@@ -569,7 +572,7 @@ export default function AppointmentsScreen() {
         >
           <TextInput
             style={styles.searchInput}
-            placeholder="Search appointments..."
+            placeholder={t("common.searchAppointments", locale)}
             placeholderTextColor="#9a92a3"
             value={appointmentSearch}
             onChangeText={setAppointmentSearch}
@@ -590,12 +593,12 @@ export default function AppointmentsScreen() {
 
           {noAppointmentsAtAll ? (
             <EmptyState
-              title="No appointments yet"
+              title={t("common.noAppointmentsYet", locale)}
               subtitle="Create your first booking using the appointment form above."
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title="No matching appointments"
+              title={t("common.noMatchingAppointments", locale)}
               subtitle="Try another search term or switch the active filter."
             />
           ) : (
@@ -613,7 +616,7 @@ export default function AppointmentsScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label="Select client" value="" />
+                        <Picker.Item label={t("common.selectClient", locale)} value="" />
                         {clients.map((client) => (
                           <Picker.Item
                             key={client.id}
@@ -634,7 +637,7 @@ export default function AppointmentsScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label="Select service" value="" />
+                        <Picker.Item label={t("common.selectService", locale)} value="" />
                         {services.map((service) => (
                           <Picker.Item
                             key={service.id}
