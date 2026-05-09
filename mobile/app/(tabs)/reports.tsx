@@ -18,6 +18,8 @@ import SectionCard from "../../components/dashboard/SectionCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useSession } from "../../hooks/useSession";
 import { API_BASE_URL, isAuthError } from "../../lib/api";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 import {
   todayDateInput,
   yesterdayDateInput,
@@ -58,6 +60,7 @@ function ReportsSkeleton() {
 }
 
 export default function ReportsScreen() {
+  const { locale } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
 
@@ -151,7 +154,7 @@ export default function ReportsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="PDF Reports"
+        title={t("common.pdfReports", locale)}
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -180,7 +183,7 @@ export default function ReportsScreen() {
         />
 
         <SessionStatusBanner
-          title="Reports Ready"
+          title={t("common.reportsReady", locale)}
           subtitle="Your session can generate and export protected daily PDF summaries."
         />
 
@@ -191,7 +194,7 @@ export default function ReportsScreen() {
         ) : null}
 
         <SectionCard
-          title="Daily PDF Export"
+          title={t("common.dailyPdfExport", locale)}
           subtitle="Generate and download a polished daily salon summary report."
         >
           <TextInput
@@ -208,14 +211,14 @@ export default function ReportsScreen() {
               style={styles.quickButton}
               onPress={() => setReportDate(todayDateInput())}
             >
-              <Text style={styles.quickButtonText}>Today</Text>
+              <Text style={styles.quickButtonText}>{t("common.today", locale)}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.quickButton}
               onPress={() => setReportDate(yesterdayDateInput())}
             >
-              <Text style={styles.quickButtonText}>Yesterday</Text>
+              <Text style={styles.quickButtonText}>{t("common.yesterday", locale)}</Text>
             </TouchableOpacity>
           </View>
 
@@ -225,30 +228,30 @@ export default function ReportsScreen() {
             disabled={exportingPdf}
           >
             <Text style={styles.primaryButtonText}>
-              {exportingPdf ? "Exporting..." : "Export PDF Report"}
+              {exportingPdf ? t("common.exporting", locale) : t("common.exportPdfReport", locale)}
             </Text>
           </TouchableOpacity>
         </SectionCard>
 
         <SectionCard
-          title="Export Readiness"
+          title={t("common.exportReadiness", locale)}
           subtitle="Fast visibility before generating your PDF summary."
         >
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>Selected date</Text>
+            <Text style={styles.readinessLabel}>{t("common.selectedDate", locale)}</Text>
             <Text style={styles.readinessValue}>{reportDate}</Text>
           </View>
 
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>Export state</Text>
+            <Text style={styles.readinessLabel}>{t("common.exportState", locale)}</Text>
             <Text style={styles.readinessValue}>
-              {exportingPdf ? "Generating PDF..." : "Ready to export"}
+              {exportingPdf ? t("common.generatingPdf", locale) : t("common.readyToExport", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title="Reporting Workflow"
+          title={t("common.reportingWorkflow", locale)}
           subtitle="Simple export flow for daily reporting."
         >
           <View style={styles.infoBlock}>
