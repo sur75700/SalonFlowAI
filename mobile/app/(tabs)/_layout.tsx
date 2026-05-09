@@ -1,7 +1,10 @@
 import React from "react";
 import { Tabs } from "expo-router";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 
 export default function TabsLayout() {
+  const { locale } = useAppPreferences();
   return (
     <Tabs
       screenOptions={{
@@ -23,27 +26,27 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Dashboard" }}
+        options={{ title: t("common.dashboard", locale) }}
       />
       <Tabs.Screen
         name="appointments"
-        options={{ title: "Bookings" }}
+        options={{ title: t("common.bookingsTab", locale) }}
       />
       <Tabs.Screen
         name="clients"
-        options={{ title: "Clients" }}
+        options={{ title: t("common.clientsTab", locale) }}
       />
       <Tabs.Screen
         name="services"
-        options={{ title: "Service Catalog" }}
+        options={{ title: t("common.serviceCatalog", locale) }}
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: "Insights" }}
+        options={{ title: t("common.insightsTab", locale) }}
       />
       <Tabs.Screen
         name="reports"
-        options={{ title: "PDF Reports" }}
+        options={{ title: t("common.pdfReports", locale) }}
       />
     </Tabs>
   );
