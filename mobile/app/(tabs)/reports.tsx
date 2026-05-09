@@ -17,8 +17,9 @@ import SessionActionBar from "../../components/auth/SessionActionBar";
 import SectionCard from "../../components/dashboard/SectionCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useSession } from "../../hooks/useSession";
-import { useAppLanguage } from "../../contexts/LanguageContext";
 import { API_BASE_URL, isAuthError } from "../../lib/api";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
 import {
   todayDateInput,
   yesterdayDateInput,
@@ -59,7 +60,7 @@ function ReportsSkeleton() {
 }
 
 export default function ReportsScreen() {
-  const { t } = useAppLanguage();
+  const { locale } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
 
@@ -153,7 +154,7 @@ export default function ReportsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="PDF Reports"
+        title={t("common.pdfReports", locale)}
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -169,9 +170,9 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t.reports.title}</Text>
+          <Text style={styles.heroTitle}>PDF Reports</Text>
           <Text style={styles.heroText}>
-            {t.reports.heroSubtitle}
+            Export polished daily PDF summaries for operations, finance review, and management reporting.
           </Text>
         </View>
 
@@ -182,7 +183,7 @@ export default function ReportsScreen() {
         />
 
         <SessionStatusBanner
-          title="Reports Ready"
+          title={t("common.reportsReady", locale)}
           subtitle="Your session can generate and export protected daily PDF summaries."
         />
 
@@ -193,7 +194,7 @@ export default function ReportsScreen() {
         ) : null}
 
         <SectionCard
-          title={t.reports.dailyPdfExport}
+          title={t("common.dailyPdfExport", locale)}
           subtitle="Generate and download a polished daily salon summary report."
         >
           <TextInput
@@ -210,14 +211,14 @@ export default function ReportsScreen() {
               style={styles.quickButton}
               onPress={() => setReportDate(todayDateInput())}
             >
-              <Text style={styles.quickButtonText}>{t.common.today}</Text>
+              <Text style={styles.quickButtonText}>{t("common.today", locale)}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.quickButton}
               onPress={() => setReportDate(yesterdayDateInput())}
             >
-              <Text style={styles.quickButtonText}>Yesterday</Text>
+              <Text style={styles.quickButtonText}>{t("common.yesterday", locale)}</Text>
             </TouchableOpacity>
           </View>
 
@@ -227,31 +228,31 @@ export default function ReportsScreen() {
             disabled={exportingPdf}
           >
             <Text style={styles.primaryButtonText}>
-              {exportingPdf ? "Exporting..." : "Export PDF Report"}
+              {exportingPdf ? t("common.exporting", locale) : t("common.exportPdfReport", locale)}
             </Text>
           </TouchableOpacity>
         </SectionCard>
 
         <SectionCard
-          title={t.common.exportReadiness}
-          subtitle="{t.common.exportReadiness}"
+          title={t("common.exportReadiness", locale)}
+          subtitle="Fast visibility before generating your PDF summary."
         >
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t.common.selectedDate}</Text>
+            <Text style={styles.readinessLabel}>{t("common.selectedDate", locale)}</Text>
             <Text style={styles.readinessValue}>{reportDate}</Text>
           </View>
 
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t.common.exportState}</Text>
+            <Text style={styles.readinessLabel}>{t("common.exportState", locale)}</Text>
             <Text style={styles.readinessValue}>
-              {exportingPdf ? t.common.generatingPdf : t.common.readyToExport}
+              {exportingPdf ? t("common.generatingPdf", locale) : t("common.readyToExport", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t.reports.reportingWorkflow}
-          subtitle={t.reports.reportingWorkflowSubtitle}
+          title={t("common.reportingWorkflow", locale)}
+          subtitle="Simple export flow for daily reporting."
         >
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>1. Pick a date</Text>
