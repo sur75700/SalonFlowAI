@@ -30,6 +30,7 @@ import { money } from "../../utils/formatters";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { APP_PREFERENCES } from "../../lib/config/appPreferences";
 import type { AppCurrency } from "../../lib/i18n/types";
+import { t } from "../../lib/i18n";
 
 const emptyCreateForm = {
   name: "",
@@ -231,7 +232,7 @@ export default function ServicesScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Service Catalog"
+        title={t("common.serviceCatalog", locale)}
         subtitle="Your admin session is unavailable. Restore access to continue."
       />
     );
@@ -250,7 +251,7 @@ export default function ServicesScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Service Catalog</Text>
+          <Text style={styles.heroTitle}>{t("common.serviceCatalog", locale)}</Text>
           <Text style={styles.heroText}>
             Manage your premium service catalog, pricing strategy, duration, and activation state.
           </Text>
@@ -263,7 +264,7 @@ export default function ServicesScreen() {
         />
 
         <SessionStatusBanner
-          title="Catalog Ready"
+          title={t("common.catalogReady", locale)}
           subtitle="Your session is active and can manage pricing, duration, and service visibility."
         />
 
@@ -274,19 +275,19 @@ export default function ServicesScreen() {
         ) : null}
 
         <SectionCard
-          title="Create Service Entry"
+          title={t("common.createServiceEntry", locale)}
           subtitle="Add a premium salon service to your catalog."
         >
           <TextInput
             style={styles.input}
-            placeholder="Service name"
+            placeholder={t("common.serviceName", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.name}
             onChangeText={(value) => createForm.setField("name", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Duration in minutes"
+            placeholder={t("common.durationInMinutes", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.duration_minutes}
             onChangeText={(value) =>
@@ -296,7 +297,7 @@ export default function ServicesScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Price"
+            placeholder={t("common.price", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.price}
             onChangeText={(value) => createForm.setField("price", value)}
@@ -304,7 +305,7 @@ export default function ServicesScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder="Currency"
+            placeholder={t("common.currency", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.currency}
             onChangeText={(value) => createForm.setField("currency", normalizeCurrency(value))}
@@ -312,7 +313,7 @@ export default function ServicesScreen() {
           />
 
           <ActionButton
-            title={mutationLoading ? "Creating..." : "Create Service"}
+            title={mutationLoading ? t("common.creating", locale) : t("common.createService", locale)}
             onPress={handleCreateService}
             disabled={mutationLoading}
             tone="success"
@@ -320,32 +321,32 @@ export default function ServicesScreen() {
         </SectionCard>
 
         <SectionCard
-          title="Catalog Snapshot"
+          title={t("common.catalogSnapshot", locale)}
           subtitle="Fast visibility into your current service mix."
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.length}</Text>
-              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryLabel}>{t("common.total", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.filter((item) => item.is_active).length}</Text>
-              <Text style={styles.summaryLabel}>Active</Text>
+              <Text style={styles.summaryLabel}>{t("common.active", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.filter((item) => !item.is_active).length}</Text>
-              <Text style={styles.summaryLabel}>Inactive</Text>
+              <Text style={styles.summaryLabel}>{t("common.inactive", locale)}</Text>
             </View>
           </View>
         </SectionCard>
 
         <SectionCard
-          title="Service Catalog"
+          title={t("common.serviceCatalog", locale)}
           subtitle="Search, edit, activate, deactivate, and manage salon services."
         >
           <TextInput
             style={styles.searchInput}
-            placeholder="Search services..."
+            placeholder={t("common.searchServices", locale)}
             placeholderTextColor="#9a92a3"
             value={serviceSearch}
             onChangeText={setServiceSearch}
@@ -353,12 +354,12 @@ export default function ServicesScreen() {
 
           {noServicesAtAll ? (
             <EmptyState
-              title="No services yet"
+              title={t("common.noServicesYet", locale)}
               subtitle="Create your first salon service to start accepting bookings."
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title="No matching services"
+              title={t("common.noMatchingServices", locale)}
               subtitle="Try another search term or clear the search field."
             />
           ) : (
@@ -368,14 +369,14 @@ export default function ServicesScreen() {
                   <>
                     <TextInput
                       style={styles.input}
-                      placeholder="Service name"
+                      placeholder={t("common.serviceName", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.name}
                       onChangeText={(value) => editForm.setField("name", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Duration in minutes"
+                      placeholder={t("common.durationInMinutes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.duration_minutes}
                       onChangeText={(value) =>
@@ -385,7 +386,7 @@ export default function ServicesScreen() {
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Price"
+                      placeholder={t("common.price", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.price}
                       onChangeText={(value) => editForm.setField("price", value)}
@@ -393,7 +394,7 @@ export default function ServicesScreen() {
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Currency"
+                      placeholder={t("common.currency", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.currency}
                       onChangeText={(value) =>
@@ -411,19 +412,19 @@ export default function ServicesScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label="Active" value="true" />
-                        <Picker.Item label="Inactive" value="false" />
+                        <Picker.Item label={t("common.active", locale)} value="true" />
+                        <Picker.Item label={t("common.inactive", locale)} value="false" />
                       </Picker>
                     </View>
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={workingId === service.id ? "Working..." : "Save"}
+                        title={workingId === service.id ? t("common.working", locale) : t("common.save", locale)}
                         onPress={() => handleSaveService(service.id)}
                         disabled={workingId === service.id}
                         tone="success"
                       />
-                      <ActionButton title="Cancel" onPress={cancelEditService} />
+                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditService} />
                     </View>
                   </>
                 ) : (
@@ -441,12 +442,12 @@ export default function ServicesScreen() {
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title="Edit"
+                        title={t("common.edit", locale)}
                         onPress={() => startEditService(service)}
                         tone="success"
                       />
                       <ActionButton
-                        title={workingId === service.id ? "Working..." : "Delete"}
+                        title={workingId === service.id ? t("common.working", locale) : t("common.delete", locale)}
                         onPress={() => handleDeleteService(service)}
                         disabled={workingId === service.id}
                         tone="danger"
