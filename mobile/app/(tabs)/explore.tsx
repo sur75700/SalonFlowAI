@@ -35,7 +35,7 @@ export default function WorkspaceScreen() {
         <Text style={styles.overline}>SALONFLOW AI</Text>
         <Text style={styles.title}>{t("common.workspace", locale)}</Text>
         <Text style={styles.subtitle}>
-          Central utility space for navigation, backend access, and admin operations.
+          {t("common.workspaceHeroSubtitle", locale)}
         </Text>
       </View>
 
@@ -44,59 +44,59 @@ export default function WorkspaceScreen() {
 
         <QuickLink
           title={t("common.openDashboard", locale)}
-          subtitle="Return to the executive overview."
+          subtitle={t("common.openDashboardSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)")}
         />
         <QuickLink
           title={t("common.openBookings", locale)}
-          subtitle="Manage appointments and daily booking flow."
+          subtitle={t("common.openBookingsSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/appointments")}
         />
         <QuickLink
           title={t("common.openClients", locale)}
-          subtitle="Access the client registry and search records."
+          subtitle={t("common.openClientsSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/clients")}
         />
         <QuickLink
           title={t("common.openServiceCatalog", locale)}
-          subtitle="Manage pricing, duration, and active services."
+          subtitle={t("common.openServiceCatalogSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/services")}
         />
         <QuickLink
           title={t("common.openInsights", locale)}
-          subtitle="Review analytics, trends, and executive metrics."
+          subtitle={t("common.openInsightsSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/analytics")}
         />
         <QuickLink
           title={t("common.openPdfReports", locale)}
-          subtitle="Generate and export daily summary reports."
+          subtitle={t("common.openPdfReportsSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/reports")}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Backend Access</Text>
+        <Text style={styles.sectionTitle}>{t("common.backendAccess", locale)}</Text>
 
         <QuickLink
           title={t("common.openApiDocs", locale)}
-          subtitle="Launch the production Swagger documentation."
+          subtitle={t("common.openApiDocsSubtitle", locale)}
           onPress={openDocs}
         />
         <QuickLink
           title={t("common.checkBackendHealth", locale)}
-          subtitle="Open the production health endpoint."
+          subtitle={t("common.checkBackendHealthSubtitle", locale)}
           onPress={openBackend}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Operator Notes</Text>
+        <Text style={styles.sectionTitle}>{t("common.operatorNotes", locale)}</Text>
         <View style={styles.noteCard}>
           <Text style={styles.noteText}>
-            Use this workspace as a clean replacement for the default Expo starter tab.
+            {t("common.operatorNotesLineOne", locale)}
           </Text>
           <Text style={styles.noteText}>
-            It is now aligned with the SalonFlow AI admin experience.
+            {t("common.operatorNotesLineTwo", locale)}
           </Text>
         </View>
       </View>

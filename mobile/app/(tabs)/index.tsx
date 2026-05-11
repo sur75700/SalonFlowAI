@@ -81,7 +81,7 @@ export default function OverviewScreen() {
     return (
       <DevLoginCard
         title={t("common.dashboard", locale)}
-        subtitle="Your admin session is unavailable. Restore access to continue."
+        subtitle={t("common.sessionUnavailableSubtitle", locale)}
       />
     );
   }
@@ -115,7 +115,7 @@ export default function OverviewScreen() {
 
         <SessionStatusBanner
           title={t("common.operationsReady", locale)}
-          subtitle="Your admin session is active. Pull to refresh and sync the latest salon activity."
+          subtitle={t("common.operationsReadySubtitle", locale)}
         />
 
         {error ? (
@@ -132,47 +132,47 @@ export default function OverviewScreen() {
 
         <SectionCard
           title={t("common.commandNavigation", locale)}
-          subtitle="Navigate the platform through focused operational workspaces."
+          subtitle={t("common.commandNavigationSubtitle", locale)}
         >
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>{t("common.insights", locale)}</Text>
             <Text style={styles.infoText}>
-              Revenue intelligence, charts, service performance, and booking status distribution.
+              {t("common.insightsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>{t("common.pdfReports", locale)}</Text>
             <Text style={styles.infoText}>
-              Export daily PDF summary files for selected dates.
+              {t("common.pdfReportsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>{t("common.appointments", locale)}</Text>
             <Text style={styles.infoText}>
-              Search, filter, edit, complete, cancel, and delete bookings.
+              {t("common.appointmentsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>{t("common.clients", locale)}</Text>
             <Text style={styles.infoText}>
-              Create and manage your client registry in a dedicated screen.
+              {t("common.clientsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
             <Text style={styles.infoTitle}>{t("common.serviceCatalog", locale)}</Text>
             <Text style={styles.infoText}>
-              Manage your premium service catalog, pricing strategy, duration, and activation state.
+              {t("common.serviceCatalogHeroSubtitle", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
           title={t("common.quickActions", locale)}
-          subtitle="Jump directly into your most important admin workflows."
+          subtitle={t("common.quickActionsSubtitle", locale)}
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
@@ -200,7 +200,7 @@ export default function OverviewScreen() {
 
         <SectionCard
           title={t("common.executiveSnapshot", locale)}
-          subtitle="Real-time view of your current salon operating picture."
+          subtitle={t("common.executiveSnapshotSubtitle", locale)}
         >
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>{t("common.totalClients", locale)}</Text>
