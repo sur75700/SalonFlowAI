@@ -1,11 +1,3 @@
-export const money = (
-  value?: number | null,
-  currency: string = "AMD"
-): string => {
-  const safe = Number(value || 0);
-  return `${safe.toLocaleString()} ${currency}`;
-};
-
 export const formatDateTime = (isoString?: string | null): string => {
   if (!isoString) return "-";
   return new Date(isoString).toLocaleString();
