@@ -96,7 +96,7 @@ export function useClientMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to create client"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setLoading(false);
@@ -119,7 +119,7 @@ export function useClientMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to update client"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
@@ -142,7 +142,7 @@ export function useClientMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to delete client"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
@@ -181,7 +181,7 @@ export function useServiceMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to create service"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setLoading(false);
@@ -207,7 +207,7 @@ export function useServiceMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to update service"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
@@ -230,7 +230,7 @@ export function useServiceMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to delete service"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
@@ -269,7 +269,7 @@ export function useAppointmentMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to create appointment"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setLoading(false);
@@ -295,7 +295,7 @@ export function useAppointmentMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to update appointment"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
@@ -323,7 +323,7 @@ export function useAppointmentMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to update status"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
@@ -346,7 +346,7 @@ export function useAppointmentMutations({
         return false;
       }
 
-      state.setError(getErrorMessage(err, "Failed to delete appointment"));
+      state.setError(getErrorMessage(err, "Request failed. Please try again."));
       return false;
     } finally {
       state.setWorkingId("");
