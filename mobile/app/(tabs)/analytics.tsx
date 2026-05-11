@@ -18,6 +18,7 @@ import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import EmptyState from "../../components/ui/EmptyState";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
+import { t } from "../../lib/i18n";
 import type { AppCurrency } from "../../lib/i18n/types";
 import { useAnalyticsData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
@@ -147,8 +148,8 @@ export default function AnalyticsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Insights"
-        subtitle="Your admin session is unavailable. Restore access to continue."
+        title={t("common.insights", locale)}
+        subtitle={t("common.sessionUnavailableSubtitle", locale)}
       />
     );
   }
@@ -163,9 +164,9 @@ export default function AnalyticsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Insights</Text>
+          <Text style={styles.heroTitle}>{t("common.insights", locale)}</Text>
           <Text style={styles.heroText}>
-            Revenue intelligence, service performance, and booking status insights.
+            {t("common.analyticsHeroSubtitle", locale)}
           </Text>
         </View>
 
@@ -176,8 +177,8 @@ export default function AnalyticsScreen() {
         />
 
         <SessionStatusBanner
-          title="Analytics Ready"
-          subtitle="Revenue, service performance, and booking signals are now synced with your active session."
+          title={t("common.analyticsReady", locale)}
+          subtitle={t("common.analyticsReadySubtitle", locale)}
         />
 
         {error ? (
@@ -198,26 +199,26 @@ export default function AnalyticsScreen() {
         </View>
 
         <ChartBlock
-          title="Executive Snapshot"
-          subtitle="High-level financial visibility for the active salon session."
+          title={t("common.executiveSnapshot", locale)}
+          subtitle={t("common.executiveSnapshotAnalyticsSubtitle", locale)}
         >
           <View style={styles.executiveGrid}>
             <View style={styles.executiveCard}>
-              <Text style={styles.executiveLabel}>Completed Revenue</Text>
+              <Text style={styles.executiveLabel}>{t("common.completedRevenue", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.totals?.completed_revenue, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={styles.executiveCard}>
-              <Text style={styles.executiveLabel}>Scheduled Pipeline</Text>
+              <Text style={styles.executiveLabel}>{t("common.scheduledPipeline", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.totals?.scheduled_pipeline, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={styles.executiveCard}>
-              <Text style={styles.executiveLabel}>Cancelled Value</Text>
+              <Text style={styles.executiveLabel}>{t("common.cancelledValue", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.totals?.cancelled_value, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
@@ -226,13 +227,13 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title="Revenue Trendline"
-          subtitle="Completed revenue movement across the last 7 days."
+          title={t("common.revenueTrendline", locale)}
+          subtitle={t("common.revenueTrendlineSubtitle", locale)}
         >
           {!lineChartData.length ? (
             <EmptyState
-              title="No revenue data available"
-              subtitle="Revenue trend will appear after completed bookings start accumulating."
+              title={t("common.noRevenueDataAvailable", locale)}
+              subtitle={t("common.noRevenueDataAvailableSubtitle", locale)}
             />
           ) : (
             <View style={styles.chartWrap}>
@@ -265,13 +266,13 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title="Top Performing Services"
-          subtitle="Highest-performing services ranked by revenue contribution."
+          title={t("common.topPerformingServices", locale)}
+          subtitle={t("common.topPerformingServicesSubtitle", locale)}
         >
           {!barChartData.length ? (
             <EmptyState
-              title="No service analytics yet"
-              subtitle="Top services will appear once appointments start generating revenue."
+              title={t("common.noServiceAnalyticsYet", locale)}
+              subtitle={t("common.noServiceAnalyticsYetSubtitle", locale)}
             />
           ) : (
             <View style={styles.chartWrap}>
@@ -295,13 +296,13 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title="Booking Status Distribution"
-          subtitle="Scheduled, completed, and cancelled appointment mix."
+          title={t("common.bookingStatusDistribution", locale)}
+          subtitle={t("common.bookingStatusDistributionSubtitle", locale)}
         >
           {!pieChartData.length ? (
             <EmptyState
-              title="No status data yet"
-              subtitle="Appointment status distribution will appear after bookings are created."
+              title={t("common.noStatusDataYet", locale)}
+              subtitle={t("common.noStatusDataYetSubtitle", locale)}
             />
           ) : (
             <>
@@ -325,19 +326,19 @@ export default function AnalyticsScreen() {
                   <View
                     style={[styles.legendDot, { backgroundColor: "#1d4ed8" }]}
                   />
-                  <Text style={styles.legendText}>Scheduled</Text>
+                  <Text style={styles.legendText}>{t("common.scheduled", locale)}</Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View
                     style={[styles.legendDot, { backgroundColor: "#15803d" }]}
                   />
-                  <Text style={styles.legendText}>Completed</Text>
+                  <Text style={styles.legendText}>{t("common.completed", locale)}</Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View
                     style={[styles.legendDot, { backgroundColor: "#b91c1c" }]}
                   />
-                  <Text style={styles.legendText}>Cancelled</Text>
+                  <Text style={styles.legendText}>{t("common.cancelled", locale)}</Text>
                 </View>
               </View>
             </>
@@ -345,11 +346,11 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title="Business Snapshot"
-          subtitle="Quick revenue and volume summary."
+          title={t("common.businessSnapshot", locale)}
+          subtitle={t("common.businessSnapshotSubtitle", locale)}
         >
           <View style={styles.metricRow}>
-            <Text style={styles.item}>Total Revenue Snapshot</Text>
+            <Text style={styles.item}>{t("common.totalRevenueSnapshot", locale)}</Text>
             <Text style={styles.metricValue}>
               {money(
                 analytics?.totals?.total_revenue_snapshot,
@@ -359,26 +360,26 @@ export default function AnalyticsScreen() {
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>Total Appointments</Text>
+            <Text style={styles.item}>{t("common.totalBookings", locale)}</Text>
             <Text style={styles.metricValue}>
               {summary?.total_appointments ?? 0}
             </Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>Today Appointments</Text>
+            <Text style={styles.item}>{t("common.todayBookings", locale)}</Text>
             <Text style={styles.metricValue}>
               {summary?.today_appointments ?? 0}
             </Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>Total Clients</Text>
+            <Text style={styles.item}>{t("common.totalClients", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>Total Services</Text>
+            <Text style={styles.item}>{t("common.totalServices", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
           </View>
         </ChartBlock>

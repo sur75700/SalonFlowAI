@@ -169,9 +169,7 @@ export default function ClientsScreen() {
   const handleDeleteClient = async (client: ClientItem) => {
     const approved = await confirm(
       t("common.deleteClientTitle", locale),
-      "This will permanently remove " +
-        (client.full_name || "this client") +
-        " from the salon system."
+        t("common.deleteClientConfirmMessage", locale)
     );
 
     if (!approved) return;
@@ -290,7 +288,7 @@ export default function ClientsScreen() {
 
         <SectionCard
           title={t("common.clientSnapshot", locale)}
-          subtitle="Search, edit, and manage all salon clients."
+          subtitle={t("common.clientSnapshotSubtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}

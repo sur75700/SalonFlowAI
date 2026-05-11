@@ -155,7 +155,7 @@ export default function ReportsScreen() {
     return (
       <DevLoginCard
         title={t("common.pdfReports", locale)}
-        subtitle="Your admin session is unavailable. Restore access to continue."
+        subtitle={t("common.sessionUnavailableSubtitle", locale)}
       />
     );
   }
@@ -170,9 +170,9 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>PDF Reports</Text>
+          <Text style={styles.heroTitle}>{t("common.pdfReports", locale)}</Text>
           <Text style={styles.heroText}>
-            Export polished daily PDF summaries for operations, finance review, and management reporting.
+            {t("common.reportsHeroSubtitle", locale)}
           </Text>
         </View>
 
@@ -184,7 +184,7 @@ export default function ReportsScreen() {
 
         <SessionStatusBanner
           title={t("common.reportsReady", locale)}
-          subtitle="Your session can generate and export protected daily PDF summaries."
+          subtitle={t("common.reportsReadySubtitle", locale)}
         />
 
         {error ? (
@@ -195,11 +195,11 @@ export default function ReportsScreen() {
 
         <SectionCard
           title={t("common.dailyPdfExport", locale)}
-          subtitle="Generate and download a polished daily salon summary report."
+          subtitle={t("common.dailyPdfExportSubtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder="YYYY-MM-DD"
+            placeholder={t("common.dateInputPlaceholder", locale)}
             placeholderTextColor="#9a92a3"
             value={reportDate}
             onChangeText={setReportDate}
@@ -235,7 +235,7 @@ export default function ReportsScreen() {
 
         <SectionCard
           title={t("common.exportReadiness", locale)}
-          subtitle="Fast visibility before generating your PDF summary."
+          subtitle={t("common.exportReadinessSubtitle", locale)}
         >
           <View style={styles.readinessCard}>
             <Text style={styles.readinessLabel}>{t("common.selectedDate", locale)}</Text>
@@ -252,19 +252,19 @@ export default function ReportsScreen() {
 
         <SectionCard
           title={t("common.reportingWorkflow", locale)}
-          subtitle="Simple export flow for daily reporting."
+          subtitle={t("common.reportingWorkflowSubtitle", locale)}
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>1. Pick a date</Text>
+            <Text style={styles.infoTitle}>{t("common.pickDateStepTitle", locale)}</Text>
             <Text style={styles.infoText}>
-              Use the input field or quick buttons to select the report date.
+              {t("common.pickDateStepSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>2. Export the summary</Text>
+            <Text style={styles.infoTitle}>{t("common.exportSummaryStepTitle", locale)}</Text>
             <Text style={styles.infoText}>
-              The system downloads a PDF generated from your backend reports endpoint.
+              {t("common.exportSummaryStepSubtitle", locale)}
             </Text>
           </View>
 
