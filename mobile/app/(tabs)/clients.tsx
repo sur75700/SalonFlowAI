@@ -111,8 +111,8 @@ export default function ClientsScreen() {
 
   const handleCreateClient = async () => {
     if (!createForm.values.full_name.trim() || !createForm.values.phone.trim()) {
-      setMutationError("Full name and phone are required");
-      showToast("Full name and phone are required", "error");
+      setMutationError(t("common.clientFieldsRequired", locale));
+      showToast(t("common.clientFieldsRequired", locale), "error");
       return;
     }
 
@@ -125,7 +125,7 @@ export default function ClientsScreen() {
 
     if (ok) {
       createForm.reset();
-      showToast("Client created successfully", "success");
+      showToast(t("common.clientCreatedSuccessfully", locale), "success");
     }
   };
 
@@ -148,8 +148,8 @@ export default function ClientsScreen() {
 
   const handleSaveClient = async (clientId: string) => {
     if (!editForm.values.full_name.trim() || !editForm.values.phone.trim()) {
-      setMutationError("Full name and phone are required");
-      showToast("Full name and phone are required", "error");
+      setMutationError(t("common.clientFieldsRequired", locale));
+      showToast(t("common.clientFieldsRequired", locale), "error");
       return;
     }
 
@@ -162,13 +162,13 @@ export default function ClientsScreen() {
 
     if (ok) {
       cancelEditClient();
-      showToast("Client updated successfully", "success");
+      showToast(t("common.clientUpdatedSuccessfully", locale), "success");
     }
   };
 
   const handleDeleteClient = async (client: ClientItem) => {
     const approved = await confirm(
-      "Delete client?",
+      t("common.deleteClientTitle", locale),
       "This will permanently remove " +
         (client.full_name || "this client") +
         " from the salon system."
@@ -179,7 +179,7 @@ export default function ClientsScreen() {
     const ok = await deleteClient(client.id);
 
     if (ok) {
-      showToast("Client deleted successfully", "success");
+      showToast(t("common.clientDeletedSuccessfully", locale), "success");
     }
   };
 
@@ -204,7 +204,7 @@ export default function ClientsScreen() {
     return (
       <DevLoginCard
         title={t("common.clientSnapshot", locale)}
-        subtitle="Your admin session is unavailable. Restore access to continue."
+        subtitle={t("common.sessionUnavailableSubtitle", locale)}
       />
     );
   }
@@ -222,9 +222,9 @@ export default function ClientsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Client Registry</Text>
+          <Text style={styles.heroTitle}>{t("common.clientSnapshot", locale)}</Text>
           <Text style={styles.heroText}>
-            Manage your client registry, update details, and add new salon leads.
+            {t("common.clientRegistryHeroSubtitle", locale)}
           </Text>
         </View>
 
@@ -235,8 +235,8 @@ export default function ClientsScreen() {
         />
 
         <SessionStatusBanner
-          title="Client Registry Connected"
-          subtitle="Your session is active and ready to create, edit, and manage salon client records."
+          title={t("common.clientRegistryConnected", locale)}
+          subtitle={t("common.clientRegistryConnectedSubtitle", locale)}
         />
 
         {screenError ? (
@@ -247,25 +247,25 @@ export default function ClientsScreen() {
 
         <SectionCard
           title={t("common.createClientEntry", locale)}
-          subtitle="Add a polished client profile to the salon system."
+          subtitle={t("common.createClientEntrySubtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder="Full name"
+            placeholder={t("common.fullName", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.full_name}
             onChangeText={(value) => createForm.setField("full_name", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Phone"
+            placeholder={t("common.phone", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.phone}
             onChangeText={(value) => createForm.setField("phone", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder={t("common.email", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.email}
             onChangeText={(value) => createForm.setField("email", value)}
@@ -273,7 +273,7 @@ export default function ClientsScreen() {
           />
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Notes"
+            placeholder={t("common.notes", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.notes}
             onChangeText={(value) => createForm.setField("notes", value)}
@@ -303,12 +303,12 @@ export default function ClientsScreen() {
           {noClientsAtAll ? (
             <EmptyState
               title={t("common.noClientsYet", locale)}
-              subtitle="Create your first client profile to start building your salon customer base."
+              subtitle={t("common.noClientsYetSubtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
               title={t("common.noMatchingClients", locale)}
-              subtitle="Try a different search term or clear the search field."
+              subtitle={t("common.noMatchingClientsSubtitle", locale)}
             />
           ) : (
             filteredClients.map((client) => (
@@ -317,21 +317,21 @@ export default function ClientsScreen() {
                   <>
                     <TextInput
                       style={styles.input}
-                      placeholder="Full name"
+                      placeholder={t("common.fullName", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.full_name}
                       onChangeText={(value) => editForm.setField("full_name", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Phone"
+                      placeholder={t("common.phone", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.phone}
                       onChangeText={(value) => editForm.setField("phone", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Email"
+                      placeholder={t("common.email", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.email}
                       onChangeText={(value) => editForm.setField("email", value)}
@@ -339,7 +339,7 @@ export default function ClientsScreen() {
                     />
                     <TextInput
                       style={[styles.input, styles.textArea]}
-                      placeholder="Notes"
+                      placeholder={t("common.notes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.notes}
                       onChangeText={(value) => editForm.setField("notes", value)}
@@ -359,9 +359,9 @@ export default function ClientsScreen() {
                 ) : (
                   <>
                     <Text style={styles.cardTitle}>{client.full_name}</Text>
-                    <Text style={styles.item}>Phone: {client.phone}</Text>
-                    <Text style={styles.item}>Email: {client.email || "-"}</Text>
-                    <Text style={styles.item}>Notes: {client.notes || "-"}</Text>
+                    <Text style={styles.item}>{t("common.phone", locale)}: {client.phone}</Text>
+                    <Text style={styles.item}>{t("common.email", locale)}: {client.email || "-"}</Text>
+                    <Text style={styles.item}>{t("common.notes", locale)}: {client.notes || "-"}</Text>
 
                     <View style={styles.actionRow}>
                       <ActionButton

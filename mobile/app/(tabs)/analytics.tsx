@@ -18,10 +18,12 @@ import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import EmptyState from "../../components/ui/EmptyState";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
+import type { AppCurrency } from "../../lib/i18n/types";
 import { useAnalyticsData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
-import { money, shortDay } from "../../utils/formatters";
-import { useAppLanguage } from "../../contexts/LanguageContext";
+import { shortDay } from "../../utils/formatters";
+import { money } from "../../utils/money";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
 
 function AnalyticsSkeleton() {
   return (
@@ -55,8 +57,13 @@ function AnalyticsSkeleton() {
   );
 }
 
+function normalizeAnalyticsCurrency(value: string | null | undefined): AppCurrency {
+  if (value === "AMD" || value === "USD" || value === "EUR") return value;
+  return "AMD";
+}
+
 export default function AnalyticsScreen() {
-  const { t } = useAppLanguage();
+  const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
   const { summary, analytics, loading, refreshing, error, refresh } =
@@ -107,28 +114,28 @@ export default function AnalyticsScreen() {
       label: "Completed Revenue",
       value: money(
         analytics?.totals?.completed_revenue,
-        analytics?.currency || "AMD"
+        normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
     {
       label: "Scheduled Pipeline",
       value: money(
         analytics?.totals?.scheduled_pipeline,
-        analytics?.currency || "AMD"
+        normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
     {
       label: "Cancelled Value",
       value: money(
         analytics?.totals?.cancelled_value,
-        analytics?.currency || "AMD"
+        normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
     {
       label: "Avg Completed Ticket",
       value: money(
         analytics?.totals?.avg_completed_booking_value,
-        analytics?.currency || "AMD"
+        normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
   ];
@@ -156,9 +163,9 @@ export default function AnalyticsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t.insights.title}</Text>
+          <Text style={styles.heroTitle}>Insights</Text>
           <Text style={styles.heroText}>
-            {t.insights.heroSubtitle}
+            Revenue intelligence, service performance, and booking status insights.
           </Text>
         </View>
 
@@ -191,28 +198,28 @@ export default function AnalyticsScreen() {
         </View>
 
         <ChartBlock
-          title={t.common.executiveSnapshot}
+          title="Executive Snapshot"
           subtitle="High-level financial visibility for the active salon session."
         >
           <View style={styles.executiveGrid}>
             <View style={styles.executiveCard}>
               <Text style={styles.executiveLabel}>Completed Revenue</Text>
               <Text style={styles.executiveValue}>
-                {money(analytics?.totals?.completed_revenue, analytics?.currency || "AMD")}
+                {money(analytics?.totals?.completed_revenue, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={styles.executiveCard}>
               <Text style={styles.executiveLabel}>Scheduled Pipeline</Text>
               <Text style={styles.executiveValue}>
-                {money(analytics?.totals?.scheduled_pipeline, analytics?.currency || "AMD")}
+                {money(analytics?.totals?.scheduled_pipeline, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={styles.executiveCard}>
               <Text style={styles.executiveLabel}>Cancelled Value</Text>
               <Text style={styles.executiveValue}>
-                {money(analytics?.totals?.cancelled_value, analytics?.currency || "AMD")}
+                {money(analytics?.totals?.cancelled_value, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
           </View>
@@ -220,7 +227,7 @@ export default function AnalyticsScreen() {
 
         <ChartBlock
           title="Revenue Trendline"
-          subtitle={t.insights.revenueMomentumSubtitle}
+          subtitle="Completed revenue movement across the last 7 days."
         >
           {!lineChartData.length ? (
             <EmptyState
@@ -259,7 +266,7 @@ export default function AnalyticsScreen() {
 
         <ChartBlock
           title="Top Performing Services"
-          subtitle={t.insights.topRevenueServicesSubtitle}
+          subtitle="Highest-performing services ranked by revenue contribution."
         >
           {!barChartData.length ? (
             <EmptyState
@@ -346,7 +353,7 @@ export default function AnalyticsScreen() {
             <Text style={styles.metricValue}>
               {money(
                 analytics?.totals?.total_revenue_snapshot,
-                analytics?.currency || "AMD"
+                normalizeAnalyticsCurrency(analytics?.currency)
               )}
             </Text>
           </View>

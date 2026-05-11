@@ -306,8 +306,8 @@ export default function AppointmentsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title="Bookings Control"
-        subtitle="Your admin session is unavailable. Restore access to continue."
+        title={t("common.bookingsTab", locale)}
+        subtitle={t("common.sessionUnavailableSubtitle", locale)}
       />
     );
   }
@@ -322,7 +322,7 @@ export default function AppointmentsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>Bookings Control</Text>
+          <Text style={styles.heroTitle}>{t("common.bookingsTab", locale)}</Text>
           <Text style={styles.heroText}>
             Manage bookings, create reservations, update statuses, and keep
             daily salon flow under control.
@@ -337,7 +337,7 @@ export default function AppointmentsScreen() {
 
         <SessionStatusBanner
           title={t("common.bookingFlowConnected", locale)}
-          subtitle={t("common.bookingFlowConnected", locale) === "Booking Flow Connected" ? "Your active session can create bookings, update statuses, reschedule appointments, and manage salon operations." : t("common.createAppointmentSubtitle", locale)}
+          subtitle={t("common.bookingFlowConnectedSubtitle", locale)}
         />
 
         {screenError ? (
@@ -350,7 +350,7 @@ export default function AppointmentsScreen() {
           title={t("common.createAppointment", locale)}
           subtitle={t("common.createAppointmentSubtitle", locale)}
         >
-          <Text style={styles.label}>Client</Text>
+          <Text style={styles.label}>{t("common.client", locale)}</Text>
           <View style={styles.pickerWrap}>
             <Picker
               selectedValue={createForm.values.client_id}
@@ -371,7 +371,7 @@ export default function AppointmentsScreen() {
             </Picker>
           </View>
 
-          <Text style={styles.label}>Service</Text>
+          <Text style={styles.label}>{t("common.serviceCatalog", locale)}</Text>
           <View style={styles.pickerWrap}>
             <Picker
               selectedValue={createForm.values.service_id}
@@ -397,10 +397,10 @@ export default function AppointmentsScreen() {
             </Picker>
           </View>
 
-          <Text style={styles.label}>Booking time</Text>
+          <Text style={styles.label}>{t("common.bookingTime", locale)}</Text>
           <TextInput
             style={styles.input}
-            placeholder="YYYY-MM-DDTHH:MM"
+            placeholder={t("common.dateTimeInputPlaceholder", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.starts_at}
             onChangeText={(value) => createForm.setField("starts_at", value)}
@@ -433,7 +433,7 @@ export default function AppointmentsScreen() {
           <Text style={styles.label}>{t("common.notes", locale)}</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Booking notes"
+            placeholder={t("common.bookingNotesPlaceholder", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.notes}
             onChangeText={(value) => createForm.setField("notes", value)}
@@ -606,7 +606,7 @@ export default function AppointmentsScreen() {
               <View key={appointment.id} style={styles.appointmentCard}>
                 {editingAppointmentId === appointment.id ? (
                   <>
-                    <Text style={styles.label}>Client</Text>
+                    <Text style={styles.label}>{t("common.client", locale)}</Text>
                     <View style={styles.pickerWrap}>
                       <Picker
                         selectedValue={editForm.values.client_id}
@@ -627,7 +627,7 @@ export default function AppointmentsScreen() {
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>Service</Text>
+                    <Text style={styles.label}>{t("common.serviceCatalog", locale)}</Text>
                     <View style={styles.pickerWrap}>
                       <Picker
                         selectedValue={editForm.values.service_id}
@@ -654,10 +654,10 @@ export default function AppointmentsScreen() {
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>Start time</Text>
+                    <Text style={styles.label}>{t("common.startTime", locale)}</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder="YYYY-MM-DDTHH:MM"
+                      placeholder={t("common.dateTimeInputPlaceholder", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.starts_at}
                       onChangeText={(value) =>
@@ -665,7 +665,7 @@ export default function AppointmentsScreen() {
                       }
                     />
 
-                    <Text style={styles.label}>Status</Text>
+                    <Text style={styles.label}>{t("common.status", locale)}</Text>
                     <View style={styles.pickerWrap}>
                       <Picker
                         selectedValue={editForm.values.status}
@@ -702,7 +702,7 @@ export default function AppointmentsScreen() {
                         disabled={savingAppointmentId === appointment.id}
                         tone="success"
                       />
-                      <ActionButton title="Cancel" onPress={cancelEditAppointment} />
+                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditAppointment} />
                     </View>
                   </>
                 ) : (
@@ -727,12 +727,12 @@ export default function AppointmentsScreen() {
                       End: {formatDateTime(appointment.ends_at)}
                     </Text>
                     <Text style={styles.item}>
-                      Notes: {appointment.notes || "-"}
+                      {t("common.notes", locale)}: {appointment.notes || "-"}
                     </Text>
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title="Edit"
+                        title={t("common.edit", locale)}
                         onPress={() => startEditAppointment(appointment)}
                         tone="success"
                       />

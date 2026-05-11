@@ -26,7 +26,7 @@ import { useServicesData } from "../../hooks/useResourceData";
 import { useServiceMutations } from "../../hooks/useMutations";
 import { useSession } from "../../hooks/useSession";
 import type { ServiceItem } from "../../types/models";
-import { money } from "../../utils/formatters";
+import { money } from "../../utils/money";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { APP_PREFERENCES } from "../../lib/config/appPreferences";
 import type { AppCurrency } from "../../lib/i18n/types";
@@ -198,9 +198,7 @@ export default function ServicesScreen() {
   const handleDeleteService = async (service: ServiceItem) => {
     const approved = await confirm(
       t("common.deleteServiceTitle", locale),
-      "This will permanently remove " +
-        (service.name || "this service") +
-        " from your catalog."
+        t("common.deleteServiceConfirmMessage", locale)
     );
 
     if (!approved) return;
@@ -233,7 +231,7 @@ export default function ServicesScreen() {
     return (
       <DevLoginCard
         title={t("common.serviceCatalog", locale)}
-        subtitle="Your admin session is unavailable. Restore access to continue."
+        subtitle={t("common.sessionUnavailableSubtitle", locale)}
       />
     );
   }
@@ -253,7 +251,7 @@ export default function ServicesScreen() {
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
           <Text style={styles.heroTitle}>{t("common.serviceCatalog", locale)}</Text>
           <Text style={styles.heroText}>
-            Manage your premium service catalog, pricing strategy, duration, and activation state.
+            {t("common.serviceCatalogHeroSubtitle", locale)}
           </Text>
         </View>
 
