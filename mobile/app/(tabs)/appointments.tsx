@@ -208,7 +208,7 @@ export default function AppointmentsScreen() {
       !editForm.values.service_id ||
       !editForm.values.starts_at.trim()
     ) {
-      const message = t("common.bookingStartRequired", locale);
+      const message = t("common.bookingFieldsRequired", locale);
       setMutationError(message);
       showToast(message, "error");
       return;
@@ -247,9 +247,7 @@ export default function AppointmentsScreen() {
   const handleDeleteAppointment = async (appointment: AppointmentItem) => {
     const approved = await confirm(
       t("common.deleteAppointmentTitle", locale),
-      "This booking for " +
-        (appointment.client_name || "this client") +
-        " will be permanently removed."
+      t("common.deleteAppointmentConfirmMessage", locale)
     );
 
     if (!approved) return;

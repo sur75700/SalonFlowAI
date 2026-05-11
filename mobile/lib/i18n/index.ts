@@ -542,6 +542,7 @@ const translations: Record<AppLocale, TranslationTree> = {
         "Запись успешно удалена",
       deleteServiceTitle: "Удалить услугу?",
       deleteAppointmentTitle: "Удалить запись?",
+      deleteAppointmentConfirmMessage: "Эта запись будет удалена безвозвратно.",
       sessionExpiredSignIn: "Сессия истекла. Войдите снова.",
       failedToExportPdf: "Не удалось экспортировать PDF",
       exportUiWebOnly: "Экспорт PDF из UI сейчас доступен только для web.",

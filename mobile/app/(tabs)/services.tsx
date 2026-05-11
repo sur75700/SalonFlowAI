@@ -138,10 +138,19 @@ export default function ServicesScreen() {
       return;
     }
 
+    const duration = Number(createForm.values.duration_minutes);
+    const price = Number(createForm.values.price);
+
+    if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(price) || price < 0) {
+      setMutationError(t("common.serviceNumericInvalid", locale));
+      showToast(t("common.serviceNumericInvalid", locale), "error");
+      return;
+    }
+
     const ok = await createService({
       name: createForm.values.name.trim(),
-      duration_minutes: Number(createForm.values.duration_minutes),
-      price: Number(createForm.values.price),
+      duration_minutes: duration,
+      price: price,
       currency: createForm.values.currency.trim() || "AMD",
       is_active: true,
     });
@@ -181,10 +190,19 @@ export default function ServicesScreen() {
       return;
     }
 
+    const duration = Number(editForm.values.duration_minutes);
+    const price = Number(editForm.values.price);
+
+    if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(price) || price < 0) {
+      setMutationError(t("common.serviceNumericInvalid", locale));
+      showToast(t("common.serviceNumericInvalid", locale), "error");
+      return;
+    }
+
     const ok = await updateService(serviceId, {
       name: editForm.values.name.trim(),
-      duration_minutes: Number(editForm.values.duration_minutes),
-      price: Number(editForm.values.price),
+      duration_minutes: duration,
+      price: price,
       currency: editForm.values.currency.trim() || "AMD",
       is_active: editForm.values.is_active === "true",
     });
