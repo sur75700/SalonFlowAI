@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -23,10 +24,12 @@ export default function SectionCard({ title, subtitle, children }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#0a0b10",
-    borderRadius: 28,
-    padding: 20,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
     marginBottom: 20,
     borderWidth: 1,
+    boxShadow: UI.depth.card,
+    elevation: 10,
     borderColor: "#2a2230",
   },
   header: {
@@ -34,7 +37,7 @@ const styles = StyleSheet.create({
   },
   overline: {
     color: "#f2d17a",
-    fontSize: 10,
+    fontSize: UI.font.tiny,
     fontWeight: "900",
     letterSpacing: 1.8,
     marginBottom: 8,
@@ -42,13 +45,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#ffffff",
-    fontSize: 24,
+    fontSize: UI.font.title,
     fontWeight: "900",
     marginBottom: 6,
   },
   subtitle: {
     color: "#b7adbf",
-    fontSize: 14,
+    fontSize: UI.font.body,
     lineHeight: 21,
   },
   body: {

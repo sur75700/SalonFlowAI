@@ -25,6 +25,7 @@ import { useSession } from "../../hooks/useSession";
 import { shortDay } from "../../utils/formatters";
 import { money } from "../../utils/money";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { UI } from "../../lib/theme/tokens";
 
 function AnalyticsSkeleton() {
   return (
@@ -392,10 +393,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
   content: { padding: 22, paddingBottom: 40 },
   hero: {
-    backgroundColor: "#0a0b10",
+    boxShadow: UI.depth.hero,
+    elevation: 12,
+    backgroundColor: "rgba(10, 11, 16, 0.96)",
     borderRadius: 30,
-    padding: 26,
-    marginBottom: 20,
+    padding: 28,
+    marginBottom: 24,
     borderWidth: 1,
     borderColor: "#27212c",
   },

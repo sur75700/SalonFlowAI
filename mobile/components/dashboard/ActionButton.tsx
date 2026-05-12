@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 type Props = {
@@ -38,13 +39,15 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     minWidth: 118,
-    borderRadius: 18,
+    borderRadius: UI.radius.lg,
     paddingVertical: 13,
     paddingHorizontal: 14,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#171b27",
     borderWidth: 1,
+    boxShadow: UI.depth.card,
+    elevation: 10,
     borderColor: "#2d3342",
   },
   success: {
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#ffffff",
-    fontSize: 13,
+    fontSize: UI.font.body,
     fontWeight: "900",
     letterSpacing: 0.35,
     textTransform: "uppercase",

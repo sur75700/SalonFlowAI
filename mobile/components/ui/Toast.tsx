@@ -12,6 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { UI } from "../../lib/theme/tokens";
 
 type ToastTone = "success" | "error" | "info";
 
@@ -127,9 +128,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 18,
     borderWidth: 1,
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: UI.depth.soft,
     elevation: 8,
   },
   successToast: {

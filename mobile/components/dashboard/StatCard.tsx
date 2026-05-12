@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -28,9 +29,11 @@ const styles = StyleSheet.create({
     minWidth: 160,
       maxWidth: 260,
     backgroundColor: "#0a0b10",
-    borderRadius: 24,
-    padding: 18,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
     borderWidth: 1,
+    boxShadow: UI.depth.card,
+    elevation: 10,
     borderColor: "#2a2230",
   },
   cardAccent: {
@@ -49,7 +52,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#c1b4c7",
-    fontSize: 11,
+    fontSize: UI.font.tiny,
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.9,
