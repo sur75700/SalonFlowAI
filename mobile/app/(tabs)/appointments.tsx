@@ -849,17 +849,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#11131a",
   },
   quickActions: {
-    flexDirection: "row",
-    gap: 10,
-    flexWrap: "wrap",
-    marginBottom: 12,
+    gap: 12,
   },
   filterRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginBottom: 14,
-    },
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
   appointmentCard: {
     backgroundColor: "#0f1118",
     borderRadius: 22,
@@ -912,11 +908,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   actionRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 10,
-      marginTop: 8,
-    },
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
   errorBox: {
     backgroundColor: "#301218",
     padding: 12,
@@ -934,8 +929,8 @@ const styles = StyleSheet.create({
   summaryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
     gap: 12,
-    marginBottom: 14,
   },
   summaryCard: {
     flexBasis: "31%",

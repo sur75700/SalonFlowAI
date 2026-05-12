@@ -570,9 +570,8 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: "row",
-    gap: 10,
-    marginTop: 14,
     flexWrap: "wrap",
+    gap: 12,
   },
   errorBox: {
     backgroundColor: "#301218",
@@ -592,7 +591,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
-    marginBottom: 14,
   },
   summaryCard: {
     flexBasis: "31%",
