@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   executiveCard: {
     flexBasis: "31%",
     flexGrow: 1,
-    minWidth: 180,
+    minWidth: 240,
     backgroundColor: "#11131a",
     borderWidth: 1,
     borderColor: "#2a3140",

@@ -50,7 +50,9 @@ const emptyEditForm = {
 function ServicesSkeleton() {
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+          keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <LoadingSkeleton height={12} width={110} style={{ marginBottom: 12 }} />
           <LoadingSkeleton height={36} width={160} style={{ marginBottom: 10 }} />
@@ -595,7 +597,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     flexBasis: "31%",
     flexGrow: 1,
-    minWidth: 160,
+    minWidth: 220,
     backgroundColor: "#11131a",
     borderWidth: 1,
     borderColor: "#2a3140",

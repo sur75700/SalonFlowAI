@@ -37,7 +37,9 @@ const emptyClientForm = {
 function ClientsSkeleton() {
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+          keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <LoadingSkeleton height={12} width={110} style={{ marginBottom: 12 }} />
           <LoadingSkeleton height={36} width={150} style={{ marginBottom: 10 }} />
