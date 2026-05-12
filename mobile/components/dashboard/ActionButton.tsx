@@ -16,6 +16,7 @@ export default function ActionButton({
 }: Props) {
   return (
     <TouchableOpacity
+      activeOpacity={0.86}
       style={[
         styles.button,
         tone === "success" && styles.success,
@@ -26,7 +27,9 @@ export default function ActionButton({
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={styles.text}>{title}</Text>
+      <Text style={styles.text} numberOfLines={1}>
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -34,27 +37,36 @@ export default function ActionButton({
 const styles = StyleSheet.create({
   button: {
     flex: 1,
-    minWidth: 110,
-    borderRadius: 14,
-    paddingVertical: 12,
+    minWidth: 118,
+    borderRadius: 18,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
     alignItems: "center",
-    backgroundColor: "#1b2130",
+    justifyContent: "center",
+    backgroundColor: "#171b27",
+    borderWidth: 1,
+    borderColor: "#2d3342",
   },
   success: {
-    backgroundColor: "#15803d",
+    backgroundColor: "#14532d",
+    borderColor: "#22c55e",
   },
   danger: {
-    backgroundColor: "#7f1d1d",
+    backgroundColor: "#581c1c",
+    borderColor: "#ef4444",
   },
   warning: {
-    backgroundColor: "#b91c1c",
+    backgroundColor: "#78350f",
+    borderColor: "#f59e0b",
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   text: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "900",
+    letterSpacing: 0.35,
+    textTransform: "uppercase",
   },
 });

@@ -12,6 +12,7 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <View style={styles.wrap}>
+      <Text style={styles.icon}>✦</Text>
       <Text style={styles.title}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
@@ -22,23 +23,29 @@ const styles = StyleSheet.create({
   wrap: {
     backgroundColor: "#10131a",
     borderWidth: 1,
-    borderColor: "#232834",
-    borderRadius: 18,
-    padding: 18,
+    borderColor: "#2b3040",
+    borderRadius: 22,
+    padding: 22,
     alignItems: "center",
     justifyContent: "center",
   },
+  icon: {
+    color: "#f2d17a",
+    fontSize: 22,
+    fontWeight: "900",
+    marginBottom: 8,
+  },
   title: {
     color: "#ffffff",
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "900",
-    marginBottom: 6,
+    marginBottom: 7,
     textAlign: "center",
   },
   subtitle: {
     color: "#b8b0c0",
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
     textAlign: "center",
   },
 });
