@@ -579,11 +579,19 @@ export default function AppointmentsScreen() {
             {(["all", "scheduled", "completed", "cancelled"] as FilterType[]).map(
               (filter) => (
                 <FilterChip
-                  key={filter}
-                  label={filter}
-                  active={appointmentFilter === filter}
-                  onPress={() => setAppointmentFilter(filter)}
-                />
+                    key={filter}
+                    label={
+                      filter === "all"
+                        ? t("common.all", locale)
+                        : filter === "scheduled"
+                        ? t("common.scheduled", locale)
+                        : filter === "completed"
+                        ? t("common.completed", locale)
+                        : t("common.cancelled", locale)
+                    }
+                    active={appointmentFilter === filter}
+                    onPress={() => setAppointmentFilter(filter)}
+                  />
               )
             )}
           </View>
@@ -733,18 +741,22 @@ export default function AppointmentsScreen() {
                         onPress={() => startEditAppointment(appointment)}
                         tone="success"
                       />
-                      <ActionButton
-                        title={workingId === appointment.id ? t("common.working", locale) : t("common.complete", locale)}
-                        onPress={() => handleCompleteAppointment(appointment.id)}
-                        disabled={workingId === appointment.id}
-                        tone="success"
-                      />
-                      <ActionButton
-                        title={workingId === appointment.id ? t("common.working", locale) : t("common.cancel", locale)}
-                        onPress={() => handleCancelAppointment(appointment.id)}
-                        disabled={workingId === appointment.id}
-                        tone="warning"
-                      />
+                      {appointment.status === "scheduled" ? (
+                        <>
+                          <ActionButton
+                            title={workingId === appointment.id ? t("common.working", locale) : t("common.complete", locale)}
+                            onPress={() => handleCompleteAppointment(appointment.id)}
+                            disabled={workingId === appointment.id}
+                            tone="success"
+                          />
+                          <ActionButton
+                            title={workingId === appointment.id ? t("common.working", locale) : t("common.cancel", locale)}
+                            onPress={() => handleCancelAppointment(appointment.id)}
+                            disabled={workingId === appointment.id}
+                            tone="warning"
+                          />
+                        </>
+                      ) : null}
                       <ActionButton
                         title={workingId === appointment.id ? t("common.working", locale) : t("common.delete", locale)}
                         onPress={() => handleDeleteAppointment(appointment)}
@@ -843,11 +855,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   filterRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 14,
-  },
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: 14,
+    },
   appointmentCard: {
     backgroundColor: "#0f1118",
     borderRadius: 22,
@@ -900,11 +912,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   actionRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 14,
-    flexWrap: "wrap",
-  },
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 8,
+    },
   errorBox: {
     backgroundColor: "#301218",
     padding: 12,
