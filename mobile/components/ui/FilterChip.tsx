@@ -24,12 +24,12 @@ export default function FilterChip({
 
 const styles = StyleSheet.create({
   base: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 999,
     backgroundColor: "#11131a",
     borderWidth: 1,
-    borderColor: "#2f2631",
+    borderColor: "#332a38",
   },
   active: {
     backgroundColor: "#f2d17a",
@@ -37,9 +37,9 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#d2c5d8",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "900",
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
     textTransform: "uppercase",
   },
   activeText: {

@@ -38,31 +38,37 @@ export default function StatusBadge({ status }: Props) {
 
 const styles = StyleSheet.create({
   base: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     paddingVertical: 8,
     borderRadius: 999,
     alignSelf: "flex-start",
+    borderWidth: 1,
   },
   scheduled: {
-    backgroundColor: "#1d4ed8",
+    backgroundColor: "#172554",
+    borderColor: "#3b82f6",
   },
   completed: {
-    backgroundColor: "#15803d",
+    backgroundColor: "#052e16",
+    borderColor: "#22c55e",
   },
   cancelled: {
-    backgroundColor: "#b91c1c",
+    backgroundColor: "#450a0a",
+    borderColor: "#ef4444",
   },
   active: {
-    backgroundColor: "#166534",
+    backgroundColor: "#052e16",
+    borderColor: "#22c55e",
   },
   inactive: {
-    backgroundColor: "#6b7280",
+    backgroundColor: "#1f2937",
+    borderColor: "#6b7280",
   },
   text: {
     color: "#ffffff",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
 });
