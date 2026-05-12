@@ -31,6 +31,7 @@ import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { APP_PREFERENCES } from "../../lib/config/appPreferences";
 import type { AppCurrency } from "../../lib/i18n/types";
 import { t } from "../../lib/i18n";
+import { UI } from "../../lib/theme/tokens";
 
 const emptyCreateForm = {
   name: "",
@@ -486,10 +487,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
   content: { padding: 22, paddingBottom: 40 },
   hero: {
-    backgroundColor: "#0a0b10",
+    boxShadow: UI.depth.hero,
+    elevation: 12,
+    backgroundColor: "rgba(10, 11, 16, 0.96)",
     borderRadius: 30,
-    padding: 26,
-    marginBottom: 20,
+    padding: 28,
+    marginBottom: 24,
     borderWidth: 1,
     borderColor: "#27212c",
   },
