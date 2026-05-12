@@ -322,9 +322,8 @@ export default function AppointmentsScreen() {
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
           <Text style={styles.heroTitle}>{t("common.bookingsTab", locale)}</Text>
           <Text style={styles.heroText}>
-            Manage bookings, create reservations, update statuses, and keep
-            daily salon flow under control.
-          </Text>
+              {t("common.appointmentsHeroSubtitle", locale)}
+            </Text>
         </View>
 
         <SessionActionBar
@@ -406,21 +405,21 @@ export default function AppointmentsScreen() {
 
           <View style={styles.quickActions}>
             <FilterChip
-              label="Next hour"
+              label={t("common.quickNextHour", locale)}
               active={false}
               onPress={() =>
                 createForm.setField("starts_at", nextHourDateTimeInput())
               }
             />
             <FilterChip
-              label="Today 18:00"
+              label={t("common.quickTodayEvening", locale)}
               active={false}
               onPress={() =>
                 createForm.setField("starts_at", todayEveningDateTimeInput())
               }
             />
             <FilterChip
-              label="Tomorrow 10:00"
+              label={t("common.quickTomorrowMorning", locale)}
               active={false}
               onPress={() =>
                 createForm.setField("starts_at", tomorrowMorningDateTimeInput())
@@ -481,10 +480,10 @@ export default function AppointmentsScreen() {
                 </View>
 
                 <Text style={styles.item}>
-                  Start: {formatDateTime(appointment.starts_at)}
+                  {t("common.startLabel", locale)}: {formatDateTime(appointment.starts_at)}
                 </Text>
                 <Text style={styles.item}>
-                  End: {formatDateTime(appointment.ends_at)}
+                  {t("common.endLabel", locale)}: {formatDateTime(appointment.ends_at)}
                 </Text>
               </View>
             ))
@@ -515,10 +514,10 @@ export default function AppointmentsScreen() {
                 </View>
 
                 <Text style={styles.item}>
-                  Start: {formatDateTime(appointment.starts_at)}
+                  {t("common.startLabel", locale)}: {formatDateTime(appointment.starts_at)}
                 </Text>
                 <Text style={styles.item}>
-                  End: {formatDateTime(appointment.ends_at)}
+                  {t("common.endLabel", locale)}: {formatDateTime(appointment.ends_at)}
                 </Text>
               </View>
             ))
@@ -532,15 +531,15 @@ export default function AppointmentsScreen() {
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{todayAppointments.length}</Text>
-              <Text style={styles.summaryLabel}>Today</Text>
+              <Text style={styles.summaryLabel}>{t("common.todayLabel", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{upcomingAppointments.length}</Text>
-              <Text style={styles.summaryLabel}>Upcoming</Text>
+              <Text style={styles.summaryLabel}>{t("common.upcomingLabel", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{appointments.length}</Text>
-              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryLabel}>{t("common.totalLabel", locale)}</Text>
             </View>
           </View>
 
@@ -652,7 +651,7 @@ export default function AppointmentsScreen() {
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>{t("common.startTime", locale)}</Text>
+                    <Text style={styles.label}>{t("common.startLabel", locale)}</Text>
                     <TextInput
                       style={styles.input}
                       placeholder={t("common.dateTimeInputPlaceholder", locale)}
@@ -673,9 +672,9 @@ export default function AppointmentsScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label="Scheduled" value="scheduled" />
-                        <Picker.Item label="Completed" value="completed" />
-                        <Picker.Item label="Cancelled" value="cancelled" />
+                        <Picker.Item label={t("common.scheduled", locale)} value="scheduled" />
+                        <Picker.Item label={t("common.completed", locale)} value="completed" />
+                        <Picker.Item label={t("common.cancelled", locale)} value="cancelled" />
                       </Picker>
                     </View>
 
@@ -693,8 +692,8 @@ export default function AppointmentsScreen() {
                       <ActionButton
                         title={
                           savingAppointmentId === appointment.id
-                            ? "Working..."
-                            : "Save"
+                            ? t("common.working", locale)
+                            : t("common.save", locale)
                         }
                         onPress={() => handleSaveAppointment(appointment.id)}
                         disabled={savingAppointmentId === appointment.id}
@@ -719,10 +718,10 @@ export default function AppointmentsScreen() {
                     </View>
 
                     <Text style={styles.item}>
-                      Start: {formatDateTime(appointment.starts_at)}
+                      {t("common.startLabel", locale)}: {formatDateTime(appointment.starts_at)}
                     </Text>
                     <Text style={styles.item}>
-                      End: {formatDateTime(appointment.ends_at)}
+                      {t("common.endLabel", locale)}: {formatDateTime(appointment.ends_at)}
                     </Text>
                     <Text style={styles.item}>
                       {t("common.notes", locale)}: {appointment.notes || "-"}
@@ -735,19 +734,19 @@ export default function AppointmentsScreen() {
                         tone="success"
                       />
                       <ActionButton
-                        title={workingId === appointment.id ? "Working..." : "Complete"}
+                        title={workingId === appointment.id ? t("common.working", locale) : t("common.complete", locale)}
                         onPress={() => handleCompleteAppointment(appointment.id)}
                         disabled={workingId === appointment.id}
                         tone="success"
                       />
                       <ActionButton
-                        title={workingId === appointment.id ? "Working..." : "Cancel"}
+                        title={workingId === appointment.id ? t("common.working", locale) : t("common.cancel", locale)}
                         onPress={() => handleCancelAppointment(appointment.id)}
                         disabled={workingId === appointment.id}
                         tone="warning"
                       />
                       <ActionButton
-                        title={workingId === appointment.id ? "Working..." : "Delete"}
+                        title={workingId === appointment.id ? t("common.working", locale) : t("common.delete", locale)}
                         onPress={() => handleDeleteAppointment(appointment)}
                         disabled={workingId === appointment.id}
                         tone="danger"
