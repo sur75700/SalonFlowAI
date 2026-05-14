@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
-    backgroundColor: "rgba(10, 11, 16, 0.96)",
+    backgroundColor: "rgba(8, 10, 18, 0.92)",
     borderRadius: 30,
     padding: 28,
     marginBottom: 24,
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   sectionSkeleton: {
-    backgroundColor: "#0f1118",
+    backgroundColor: "#11131d",
     borderWidth: 1,
     borderColor: "#241f27",
     borderRadius: 24,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   input: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     color: "#ffffff",
     borderRadius: 16,
     paddingHorizontal: 14,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   infoBlock: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   errorBox: {
-    backgroundColor: "#301218",
+    backgroundColor: "#38161f",
     padding: 12,
     borderRadius: 16,
     marginBottom: 16,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
 
 
   readinessCard: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
     borderRadius: 16,
