@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const hideToast = () => {
     Animated.timing(fadeAnim, {
       toValue: 0,
-      duration: 220,
+      duration: 260,
       useNativeDriver: true,
     }).start(() => {
       setToast(null);
@@ -60,7 +60,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 180,
+      duration: 220,
       useNativeDriver: true,
     }).start();
 

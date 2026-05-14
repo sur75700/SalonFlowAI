@@ -62,6 +62,6 @@ export default function LoadingSkeleton({
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: "#202431",
+    backgroundColor: "#24293a",
   },
 });
