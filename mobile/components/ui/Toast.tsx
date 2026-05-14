@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   infoToast: {
     backgroundColor: "#141b30",
-    borderColor: "#3356a5",
+    borderColor: "#4a6fd1",
   },
   toastText: {
     color: "#ffffff",

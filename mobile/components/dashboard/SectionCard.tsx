@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     boxShadow: UI.depth.card,
     elevation: 10,
-    borderColor: "#2a2230",
+    borderColor: "#34283d",
   },
   header: {
     marginBottom: 16,
