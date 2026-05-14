@@ -20,9 +20,9 @@ export default function ChartBlock({ title, subtitle, children }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     backgroundColor: "#0a0b10",
-    borderRadius: 24,
+    borderRadius: 28,
     padding: 22,
-    marginBottom: 18,
+    marginBottom: 22,
     borderWidth: 1,
     borderColor: "#241f27",
   },

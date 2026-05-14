@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#171b27",
     borderWidth: 1,
     boxShadow: UI.depth.card,
-    elevation: 10,
-    borderColor: "#2d3342",
+    elevation: 14,
+    borderColor: "#4b556d",
   },
   success: {
     backgroundColor: "#14532d",
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: UI.font.body,
     fontWeight: "900",
-    letterSpacing: 1.1,
+    letterSpacing: 1.4,
     textTransform: "uppercase",
   },
 });

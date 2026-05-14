@@ -26,7 +26,7 @@ export default function StatCard({
 const styles = StyleSheet.create({
   card: {
     width: "48%",
-    minWidth: 160,
+    minWidth: 180,
       maxWidth: 260,
     backgroundColor: "#0a0b10",
     borderRadius: UI.radius.xl,
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     color: "#f5d27a",
     fontSize: 30,
     fontWeight: "900",
-    marginBottom: 7,
+    marginBottom: 10,
   },
   valueAccent: {
     color: "#c4a1ff",
