@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     borderColor: "#2a2230",
   },
   cardAccent: {
-    backgroundColor: "#11101b",
+    backgroundColor: "#151320",
     borderColor: "#4c3575",
   },
   value: {
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
     fontSize: UI.font.tiny,
     fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.9,
+    letterSpacing: 1.1,
   },
 });

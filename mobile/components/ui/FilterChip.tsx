@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#11131a",
     borderWidth: 1,
-    borderColor: "#332a38",
+    borderColor: "#433547",
   },
   active: {
     backgroundColor: "#f2d17a",
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     color: "#d2c5d8",
     fontSize: 11,
     fontWeight: "900",
-    letterSpacing: 1.2,
+    letterSpacing: 1.35,
     textTransform: "uppercase",
   },
   activeText: {
