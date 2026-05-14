@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#0a0b10",
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.lg,
+    padding: UI.spacing.xl,
     marginBottom: 24,
     borderWidth: 1,
     boxShadow: UI.depth.card,
