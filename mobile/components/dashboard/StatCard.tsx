@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
       maxWidth: 260,
     backgroundColor: "#0a0b10",
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.lg,
+    padding: UI.spacing.xl,
     borderWidth: 1,
     boxShadow: UI.depth.card,
     elevation: 10,

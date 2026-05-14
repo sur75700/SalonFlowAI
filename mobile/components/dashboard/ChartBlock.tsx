@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   wrap: {
     backgroundColor: "#0a0b10",
     borderRadius: 24,
-    padding: 20,
+    padding: 22,
     marginBottom: 18,
     borderWidth: 1,
     borderColor: "#241f27",

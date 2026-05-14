@@ -21,7 +21,7 @@ export default function EmptyState({
 
 const styles = StyleSheet.create({
   wrap: {
-    backgroundColor: "#10131a",
+    backgroundColor: "rgba(16, 19, 26, 0.84)",
     borderWidth: 1,
     borderColor: "#2b3040",
     borderRadius: 24,
