@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
-    backgroundColor: "rgba(10, 11, 16, 0.96)",
+    backgroundColor: "rgba(8, 10, 18, 0.92)",
     borderRadius: 30,
     padding: 28,
     marginBottom: 24,
@@ -810,7 +810,7 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   sectionCard: {
-    backgroundColor: "#0f1118",
+    backgroundColor: "#11131d",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
@@ -818,7 +818,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   searchInput: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     color: "#ffffff",
     borderRadius: 16,
     paddingHorizontal: 14,
@@ -828,7 +828,7 @@ const styles = StyleSheet.create({
     borderColor: "#2e2631",
   },
   input: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     color: "#ffffff",
     borderRadius: 16,
     paddingHorizontal: 14,
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   pickerWrap: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     borderRadius: 16,
     marginBottom: 10,
     borderWidth: 1,
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
   },
   picker: {
     color: "#ffffff",
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
   },
   quickActions: {
     gap: 12,
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   appointmentCard: {
-    backgroundColor: "#0f1118",
+    backgroundColor: "#11131d",
     borderRadius: 22,
     padding: 18,
     marginBottom: 12,
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
     borderColor: "#241f27",
   },
   dayCard: {
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     borderRadius: 18,
     padding: 14,
     marginBottom: 12,
@@ -918,7 +918,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   errorBox: {
-    backgroundColor: "#301218",
+    backgroundColor: "#38161f",
     padding: 12,
     borderRadius: 16,
     marginBottom: 16,
@@ -941,7 +941,7 @@ const styles = StyleSheet.create({
     flexBasis: "31%",
     flexGrow: 1,
     minWidth: 220,
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
     borderRadius: 16,

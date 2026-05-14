@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
-    backgroundColor: "rgba(10, 11, 16, 0.96)",
+    backgroundColor: "rgba(8, 10, 18, 0.92)",
     borderRadius: 30,
     padding: 28,
     marginBottom: 24,
@@ -428,14 +428,14 @@ const styles = StyleSheet.create({
   },
   statSkeletonCard: {
     width: "48%",
-    backgroundColor: "#0f1118",
+    backgroundColor: "#11131d",
     borderWidth: 1,
     borderColor: "#241f27",
     borderRadius: 20,
     padding: 18,
   },
   sectionSkeleton: {
-    backgroundColor: "#0f1118",
+    backgroundColor: "#11131d",
     borderWidth: 1,
     borderColor: "#241f27",
     borderRadius: 24,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   errorBox: {
-    backgroundColor: "#301218",
+    backgroundColor: "#38161f",
     padding: 12,
     borderRadius: 16,
     marginBottom: 16,
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
     flexBasis: "31%",
     flexGrow: 1,
     minWidth: 240,
-    backgroundColor: "#11131a",
+    backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
     borderRadius: 16,

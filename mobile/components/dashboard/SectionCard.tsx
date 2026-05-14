@@ -23,12 +23,12 @@ export default function SectionCard({ title, subtitle, children }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#0a0b10",
+    backgroundColor: "#0d1018",
     borderRadius: UI.radius.xl,
     padding: UI.spacing.xl,
     marginBottom: 24,
     borderWidth: 1,
-    boxShadow: UI.depth.card,
+    boxShadow: UI.depth.hero,
     elevation: 10,
     borderColor: "#34283d",
   },
