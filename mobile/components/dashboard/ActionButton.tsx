@@ -17,7 +17,7 @@ export default function ActionButton({
 }: Props) {
   return (
     <TouchableOpacity
-      activeOpacity={0.78}
+      activeOpacity={0.88}
       style={[
         styles.button,
         tone === "success" && styles.success,

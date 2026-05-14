@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     color: "#f2d17a",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "900",
     marginBottom: 8,
   },
