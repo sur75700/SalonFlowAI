@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const hideToast = () => {
     Animated.timing(fadeAnim, {
       toValue: 0,
-      duration: 180,
+      duration: 220,
       useNativeDriver: true,
     }).start(() => {
       setToast(null);
@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
     timerRef.current = setTimeout(() => {
       hideToast();
-    }, 2400);
+    }, 2800);
   };
 
   const value = useMemo(
@@ -115,16 +115,16 @@ export function useToast() {
 const styles = StyleSheet.create({
   overlay: {
     position: "absolute",
-    top: 12,
+    top: 16,
     left: 0,
     right: 0,
     alignItems: "center",
     zIndex: 9999,
   },
   toast: {
-    minWidth: 240,
-    maxWidth: 520,
-    paddingHorizontal: 18,
+    minWidth: 260,
+    maxWidth: 560,
+    paddingHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 18,
     borderWidth: 1,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   toastText: {
     color: "#ffffff",
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "900",
     textAlign: "center",
   },
 });

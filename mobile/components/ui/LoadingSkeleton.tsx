@@ -19,19 +19,19 @@ export default function LoadingSkeleton({
   radius = 12,
   style,
 }: SkeletonProps) {
-  const opacity = useRef(new Animated.Value(0.35)).current;
+  const opacity = useRef(new Animated.Value(0.32)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
-          toValue: 0.7,
-          duration: 700,
+          toValue: 0.74,
+          duration: 900,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
-          toValue: 0.35,
-          duration: 700,
+          toValue: 0.32,
+          duration: 900,
           useNativeDriver: true,
         }),
       ])
@@ -62,6 +62,6 @@ export default function LoadingSkeleton({
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: "#1a1e27",
+    backgroundColor: "#202431",
   },
 });
