@@ -26,12 +26,12 @@ export default function LoadingSkeleton({
       Animated.sequence([
         Animated.timing(opacity, {
           toValue: 0.74,
-          duration: 900,
+          duration: 2200,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
           toValue: 0.32,
-          duration: 900,
+          duration: 2200,
           useNativeDriver: true,
         }),
       ])
