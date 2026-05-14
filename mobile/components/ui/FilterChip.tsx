@@ -15,7 +15,7 @@ export default function FilterChip({
   return (
     <Pressable
       onPress={onPress}
-        hitSlop={8}
+      hitSlop={8}
       style={[styles.base, active && styles.active]}
     >
       <Text style={[styles.text, active && styles.activeText]}>{label}</Text>
