@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderRadius: 18,
+    borderRadius: 22,
     borderWidth: 1,
     boxShadow: UI.depth.soft,
     elevation: 8,
