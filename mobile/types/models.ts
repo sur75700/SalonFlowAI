@@ -65,6 +65,20 @@ export type AnalyticsRevenuePoint = {
 };
 
 export type AnalyticsData = {
+  // Live analytics API aliases
+  total_revenue?: number;
+  completed_revenue?: number;
+  scheduled_pipeline?: number;
+  cancelled_value?: number;
+  avg_completed_ticket?: number;
+  completedRevenue?: number;
+  scheduledPipeline?: number;
+  cancelledValue?: number;
+  avgCompletedTicket?: number;
+  revenueTrend?: any[];
+  topPerformingServices?: any[];
+  top_performing_services?: any[];
+
   currency: string;
   totals: AnalyticsTotals;
   top_services: AnalyticsTopService[];

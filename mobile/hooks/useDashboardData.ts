@@ -115,7 +115,30 @@ export function useAnalyticsData(
       ]);
 
       setSummary(summaryRes.data);
-      setAnalytics(analyticsRes.data);
+      setAnalytics({
+        ...analyticsRes.data,
+        completedRevenue:
+          analyticsRes.data.completedRevenue ??
+          analyticsRes.data.completed_revenue ??
+          analyticsRes.data.total_revenue ??
+          0,
+        scheduledPipeline:
+          analyticsRes.data.scheduledPipeline ??
+          analyticsRes.data.scheduled_pipeline ??
+          0,
+        cancelledValue:
+          analyticsRes.data.cancelledValue ??
+          analyticsRes.data.cancelled_value ??
+          0,
+        avgCompletedTicket:
+          analyticsRes.data.avgCompletedTicket ??
+          analyticsRes.data.avg_completed_ticket ??
+          0,
+        topPerformingServices:
+          analyticsRes.data.topPerformingServices ??
+          analyticsRes.data.top_performing_services ??
+          [],
+      });
     } catch (err: any) {
       if (isAuthError(err)) {
         clearToken();
