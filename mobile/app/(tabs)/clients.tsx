@@ -114,8 +114,8 @@ export default function ClientsScreen() {
 
   const handleCreateClient = async () => {
     if (!createForm.values.full_name.trim() || !createForm.values.phone.trim()) {
-      setMutationError(t("common.clientFieldsRequired", locale));
-      showToast(t("common.clientFieldsRequired", locale), "error");
+      setMutationError(t("Client Fields Required", locale));
+      showToast(t("Client Fields Required", locale), "error");
       return;
     }
 
@@ -128,7 +128,7 @@ export default function ClientsScreen() {
 
     if (ok) {
       createForm.reset();
-      showToast(t("common.clientCreatedSuccessfully", locale), "success");
+      showToast(t("Client Created Successfully", locale), "success");
     }
   };
 
@@ -151,8 +151,8 @@ export default function ClientsScreen() {
 
   const handleSaveClient = async (clientId: string) => {
     if (!editForm.values.full_name.trim() || !editForm.values.phone.trim()) {
-      setMutationError(t("common.clientFieldsRequired", locale));
-      showToast(t("common.clientFieldsRequired", locale), "error");
+      setMutationError(t("Client Fields Required", locale));
+      showToast(t("Client Fields Required", locale), "error");
       return;
     }
 
@@ -165,14 +165,14 @@ export default function ClientsScreen() {
 
     if (ok) {
       cancelEditClient();
-      showToast(t("common.clientUpdatedSuccessfully", locale), "success");
+      showToast(t("Client Updated Successfully", locale), "success");
     }
   };
 
   const handleDeleteClient = async (client: ClientItem) => {
     const approved = await confirm(
-      t("common.deleteClientTitle", locale),
-        t("common.deleteClientConfirmMessage", locale)
+      t("Delete Client Title", locale),
+        t("Delete Client Confirm Message", locale)
     );
 
     if (!approved) return;
@@ -180,7 +180,7 @@ export default function ClientsScreen() {
     const ok = await deleteClient(client.id);
 
     if (ok) {
-      showToast(t("common.clientDeletedSuccessfully", locale), "success");
+      showToast(t("Client Deleted Successfully", locale), "success");
     }
   };
 
@@ -204,8 +204,8 @@ export default function ClientsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.clientSnapshot", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Client Snapshot", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -223,9 +223,9 @@ export default function ClientsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.clientSnapshot", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Client Snapshot", locale)}</Text>
           <Text style={styles.heroText}>
-            {t("common.clientRegistryHeroSubtitle", locale)}
+            {t("Client Registry Hero Subtitle", locale)}
           </Text>
         </View>
 
@@ -236,8 +236,8 @@ export default function ClientsScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.clientRegistryConnected", locale)}
-          subtitle={t("common.clientRegistryConnectedSubtitle", locale)}
+          title={t("Client Registry Connected", locale)}
+          subtitle={t("Client Registry ConnectedSubtitle", locale)}
         />
 
         {screenError ? (
@@ -247,26 +247,26 @@ export default function ClientsScreen() {
         ) : null}
 
         <SectionCard
-          title={t("common.createClientEntry", locale)}
-          subtitle={t("common.createClientEntrySubtitle", locale)}
+          title={t("Create ClientEntry", locale)}
+          subtitle={t("Create ClientEntrySubtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder={t("common.fullName", locale)}
+            placeholder={t("Full Name", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.full_name}
             onChangeText={(value) => createForm.setField("full_name", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.phone", locale)}
+            placeholder={t("Phone", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.phone}
             onChangeText={(value) => createForm.setField("phone", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.email", locale)}
+            placeholder={t("Email", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.email}
             onChangeText={(value) => createForm.setField("email", value)}
@@ -274,7 +274,7 @@ export default function ClientsScreen() {
           />
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder={t("common.notes", locale)}
+            placeholder={t("Notes", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.notes}
             onChangeText={(value) => createForm.setField("notes", value)}
@@ -282,7 +282,7 @@ export default function ClientsScreen() {
           />
 
           <ActionButton
-            title={mutationLoading ? t("common.creating", locale) : t("common.createClient", locale)}
+            title={mutationLoading ? t("Creating", locale) : t("Create Client", locale)}
             onPress={handleCreateClient}
             disabled={mutationLoading}
             tone="success"
@@ -290,12 +290,12 @@ export default function ClientsScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t("common.clientSnapshot", locale)}
-          subtitle={t("common.clientSnapshotSubtitle", locale)}
+          title={t("Client Snapshot", locale)}
+          subtitle={t("Client Snapshot Subtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}
-            placeholder={t("common.searchClients", locale)}
+            placeholder={t("Search Clients", locale)}
             placeholderTextColor="#9a92a3"
             value={clientSearch}
             onChangeText={setClientSearch}
@@ -303,13 +303,13 @@ export default function ClientsScreen() {
 
           {noClientsAtAll ? (
             <EmptyState
-              title={t("common.noClientsYet", locale)}
-              subtitle={t("common.noClientsYetSubtitle", locale)}
+              title={t("No Clients Yet", locale)}
+              subtitle={t("No Clients YetSubtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title={t("common.noMatchingClients", locale)}
-              subtitle={t("common.noMatchingClientsSubtitle", locale)}
+              title={t("No Matching Clients", locale)}
+              subtitle={t("No Matching ClientsSubtitle", locale)}
             />
           ) : (
             filteredClients.map((client) => (
@@ -318,21 +318,21 @@ export default function ClientsScreen() {
                   <>
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.fullName", locale)}
+                      placeholder={t("Full Name", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.full_name}
                       onChangeText={(value) => editForm.setField("full_name", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.phone", locale)}
+                      placeholder={t("Phone", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.phone}
                       onChangeText={(value) => editForm.setField("phone", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.email", locale)}
+                      placeholder={t("Email", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.email}
                       onChangeText={(value) => editForm.setField("email", value)}
@@ -340,7 +340,7 @@ export default function ClientsScreen() {
                     />
                     <TextInput
                       style={[styles.input, styles.textArea]}
-                      placeholder={t("common.notes", locale)}
+                      placeholder={t("Notes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.notes}
                       onChangeText={(value) => editForm.setField("notes", value)}
@@ -354,19 +354,19 @@ export default function ClientsScreen() {
                         disabled={workingId === client.id}
                         tone="success"
                       />
-                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditClient} />
+                      <ActionButton title={t("Cancel", locale)} onPress={cancelEditClient} />
                     </View>
                   </>
                 ) : (
                   <>
                     <Text style={styles.cardTitle}>{client.full_name}</Text>
-                    <Text style={styles.item}>{t("common.phone", locale)}: {client.phone}</Text>
-                    <Text style={styles.item}>{t("common.email", locale)}: {client.email || "-"}</Text>
-                    <Text style={styles.item}>{t("common.notes", locale)}: {client.notes || "-"}</Text>
+                    <Text style={styles.item}>{t("Phone", locale)}: {client.phone}</Text>
+                    <Text style={styles.item}>{t("Email", locale)}: {client.email || "-"}</Text>
+                    <Text style={styles.item}>{t("Notes", locale)}: {client.notes || "-"}</Text>
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={t("common.edit", locale)}
+                        title={t("Edit", locale)}
                         onPress={() => startEditClient(client)}
                         tone="success"
                       />

@@ -81,8 +81,8 @@ export default function OverviewScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.dashboard", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Dashboard", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -101,7 +101,7 @@ export default function OverviewScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.dashboard", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Dashboard", locale)}</Text>
           <Text style={styles.heroText}>
             Premium salon command center for bookings, clients, services, analytics,
             and reporting—organized into focused operational sections.
@@ -115,8 +115,8 @@ export default function OverviewScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.operationsReady", locale)}
-          subtitle={t("common.operationsReadySubtitle", locale)}
+          title={t("Operations Ready", locale)}
+          subtitle={t("Operations ReadySubtitle", locale)}
         />
 
         {error ? (
@@ -132,109 +132,109 @@ export default function OverviewScreen() {
         </View>
 
         <SectionCard
-          title={t("common.commandNavigation", locale)}
-          subtitle={t("common.commandNavigationSubtitle", locale)}
+          title={t("Command Navigation", locale)}
+          subtitle={t("Command NavigationSubtitle", locale)}
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.insights", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Insights", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.insightsInfoSubtitle", locale)}
+              {t("Insights Info Subtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.pdfReports", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Pdf Reports", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.pdfReportsInfoSubtitle", locale)}
+              {t("Pdf ReportsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.appointments", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Appointments", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.appointmentsInfoSubtitle", locale)}
+              {t("AppointmentsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.clients", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Clients", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.clientsInfoSubtitle", locale)}
+              {t("ClientsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.serviceCatalog", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Service Catalog", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.serviceCatalogHeroSubtitle", locale)}
+              {t("Service CatalogHeroSubtitle", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.quickActions", locale)}
-          subtitle={t("common.quickActionsSubtitle", locale)}
+          title={t("Quick Actions", locale)}
+          subtitle={t("Quick Actions Subtitle", locale)}
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
-              title={t("common.openBookings", locale)}
+              title={t("Open Bookings", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
-              title={t("common.openClients", locale)}
+              title={t("Open Clients", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
-              title={t("common.openServiceCatalog", locale)}
+              title={t("Open Service Catalog", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
-              title={t("common.openInsights", locale)}
+              title={t("Open Insights", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
-              title={t("common.openPdfReports", locale)}
+              title={t("Open Pdf Reports", locale)}
               onPress={() => router.navigate("/(tabs)/reports")}
             />
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.executiveSnapshot", locale)}
-          subtitle={t("common.executiveSnapshotSubtitle", locale)}
+          title={t("Executive Snapshot", locale)}
+          subtitle={t("Executive Snapshot Subtitle", locale)}
         >
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.totalClients", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Total Clients", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.totalServices", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Total Services", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.totalBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Total Bookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.scheduledBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("ScheduledBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.scheduled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.completedBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("CompletedBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.completed_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.cancelledBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Cancelled Bookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.cancelled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.todayBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("TodayBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.today_appointments ?? 0}</Text>
           </View>
         </SectionCard>

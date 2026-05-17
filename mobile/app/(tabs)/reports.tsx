@@ -77,12 +77,12 @@ export default function ReportsScreen() {
 
   const exportPdfReport = async () => {
     if (!token) {
-      setError(t("common.sessionExpiredSignIn", locale));
+      setError(t("Session Expired Sign In", locale));
       return;
     }
 
     if (typeof window === "undefined") {
-      setError(t("common.exportUiWebOnly", locale));
+      setError(t("Export Ui Web Only", locale));
       return;
     }
 
@@ -123,7 +123,7 @@ export default function ReportsScreen() {
           return;
         }
 
-        throw new Error(payload?.detail || t("common.failedToExportPdf", locale));
+        throw new Error(payload?.detail || t("Failed To Export Pdf", locale));
       }
 
       const blob = await response.blob();
@@ -142,7 +142,7 @@ export default function ReportsScreen() {
         return;
       }
 
-      setError(err?.message || t("common.failedToExportPdf", locale));
+      setError(err?.message || t("Failed To Export Pdf", locale));
     } finally {
       setExportingPdf(false);
     }
@@ -155,8 +155,8 @@ export default function ReportsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.pdfReports", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Pdf Reports", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -171,9 +171,9 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.pdfReports", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Pdf Reports", locale)}</Text>
           <Text style={styles.heroText}>
-            {t("common.reportsHeroSubtitle", locale)}
+            {t("Reports Hero Subtitle", locale)}
           </Text>
         </View>
 
@@ -184,8 +184,8 @@ export default function ReportsScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.reportsReady", locale)}
-          subtitle={t("common.reportsReadySubtitle", locale)}
+          title={t("Reports Ready", locale)}
+          subtitle={t("Reports Ready Subtitle", locale)}
         />
 
         {error ? (
@@ -195,12 +195,12 @@ export default function ReportsScreen() {
         ) : null}
 
         <SectionCard
-          title={t("common.dailyPdfExport", locale)}
-          subtitle={t("common.dailyPdfExportSubtitle", locale)}
+          title={t("Daily Pdf Export", locale)}
+          subtitle={t("Daily Pdf Export Subtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder={t("common.dateInputPlaceholder", locale)}
+            placeholder={t("Date Input Placeholder", locale)}
             placeholderTextColor="#9a92a3"
             value={reportDate}
             onChangeText={setReportDate}
@@ -212,14 +212,14 @@ export default function ReportsScreen() {
               style={styles.quickButton}
               onPress={() => setReportDate(todayDateInput())}
             >
-              <Text style={styles.quickButtonText}>{t("common.today", locale)}</Text>
+              <Text style={styles.quickButtonText}>{t("Today", locale)}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.quickButton}
               onPress={() => setReportDate(yesterdayDateInput())}
             >
-              <Text style={styles.quickButtonText}>{t("common.yesterday", locale)}</Text>
+              <Text style={styles.quickButtonText}>{t("Yesterday", locale)}</Text>
             </TouchableOpacity>
           </View>
 
@@ -229,43 +229,43 @@ export default function ReportsScreen() {
             disabled={exportingPdf}
           >
             <Text style={styles.primaryButtonText}>
-              {exportingPdf ? t("common.exporting", locale) : t("common.exportPdfReport", locale)}
+              {exportingPdf ? t("Exporting", locale) : t("Export Pdf Report", locale)}
             </Text>
           </TouchableOpacity>
         </SectionCard>
 
         <SectionCard
-          title={t("common.exportReadiness", locale)}
-          subtitle={t("common.exportReadinessSubtitle", locale)}
+          title={t("Export Readiness", locale)}
+          subtitle={t("Export Readiness Subtitle", locale)}
         >
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t("common.selectedDate", locale)}</Text>
+            <Text style={styles.readinessLabel}>{t("Selected Date", locale)}</Text>
             <Text style={styles.readinessValue}>{reportDate}</Text>
           </View>
 
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t("common.exportState", locale)}</Text>
+            <Text style={styles.readinessLabel}>{t("Export State", locale)}</Text>
             <Text style={styles.readinessValue}>
-              {exportingPdf ? t("common.generatingPdf", locale) : t("common.readyToExport", locale)}
+              {exportingPdf ? t("Generating Pdf", locale) : t("Ready To Export", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.reportingWorkflow", locale)}
-          subtitle={t("common.reportingWorkflowSubtitle", locale)}
+          title={t("Reporting Workflow", locale)}
+          subtitle={t("Reporting WorkflowSubtitle", locale)}
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.pickDateStepTitle", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Pick Date Step Title", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.pickDateStepSubtitle", locale)}
+              {t("Pick Date Step Subtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.exportSummaryStepTitle", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Export Summary Step Title", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.exportSummaryStepSubtitle", locale)}
+              {t("Export Summary Step Subtitle", locale)}
             </Text>
           </View>
 

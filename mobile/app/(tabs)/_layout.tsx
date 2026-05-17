@@ -26,27 +26,27 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: t("common.dashboard", locale) }}
+        options={{ title: t("Dashboard", locale) }}
       />
       <Tabs.Screen
         name="appointments"
-        options={{ title: t("common.bookingsTab", locale) }}
+        options={{ title: t("Bookings", locale) }}
       />
       <Tabs.Screen
         name="clients"
-        options={{ title: t("common.clientsTab", locale) }}
+        options={{ title: t("Clients", locale) }}
       />
       <Tabs.Screen
         name="services"
-        options={{ title: t("common.serviceCatalog", locale) }}
+        options={{ title: t("Service Catalog", locale) }}
       />
       <Tabs.Screen
         name="analytics"
-        options={{ title: t("common.insightsTab", locale) }}
+        options={{ title: t("Insights", locale) }}
       />
       <Tabs.Screen
         name="reports"
-        options={{ title: t("common.pdfReports", locale) }}
+        options={{ title: t("Pdf Reports", locale) }}
       />
     </Tabs>
   );

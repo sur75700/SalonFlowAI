@@ -175,8 +175,8 @@ export default function AnalyticsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.insights", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Insights", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -191,9 +191,9 @@ export default function AnalyticsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.insights", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Insights", locale)}</Text>
           <Text style={styles.heroText}>
-            {t("common.analyticsHeroSubtitle", locale)}
+            {t("Analytics Hero Subtitle", locale)}
           </Text>
         </View>
 
@@ -204,8 +204,8 @@ export default function AnalyticsScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.analyticsReady", locale)}
-          subtitle={t("common.analyticsReadySubtitle", locale)}
+          title={t("Analytics Ready", locale)}
+          subtitle={t("Analytics Ready Subtitle", locale)}
         />
 
         {error ? (
@@ -226,26 +226,26 @@ export default function AnalyticsScreen() {
         </View>
 
         <ChartBlock
-          title={t("common.executiveSnapshot", locale)}
-          subtitle={t("common.executiveSnapshotAnalyticsSubtitle", locale)}
+          title={t("Executive Snapshot", locale)}
+          subtitle={t("Executive Snapshot Analytics Subtitle", locale)}
         >
           <View style={styles.executiveGrid}>
             <View style={styles.executiveCard}>
-              <Text style={styles.executiveLabel}>{t("common.completedRevenue", locale)}</Text>
+              <Text style={styles.executiveLabel}>{t("CompletedRevenue", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.completedRevenue ?? analytics?.completed_revenue ?? analytics?.total_revenue ?? analytics?.totals?.completed_revenue, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={styles.executiveCard}>
-              <Text style={styles.executiveLabel}>{t("common.scheduledPipeline", locale)}</Text>
+              <Text style={styles.executiveLabel}>{t("ScheduledPipeline", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.scheduledPipeline ?? analytics?.scheduled_pipeline ?? analytics?.totals?.scheduled_pipeline, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={styles.executiveCard}>
-              <Text style={styles.executiveLabel}>{t("common.cancelledValue", locale)}</Text>
+              <Text style={styles.executiveLabel}>{t("Cancelled Value", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.cancelledValue ?? analytics?.cancelled_value ?? analytics?.totals?.cancelled_value, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
@@ -254,13 +254,13 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title={t("common.revenueTrendline", locale)}
-          subtitle={t("common.revenueTrendlineSubtitle", locale)}
+          title={t("Revenue Trendline", locale)}
+          subtitle={t("Revenue Trendline Subtitle", locale)}
         >
           {!lineChartData.length ? (
             <EmptyState
-              title={t("common.noRevenueDataAvailable", locale)}
-              subtitle={t("common.noRevenueDataAvailableSubtitle", locale)}
+              title={t("No Revenue Data Available", locale)}
+              subtitle={t("No Revenue Data AvailableSubtitle", locale)}
             />
           ) : (
             <View style={styles.chartWrap}>
@@ -293,13 +293,13 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title={t("common.topPerformingServices", locale)}
-          subtitle={t("common.topPerformingServicesSubtitle", locale)}
+          title={t("Top Performing Services", locale)}
+          subtitle={t("Top Performing Services Subtitle", locale)}
         >
           {!barChartData.length ? (
             <EmptyState
-              title={t("common.noServiceAnalyticsYet", locale)}
-              subtitle={t("common.noServiceAnalyticsYetSubtitle", locale)}
+              title={t("No Service Analytics Yet", locale)}
+              subtitle={t("No Service Analytics YetSubtitle", locale)}
             />
           ) : (
             <View style={styles.chartWrap}>
@@ -323,13 +323,13 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title={t("common.bookingStatusDistribution", locale)}
-          subtitle={t("common.bookingStatusDistributionSubtitle", locale)}
+          title={t("Booking Status Distribution", locale)}
+          subtitle={t("Booking Status Distribution Subtitle", locale)}
         >
           {!pieChartData.length ? (
             <EmptyState
-              title={t("common.noStatusDataYet", locale)}
-              subtitle={t("common.noStatusDataYetSubtitle", locale)}
+              title={t("No Status Data Yet", locale)}
+              subtitle={t("No Status Data YetSubtitle", locale)}
             />
           ) : (
             <>
@@ -353,19 +353,19 @@ export default function AnalyticsScreen() {
                   <View
                     style={[styles.legendDot, { backgroundColor: "#1d4ed8" }]}
                   />
-                  <Text style={styles.legendText}>{t("common.scheduled", locale)}</Text>
+                  <Text style={styles.legendText}>{t("Scheduled", locale)}</Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View
                     style={[styles.legendDot, { backgroundColor: "#15803d" }]}
                   />
-                  <Text style={styles.legendText}>{t("common.completed", locale)}</Text>
+                  <Text style={styles.legendText}>{t("Completed", locale)}</Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View
                     style={[styles.legendDot, { backgroundColor: "#b91c1c" }]}
                   />
-                  <Text style={styles.legendText}>{t("common.cancelled", locale)}</Text>
+                  <Text style={styles.legendText}>{t("Cancelled", locale)}</Text>
                 </View>
               </View>
             </>
@@ -373,11 +373,11 @@ export default function AnalyticsScreen() {
         </ChartBlock>
 
         <ChartBlock
-          title={t("common.businessSnapshot", locale)}
-          subtitle={t("common.businessSnapshotSubtitle", locale)}
+          title={t("Business Snapshot", locale)}
+          subtitle={t("Business SnapshotSubtitle", locale)}
         >
           <View style={styles.metricRow}>
-            <Text style={styles.item}>{t("common.totalRevenueSnapshot", locale)}</Text>
+            <Text style={styles.item}>{t("Total Revenue Snapshot", locale)}</Text>
             <Text style={styles.metricValue}>
               {money(
                 analytics?.totals?.total_revenue_snapshot,
@@ -387,26 +387,26 @@ export default function AnalyticsScreen() {
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>{t("common.totalBookings", locale)}</Text>
+            <Text style={styles.item}>{t("Total Bookings", locale)}</Text>
             <Text style={styles.metricValue}>
               {summary?.total_appointments ?? 0}
             </Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>{t("common.todayBookings", locale)}</Text>
+            <Text style={styles.item}>{t("TodayBookings", locale)}</Text>
             <Text style={styles.metricValue}>
               {summary?.today_appointments ?? 0}
             </Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>{t("common.totalClients", locale)}</Text>
+            <Text style={styles.item}>{t("Total Clients", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.item}>{t("common.totalServices", locale)}</Text>
+            <Text style={styles.item}>{t("Total Services", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
           </View>
         </ChartBlock>

@@ -1,8 +1,10 @@
-export const supportedLanguages = ["en", "hy", "ru", "fr"] as const;
-
-export type AppLanguage = (typeof supportedLanguages)[number];
+export type AppLanguage = "en" | "hy" | "ru" | "fr";
+export type Locale = AppLanguage;
 
 export const defaultLanguage: AppLanguage = "en";
+export const defaultLocale: Locale = "en";
+
+export const supportedLanguages: AppLanguage[] = ["en", "hy", "ru", "fr"];
 
 export const languageLabels: Record<AppLanguage, string> = {
   en: "English",
@@ -10,3 +12,7 @@ export const languageLabels: Record<AppLanguage, string> = {
   ru: "Русский",
   fr: "Français",
 };
+
+export function t(key: string, locale: AppLanguage | string = defaultLanguage): string {
+  return key;
+}

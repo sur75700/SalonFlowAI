@@ -153,7 +153,7 @@ export default function AppointmentsScreen() {
       !createForm.values.service_id ||
       !createForm.values.starts_at.trim()
     ) {
-      const message = t("common.bookingFieldsRequired", locale);
+      const message = t("Booking Fields Required", locale);
       setMutationError(message);
       showToast(message, "error");
       return;
@@ -171,7 +171,7 @@ export default function AppointmentsScreen() {
         ...emptyCreateForm,
         starts_at: nextHourDateTimeInput(),
       });
-      showToast(t("common.bookingCreatedSuccessfully", locale), "success");
+      showToast(t("Booking Created Successfully", locale), "success");
     }
   };
 
@@ -211,7 +211,7 @@ export default function AppointmentsScreen() {
       !editForm.values.service_id ||
       !editForm.values.starts_at.trim()
     ) {
-      const message = t("common.bookingFieldsRequired", locale);
+      const message = t("Booking Fields Required", locale);
       setMutationError(message);
       showToast(message, "error");
       return;
@@ -230,7 +230,7 @@ export default function AppointmentsScreen() {
 
       if (ok) {
         cancelEditAppointment();
-        showToast(t("common.bookingUpdatedSuccessfully", locale), "success");
+        showToast(t("Booking Updated Successfully", locale), "success");
       }
     } finally {
       setSavingAppointmentId("");
@@ -239,24 +239,24 @@ export default function AppointmentsScreen() {
 
   const handleCompleteAppointment = async (appointmentId: string) => {
     const ok = await updateAppointmentStatus(appointmentId, "completed");
-    if (ok) showToast(t("common.bookingCompletedSuccessfully", locale), "success");
+    if (ok) showToast(t("Booking Completed Successfully", locale), "success");
   };
 
   const handleCancelAppointment = async (appointmentId: string) => {
     const ok = await updateAppointmentStatus(appointmentId, "cancelled");
-    if (ok) showToast(t("common.bookingCancelledSuccessfully", locale), "success");
+    if (ok) showToast(t("Booking Cancelled Successfully", locale), "success");
   };
 
   const handleDeleteAppointment = async (appointment: AppointmentItem) => {
     const approved = await confirm(
-      t("common.deleteAppointmentTitle", locale),
-      t("common.deleteAppointmentConfirmMessage", locale)
+      t("DeleteAppointmentTitle", locale),
+      t("Delete Appointment Confirm Message", locale)
     );
 
     if (!approved) return;
 
     const ok = await deleteAppointment(appointment.id);
-    if (ok) showToast(t("common.bookingDeletedSuccessfully", locale), "success");
+    if (ok) showToast(t("Booking Deleted Successfully", locale), "success");
   };
 
   const filteredAppointments = useMemo(() => {
@@ -307,8 +307,8 @@ export default function AppointmentsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.bookingsTab", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Bookings", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -323,9 +323,9 @@ export default function AppointmentsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.bookingsTab", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Bookings", locale)}</Text>
           <Text style={styles.heroText}>
-              {t("common.appointmentsHeroSubtitle", locale)}
+              {t("Appointments Hero Subtitle", locale)}
             </Text>
         </View>
 
@@ -336,8 +336,8 @@ export default function AppointmentsScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.bookingFlowConnected", locale)}
-          subtitle={t("common.bookingFlowConnectedSubtitle", locale)}
+          title={t("Booking Flow Connected", locale)}
+          subtitle={t("Booking Flow Connected Subtitle", locale)}
         />
 
         {screenError ? (
@@ -347,10 +347,10 @@ export default function AppointmentsScreen() {
         ) : null}
 
         <SectionCard
-          title={t("common.createAppointment", locale)}
-          subtitle={t("common.createAppointmentSubtitle", locale)}
+          title={t("Create Appointment", locale)}
+          subtitle={t("Create Appointment Subtitle", locale)}
         >
-          <Text style={styles.label}>{t("common.client", locale)}</Text>
+          <Text style={styles.label}>{t("Client", locale)}</Text>
           <View style={styles.pickerWrap}>
             <Picker
               selectedValue={createForm.values.client_id}
@@ -360,7 +360,7 @@ export default function AppointmentsScreen() {
               dropdownIconColor="#f5d27a"
               style={styles.picker}
             >
-              <Picker.Item label={t("common.selectClient", locale)} value="" />
+              <Picker.Item label={t("Select Client", locale)} value="" />
               {clients.map((client) => (
                 <Picker.Item
                   key={client.id}
@@ -371,7 +371,7 @@ export default function AppointmentsScreen() {
             </Picker>
           </View>
 
-          <Text style={styles.label}>{t("common.serviceCatalog", locale)}</Text>
+          <Text style={styles.label}>{t("Service Catalog", locale)}</Text>
           <View style={styles.pickerWrap}>
             <Picker
               selectedValue={createForm.values.service_id}
@@ -381,7 +381,7 @@ export default function AppointmentsScreen() {
               dropdownIconColor="#f5d27a"
               style={styles.picker}
             >
-              <Picker.Item label={t("common.selectService", locale)} value="" />
+              <Picker.Item label={t("Select Service", locale)} value="" />
               {services.map((service) => (
                 <Picker.Item
                   key={service.id}
@@ -397,10 +397,10 @@ export default function AppointmentsScreen() {
             </Picker>
           </View>
 
-          <Text style={styles.label}>{t("common.bookingTime", locale)}</Text>
+          <Text style={styles.label}>{t("Booking Time", locale)}</Text>
           <TextInput
             style={styles.input}
-            placeholder={t("common.dateTimeInputPlaceholder", locale)}
+            placeholder={t("Date Time Input Placeholder", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.starts_at}
             onChangeText={(value) => createForm.setField("starts_at", value)}
@@ -408,21 +408,21 @@ export default function AppointmentsScreen() {
 
           <View style={styles.quickActions}>
             <FilterChip
-              label={t("common.quickNextHour", locale)}
+              label={t("Quick Next Hour", locale)}
               active={false}
               onPress={() =>
                 createForm.setField("starts_at", nextHourDateTimeInput())
               }
             />
             <FilterChip
-              label={t("common.quickTodayEvening", locale)}
+              label={t("Quick Today Evening", locale)}
               active={false}
               onPress={() =>
                 createForm.setField("starts_at", todayEveningDateTimeInput())
               }
             />
             <FilterChip
-              label={t("common.quickTomorrowMorning", locale)}
+              label={t("Quick Tomorrow Morning", locale)}
               active={false}
               onPress={() =>
                 createForm.setField("starts_at", tomorrowMorningDateTimeInput())
@@ -430,10 +430,10 @@ export default function AppointmentsScreen() {
             />
           </View>
 
-          <Text style={styles.label}>{t("common.notes", locale)}</Text>
+          <Text style={styles.label}>{t("Notes", locale)}</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder={t("common.bookingNotesPlaceholder", locale)}
+            placeholder={t("Booking Notes Placeholder", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.notes}
             onChangeText={(value) => createForm.setField("notes", value)}
@@ -442,13 +442,13 @@ export default function AppointmentsScreen() {
 
           <View style={styles.actionRow}>
             <ActionButton
-              title={mutationLoading ? t("common.creating", locale) : t("common.createAppointment", locale)}
+              title={mutationLoading ? t("Creating", locale) : t("Create Appointment", locale)}
               onPress={handleCreateAppointment}
               disabled={mutationLoading}
               tone="success"
             />
             <ActionButton
-              title={t("common.resetForm", locale)}
+              title={t("Reset Form", locale)}
               onPress={() =>
                 createForm.fill({
                   ...emptyCreateForm,
@@ -460,13 +460,13 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t("common.todayBookings", locale)}
-          subtitle={t("common.todayBookingsSubtitle", locale)}
+          title={t("TodayBookings", locale)}
+          subtitle={t("TodayBookingsSubtitle", locale)}
         >
           {todayAppointments.length === 0 ? (
             <EmptyState
-              title={t("common.noBookingsToday", locale)}
-              subtitle={t("common.noBookingsTodaySubtitle", locale)}
+              title={t("No Bookings Today", locale)}
+              subtitle={t("No Bookings TodaySubtitle", locale)}
             />
           ) : (
             todayAppointments.map((appointment) => (
@@ -483,10 +483,10 @@ export default function AppointmentsScreen() {
                 </View>
 
                 <Text style={styles.item}>
-                  {t("common.startLabel", locale)}: {formatDateTime(appointment.starts_at)}
+                  {t("Start Label", locale)}: {formatDateTime(appointment.starts_at)}
                 </Text>
                 <Text style={styles.item}>
-                  {t("common.endLabel", locale)}: {formatDateTime(appointment.ends_at)}
+                  {t("End Label", locale)}: {formatDateTime(appointment.ends_at)}
                 </Text>
               </View>
             ))
@@ -494,13 +494,13 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t("common.upcomingBookings", locale)}
-          subtitle={t("common.upcomingBookingsSubtitle", locale)}
+          title={t("Upcoming Bookings", locale)}
+          subtitle={t("Upcoming Bookings Subtitle", locale)}
         >
           {upcomingAppointments.length === 0 ? (
             <EmptyState
-              title={t("common.noUpcomingBookings", locale)}
-              subtitle={t("common.noUpcomingBookingsSubtitle", locale)}
+              title={t("No Upcoming Bookings", locale)}
+              subtitle={t("No Upcoming BookingsSubtitle", locale)}
             />
           ) : (
             upcomingAppointments.map((appointment) => (
@@ -517,10 +517,10 @@ export default function AppointmentsScreen() {
                 </View>
 
                 <Text style={styles.item}>
-                  {t("common.startLabel", locale)}: {formatDateTime(appointment.starts_at)}
+                  {t("Start Label", locale)}: {formatDateTime(appointment.starts_at)}
                 </Text>
                 <Text style={styles.item}>
-                  {t("common.endLabel", locale)}: {formatDateTime(appointment.ends_at)}
+                  {t("End Label", locale)}: {formatDateTime(appointment.ends_at)}
                 </Text>
               </View>
             ))
@@ -528,51 +528,51 @@ export default function AppointmentsScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t("common.bookingFilters", locale)}
-          subtitle={t("common.bookingFiltersSubtitle", locale)}
+          title={t("Booking Filters", locale)}
+          subtitle={t("Booking Filters Subtitle", locale)}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{todayAppointments.length}</Text>
-              <Text style={styles.summaryLabel}>{t("common.todayLabel", locale)}</Text>
+              <Text style={styles.summaryLabel}>{t("TodayLabel", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{upcomingAppointments.length}</Text>
-              <Text style={styles.summaryLabel}>{t("common.upcomingLabel", locale)}</Text>
+              <Text style={styles.summaryLabel}>{t("Upcoming Label", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{appointments.length}</Text>
-              <Text style={styles.summaryLabel}>{t("common.totalLabel", locale)}</Text>
+              <Text style={styles.summaryLabel}>{t("Total Label", locale)}</Text>
             </View>
           </View>
 
           <View style={styles.filterActions}>
             <ActionButton
-              title={t("common.all", locale)}
+              title={t("All", locale)}
               onPress={() => setAppointmentFilter("all")}
             />
             <ActionButton
-              title={t("common.scheduled", locale)}
+              title={t("Scheduled", locale)}
               onPress={() => setAppointmentFilter("scheduled")}
             />
             <ActionButton
-              title={t("common.completed", locale)}
+              title={t("Completed", locale)}
               onPress={() => setAppointmentFilter("completed")}
             />
             <ActionButton
-              title={t("common.cancelled", locale)}
+              title={t("Cancelled", locale)}
               onPress={() => setAppointmentFilter("cancelled")}
             />
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.bookingRegistry", locale)}
-          subtitle={t("common.bookingRegistrySubtitle", locale)}
+          title={t("Booking Registry", locale)}
+          subtitle={t("Booking RegistrySubtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}
-            placeholder={t("common.searchAppointments", locale)}
+            placeholder={t("Search Appointments", locale)}
             placeholderTextColor="#9a92a3"
             value={appointmentSearch}
             onChangeText={setAppointmentSearch}
@@ -585,12 +585,12 @@ export default function AppointmentsScreen() {
                     key={filter}
                     label={
                       filter === "all"
-                        ? t("common.all", locale)
+                        ? t("All", locale)
                         : filter === "scheduled"
-                        ? t("common.scheduled", locale)
+                        ? t("Scheduled", locale)
                         : filter === "completed"
-                        ? t("common.completed", locale)
-                        : t("common.cancelled", locale)
+                        ? t("Completed", locale)
+                        : t("Cancelled", locale)
                     }
                     active={appointmentFilter === filter}
                     onPress={() => setAppointmentFilter(filter)}
@@ -601,20 +601,20 @@ export default function AppointmentsScreen() {
 
           {noAppointmentsAtAll ? (
             <EmptyState
-              title={t("common.noAppointmentsYet", locale)}
-              subtitle={t("common.noAppointmentsYetSubtitle", locale)}
+              title={t("No Appointments Yet", locale)}
+              subtitle={t("No Appointments Yet Subtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title={t("common.noMatchingAppointments", locale)}
-              subtitle={t("common.noMatchingAppointmentsSubtitle", locale)}
+              title={t("No Matching Appointments", locale)}
+              subtitle={t("No Matching AppointmentsSubtitle", locale)}
             />
           ) : (
             filteredAppointments.map((appointment) => (
               <View key={appointment.id} style={styles.appointmentCard}>
                 {editingAppointmentId === appointment.id ? (
                   <>
-                    <Text style={styles.label}>{t("common.client", locale)}</Text>
+                    <Text style={styles.label}>{t("Client", locale)}</Text>
                     <View style={styles.pickerWrap}>
                       <Picker
                         selectedValue={editForm.values.client_id}
@@ -624,7 +624,7 @@ export default function AppointmentsScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label={t("common.selectClient", locale)} value="" />
+                        <Picker.Item label={t("Select Client", locale)} value="" />
                         {clients.map((client) => (
                           <Picker.Item
                             key={client.id}
@@ -635,7 +635,7 @@ export default function AppointmentsScreen() {
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>{t("common.serviceCatalog", locale)}</Text>
+                    <Text style={styles.label}>{t("Service Catalog", locale)}</Text>
                     <View style={styles.pickerWrap}>
                       <Picker
                         selectedValue={editForm.values.service_id}
@@ -645,7 +645,7 @@ export default function AppointmentsScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label={t("common.selectService", locale)} value="" />
+                        <Picker.Item label={t("Select Service", locale)} value="" />
                         {services.map((service) => (
                           <Picker.Item
                             key={service.id}
@@ -662,10 +662,10 @@ export default function AppointmentsScreen() {
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>{t("common.startLabel", locale)}</Text>
+                    <Text style={styles.label}>{t("Start Label", locale)}</Text>
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.dateTimeInputPlaceholder", locale)}
+                      placeholder={t("Date Time Input Placeholder", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.starts_at}
                       onChangeText={(value) =>
@@ -673,7 +673,7 @@ export default function AppointmentsScreen() {
                       }
                     />
 
-                    <Text style={styles.label}>{t("common.status", locale)}</Text>
+                    <Text style={styles.label}>{t("Status", locale)}</Text>
                     <View style={styles.pickerWrap}>
                       <Picker
                         selectedValue={editForm.values.status}
@@ -683,16 +683,16 @@ export default function AppointmentsScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label={t("common.scheduled", locale)} value="scheduled" />
-                        <Picker.Item label={t("common.completed", locale)} value="completed" />
-                        <Picker.Item label={t("common.cancelled", locale)} value="cancelled" />
+                        <Picker.Item label={t("Scheduled", locale)} value="scheduled" />
+                        <Picker.Item label={t("Completed", locale)} value="completed" />
+                        <Picker.Item label={t("Cancelled", locale)} value="cancelled" />
                       </Picker>
                     </View>
 
-                    <Text style={styles.label}>{t("common.notes", locale)}</Text>
+                    <Text style={styles.label}>{t("Notes", locale)}</Text>
                     <TextInput
                       style={[styles.input, styles.textArea]}
-                      placeholder={t("common.notes", locale)}
+                      placeholder={t("Notes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.notes}
                       onChangeText={(value) => editForm.setField("notes", value)}
@@ -703,14 +703,14 @@ export default function AppointmentsScreen() {
                       <ActionButton
                         title={
                           savingAppointmentId === appointment.id
-                            ? t("common.working", locale)
-                            : t("common.save", locale)
+                            ? t("Working", locale)
+                            : t("Save", locale)
                         }
                         onPress={() => handleSaveAppointment(appointment.id)}
                         disabled={savingAppointmentId === appointment.id}
                         tone="success"
                       />
-                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditAppointment} />
+                      <ActionButton title={t("Cancel", locale)} onPress={cancelEditAppointment} />
                     </View>
                   </>
                 ) : (
@@ -729,31 +729,31 @@ export default function AppointmentsScreen() {
                     </View>
 
                     <Text style={styles.item}>
-                      {t("common.startLabel", locale)}: {formatDateTime(appointment.starts_at)}
+                      {t("Start Label", locale)}: {formatDateTime(appointment.starts_at)}
                     </Text>
                     <Text style={styles.item}>
-                      {t("common.endLabel", locale)}: {formatDateTime(appointment.ends_at)}
+                      {t("End Label", locale)}: {formatDateTime(appointment.ends_at)}
                     </Text>
                     <Text style={styles.item}>
-                      {t("common.notes", locale)}: {appointment.notes || "-"}
+                      {t("Notes", locale)}: {appointment.notes || "-"}
                     </Text>
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={t("common.edit", locale)}
+                        title={t("Edit", locale)}
                         onPress={() => startEditAppointment(appointment)}
                         tone="success"
                       />
                       {appointment.status === "scheduled" ? (
                         <>
                           <ActionButton
-                            title={workingId === appointment.id ? t("common.working", locale) : t("common.complete", locale)}
+                            title={workingId === appointment.id ? t("Working", locale) : t("Complete", locale)}
                             onPress={() => handleCompleteAppointment(appointment.id)}
                             disabled={workingId === appointment.id}
                             tone="success"
                           />
                           <ActionButton
-                            title={workingId === appointment.id ? t("common.working", locale) : t("common.cancel", locale)}
+                            title={workingId === appointment.id ? t("Working", locale) : t("Cancel", locale)}
                             onPress={() => handleCancelAppointment(appointment.id)}
                             disabled={workingId === appointment.id}
                             tone="warning"
@@ -761,7 +761,7 @@ export default function AppointmentsScreen() {
                         </>
                       ) : null}
                       <ActionButton
-                        title={workingId === appointment.id ? t("common.working", locale) : t("common.delete", locale)}
+                        title={workingId === appointment.id ? t("Working", locale) : t("Delete", locale)}
                         onPress={() => handleDeleteAppointment(appointment)}
                         disabled={workingId === appointment.id}
                         tone="danger"
