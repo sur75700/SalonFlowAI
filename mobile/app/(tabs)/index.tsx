@@ -18,6 +18,7 @@ import SectionCard from "../../components/dashboard/SectionCard";
 import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
+import EmptyState from "../../components/ui/EmptyState";
 import { useSummaryData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -59,7 +60,7 @@ export default function OverviewScreen() {
   const { locale } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
-  const { summary, loading, refreshing, error, refresh } = useSummaryData(
+  const { summary, loading, refreshing, error, reload, refresh } = useSummaryData(
     token,
     clearToken
   );
@@ -73,6 +74,9 @@ export default function OverviewScreen() {
     { label: "Cancelled", value: summary?.cancelled_appointments ?? 0 },
     { label: "Today", value: summary?.today_appointments ?? 0 },
   ];
+
+  const hasNoSummaryActivity =
+    !!summary && statCards.every((card) => Number(card.value) === 0);
 
   if (booting) {
     return <OverviewSkeleton />;
@@ -121,7 +125,25 @@ export default function OverviewScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>Dashboard sync needs attention</Text>
             <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? "Retrying..." : "Retry"}
+                tone="warning"
+                disabled={refreshing}
+                onPress={reload}
+              />
+            </View>
+          </View>
+        ) : null}
+
+        {hasNoSummaryActivity ? (
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              title="No dashboard activity yet"
+              subtitle="Create your first client, service, or appointment to activate the command center metrics."
+            />
           </View>
         ) : null}
 
@@ -340,11 +362,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  emptyWrap: {
+    marginBottom: 20,
+  },
 
   quickActionsGrid: {
     flexDirection: "row",
