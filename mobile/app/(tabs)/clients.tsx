@@ -242,7 +242,16 @@ export default function ClientsScreen() {
 
         {screenError ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>Client registry needs attention</Text>
             <Text style={styles.errorText}>{screenError}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? "Retrying..." : "Retry"}
+                tone="warning"
+                disabled={refreshing || mutationLoading}
+                onPress={reload}
+              />
+            </View>
           </View>
         ) : null}
 
@@ -349,7 +358,7 @@ export default function ClientsScreen() {
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={workingId === client.id ? "Working..." : "Save"}
+                        title={workingId === client.id ? t("Working", locale) : t("Save", locale)}
                         onPress={() => handleSaveClient(client.id)}
                         disabled={workingId === client.id}
                         tone="success"
@@ -371,7 +380,7 @@ export default function ClientsScreen() {
                         tone="success"
                       />
                       <ActionButton
-                        title={workingId === client.id ? "Working..." : "Delete"}
+                        title={workingId === client.id ? t("Working", locale) : t("Delete", locale)}
                         onPress={() => handleDeleteClient(client)}
                         disabled={workingId === client.id}
                         tone="danger"
@@ -484,9 +493,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
+  },
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
   loadingText: {
     color: "#ffffff",
