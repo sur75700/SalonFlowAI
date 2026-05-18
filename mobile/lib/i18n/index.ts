@@ -65,6 +65,11 @@ const dict: Record<string, string> = {
   "Phone": "Phone",
   "Email": "Email",
   "Notes": "Notes",
+  "Retry": "Retry",
+  "Retrying": "Retrying",
+  "Exporting": "Exporting",
+  "Review Performance Step Title": "3. Review salon performance",
+  "Review Performance Step Subtitle": "The report includes totals and appointments for the selected day.",
 };
 
 export const translations = {
