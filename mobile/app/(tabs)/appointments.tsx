@@ -342,7 +342,16 @@ export default function AppointmentsScreen() {
 
         {screenError ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>Booking flow needs attention</Text>
             <Text style={styles.errorText}>{screenError}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? "Retrying..." : "Retry"}
+                tone="warning"
+                disabled={refreshing || mutationLoading}
+                onPress={reload}
+              />
+            </View>
           </View>
         ) : null}
 
@@ -925,11 +934,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
 
   summaryGrid: {
     flexDirection: "row",
