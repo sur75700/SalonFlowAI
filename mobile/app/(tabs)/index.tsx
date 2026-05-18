@@ -125,11 +125,11 @@ export default function OverviewScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>Dashboard sync needs attention</Text>
+            <Text style={styles.errorTitle}>{t("Dashboard sync needs attention", locale)}</Text>
             <Text style={styles.errorText}>{error}</Text>
             <View style={styles.errorActions}>
               <ActionButton
-                title={refreshing ? "Retrying..." : "Retry"}
+                title={refreshing ? t("Retrying", locale) : t("Retry", locale)}
                 tone="warning"
                 disabled={refreshing}
                 onPress={reload}

@@ -190,7 +190,7 @@ export default function ReportsScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>Report export needs attention</Text>
+            <Text style={styles.errorTitle}>{t("Report export needs attention", locale)}</Text>
             <Text style={styles.errorText}>{error}</Text>
             <View style={styles.errorActions}>
               <TouchableOpacity

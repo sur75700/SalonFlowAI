@@ -289,11 +289,11 @@ export default function ServicesScreen() {
 
         {screenError ? (
           <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>Service catalog needs attention</Text>
+            <Text style={styles.errorTitle}>{t("Service catalog needs attention", locale)}</Text>
             <Text style={styles.errorText}>{screenError}</Text>
             <View style={styles.errorActions}>
               <ActionButton
-                title={refreshing ? "Retrying..." : "Retry"}
+                title={refreshing ? t("Retrying", locale) : t("Retry", locale)}
                 tone="warning"
                 disabled={refreshing || mutationLoading}
                 onPress={reload}
