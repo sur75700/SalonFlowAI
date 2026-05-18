@@ -190,7 +190,25 @@ export default function ReportsScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>Report export needs attention</Text>
             <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.errorActions}>
+              <TouchableOpacity
+                style={[styles.retryButton, exportingPdf && styles.disabledButton]}
+                onPress={exportPdfReport}
+                disabled={exportingPdf}
+              >
+                <Text style={styles.retryButtonText}>
+                  {exportingPdf ? t("Exporting", locale) : t("Retry", locale)}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => setError("")}
+              >
+                <Text style={styles.secondaryButtonText}>{t("Cancel", locale)}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null}
 
@@ -270,9 +288,9 @@ export default function ReportsScreen() {
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>3. Review salon performance</Text>
+            <Text style={styles.infoTitle}>{t("Review Performance Step Title", locale)}</Text>
             <Text style={styles.infoText}>
-              The report includes totals and appointments for the selected day.
+              {t("Review Performance Step Subtitle", locale)}
             </Text>
           </View>
         </SectionCard>
@@ -389,11 +407,56 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  retryButton: {
+    backgroundColor: "#78350f",
+    borderWidth: 1,
+    borderColor: "#f59e0b",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  secondaryButton: {
+    backgroundColor: "#171b27",
+    borderWidth: 1,
+    borderColor: "#4b556d",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  secondaryButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  disabledButton: {
+    opacity: 0.55,
+  },
 
   readinessCard: {
     backgroundColor: "#141824",
