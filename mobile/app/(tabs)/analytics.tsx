@@ -11,6 +11,7 @@ import {
 import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
 
 import ChartBlock from "../../components/dashboard/ChartBlock";
+import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import DevLoginCard from "../../components/auth/DevLoginCard";
 import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
@@ -68,7 +69,7 @@ export default function AnalyticsScreen() {
   const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
-  const { summary, analytics, loading, refreshing, error, refresh } =
+  const { summary, analytics, loading, refreshing, error, reload, refresh } =
     useAnalyticsData(token, clearToken);
 
   const lineChartData = useMemo(() => {
@@ -210,7 +211,16 @@ export default function AnalyticsScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>Analytics sync needs attention</Text>
             <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? "Retrying..." : "Retry"}
+                tone="warning"
+                disabled={refreshing}
+                onPress={reload}
+              />
+            </View>
           </View>
         ) : null}
 
@@ -527,11 +537,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
 
   executiveGrid: {
     flexDirection: "row",
