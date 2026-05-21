@@ -114,29 +114,36 @@ export function useAnalyticsData(
         }),
       ]);
 
+      const totals = analyticsRes.data?.totals ?? {};
+
       setSummary(summaryRes.data);
       setAnalytics({
         ...analyticsRes.data,
         completedRevenue:
           analyticsRes.data.completedRevenue ??
           analyticsRes.data.completed_revenue ??
+          totals.completed_revenue ??
           analyticsRes.data.total_revenue ??
           0,
         scheduledPipeline:
           analyticsRes.data.scheduledPipeline ??
           analyticsRes.data.scheduled_pipeline ??
+          totals.scheduled_pipeline ??
           0,
         cancelledValue:
           analyticsRes.data.cancelledValue ??
           analyticsRes.data.cancelled_value ??
+          totals.cancelled_value ??
           0,
         avgCompletedTicket:
           analyticsRes.data.avgCompletedTicket ??
           analyticsRes.data.avg_completed_ticket ??
+          totals.avg_completed_booking_value ??
           0,
         topPerformingServices:
           analyticsRes.data.topPerformingServices ??
           analyticsRes.data.top_performing_services ??
+          analyticsRes.data.top_services ??
           [],
       });
     } catch (err: any) {
