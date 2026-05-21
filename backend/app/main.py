@@ -11,7 +11,6 @@ from app.api.clients import router as clients_router
 from app.api.reports import router as reports_router
 from app.api.services import router as services_router
 from app.db.mongo import close_mongo_connection, connect_to_mongo
-from app.api.routes.analytics import router as analytics_router
 
 
 @asynccontextmanager
@@ -44,4 +43,3 @@ app.include_router(services_router, prefix="/services", tags=["services"])
 app.include_router(reports_router, prefix="/reports", tags=["reports"])
 app.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 
-app.include_router(analytics_router)
