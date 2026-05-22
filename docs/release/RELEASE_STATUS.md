@@ -6,13 +6,13 @@ phase-7-royal-hardening
 
 ## Current release state
 
-SalonFlowAI is in Phase 8E release-readiness and live QA polish.
+SalonFlowAI is in Phase 8I final release status sync.
 
-The project has moved beyond recovery and bug-rescue into production-style hardening, mobile build readiness, documentation, and real-device QA preparation.
+The project has moved beyond recovery and bug-rescue into production-style hardening, mobile build readiness, release documentation, final web QA, production security audit, and Render production verification.
 
 ## Latest verified commit
 
-6d77210 phase 8e rewrite mobile readme
+927aaad phase 8e update release status
 
 ## Stable checkpoints
 
@@ -22,6 +22,10 @@ The project has moved beyond recovery and bug-rescue into production-style harde
 - phase-8b-mobile-eas-ready
 - phase-8c-mobile-api-release-safe
 - phase-8d-android-preview-apk-built
+- phase-8e-release-docs-ready
+- phase-8f-final-web-qa-ready
+- phase-8g-production-security-audit-ready
+- phase-8h-production-render-env-verified
 
 ## Phase 8A — Backend analytics cleanup
 
@@ -76,19 +80,65 @@ Verified:
 
 ## Phase 8E — Release QA documentation
 
-Status: in progress
+Status: complete
 
-Completed:
+Verified:
 
 - Release QA runbook added
 - Mobile README rewritten from default Expo starter README into SalonFlowAI-specific mobile documentation
+- Release status updated for Phase 8 release-readiness
 
-Remaining:
+Tag:
 
-- Final web QA pass
-- Android real-device APK QA
-- Release checkpoint tag after QA
-- Optional production/security environment audit
+phase-8e-release-docs-ready
+
+## Phase 8F — Final web QA
+
+Status: complete
+
+Verified:
+
+- Local backend health passed
+- Local frontend web runtime passed
+- Protected analytics token flow passed
+- Final web QA checkpoint tag created
+
+Tag:
+
+phase-8f-final-web-qa-ready
+
+## Phase 8G — Production security audit
+
+Status: complete
+
+Verified:
+
+- Local secret files are ignored
+- No real secrets are tracked
+- Local JWT secret is not using the default fallback
+- Backend analytics remains protected locally
+- Security audit checkpoint tag created
+
+Tag:
+
+phase-8g-production-security-audit-ready
+
+## Phase 8H — Production Render verification
+
+Status: complete
+
+Verified:
+
+- Render production health endpoint returns 200 OK
+- Render production /analytics/dashboard without token returns 401 Unauthorized
+- Render production login returns a token
+- Render production /analytics/dashboard with token returns AMD analytics data
+- Main branch was patched to remove legacy public analytics route
+- Production public analytics leak is closed
+
+Tag:
+
+phase-8h-production-render-env-verified
 
 ## Verified runtime state
 
@@ -100,17 +150,22 @@ Frontend / Expo web runtime:
 
 http://localhost:8081
 
+Production backend:
+
+https://salonflowai-backend.onrender.com
+
 Expected backend behavior:
 
 - /healthz -> 200 OK
 - /analytics/dashboard without token -> 401 Unauthorized
+- /analytics/dashboard with token -> 200 OK and AMD analytics data
 
-Protected analytics with login token has been verified with current AMD values:
+Current verified production analytics values:
 
-- completed_revenue: 12050 AMD
+- completed_revenue: 21050 AMD
 - scheduled_pipeline: 53000 AMD
 - cancelled_value: 22000 AMD
-- avg_completed_booking_value: 6025 AMD
+- avg_completed_booking_value: 7016.67 AMD
 
 ## Mobile QA gates
 
@@ -157,6 +212,12 @@ If Android QA passes, create tag:
 
 phase-8d-android-preview-apk-tested
 
+## Remaining work
+
+- Android real-device APK QA
+- Optional iOS/TestFlight path later
+- Optional production monitoring and final sales/demo packaging
+
 ## Release safety rules
 
 - Do not commit .env
@@ -165,9 +226,10 @@ phase-8d-android-preview-apk-tested
 - Do not commit generated PDF reports
 - Keep analytics protected
 - Verify Git clean before stopping work
+- Never print secrets in terminal logs, docs, or chat
 
 ## Release conclusion
 
 SalonFlowAI is currently in a strong release-readiness state.
 
-The backend is protected and verified, the mobile app is EAS-ready, the Android preview APK has been built, release-safe API configuration is active, and documentation is being finalized for repeatable QA and deployment workflows.
+The backend is protected locally and in Render production, the mobile app is EAS-ready, the Android preview APK has been built, release-safe API configuration is active, final release documentation is synchronized, and the production analytics leak has been closed.
