@@ -1,3 +1,5 @@
+import { translations as nestedTranslations } from "../../translations";
+
 export type AppLanguage = "en" | "hy" | "ru";
 export type AppLocale = AppLanguage;
 export type Locale = AppLanguage;
@@ -12,6 +14,94 @@ export const languageLabels: Record<AppLanguage, string> = {
   hy: "Հայերեն",
   ru: "Русский",
 };
+
+
+const bridgeMap: Record<string, string> = {
+  "Dashboard": "dashboard.title",
+  "Bookings": "bookings.title",
+  "Clients": "nav.clients",
+  "Service Catalog": "services.title",
+  "Insights": "insights.title",
+  "Pdf Reports": "reports.title",
+  "Workspace": "workspace.title",
+
+  "Operations Ready": "common.operationsReady",
+  "Command Navigation": "dashboard.commandNavigation",
+  "Command NavigationSubtitle": "dashboard.commandNavigationSubtitle",
+  "Quick Actions": "dashboard.quickActions",
+  "Quick Actions Subtitle": "dashboard.quickActionsSubtitle",
+  "Executive Snapshot": "common.executiveSnapshot",
+  "Executive Snapshot Subtitle": "dashboard.executiveSnapshotSubtitle",
+  "Open Bookings": "dashboard.openBookings",
+  "Open Clients": "dashboard.openClients",
+  "Open Service Catalog": "dashboard.openServiceCatalog",
+  "Open Insights": "dashboard.openInsights",
+  "Open Pdf Reports": "dashboard.openPdfReports",
+  "Dashboard Hero Subtitle": "dashboard.heroSubtitle",
+
+  "Today": "common.today",
+  "Total": "common.total",
+  "Active": "common.active",
+  "Inactive": "common.inactive",
+  "Scheduled": "common.scheduledLabel",
+  "Completed": "common.completedLabel",
+  "Cancelled": "common.cancelledLabel",
+  "Total Bookings": "common.totalBookingsLabel",
+  "Total Clients": "clients.totalClients",
+  "Total Services": "common.servicesLabel",
+  "Services": "common.servicesLabel",
+  "Selected Date": "common.selectedDate",
+  "Export State": "common.exportState",
+  "Ready To Export": "common.readyToExport",
+  "Generating Pdf": "common.generatingPdf",
+
+  "Analytics Hero Subtitle": "insights.heroSubtitle",
+  "Analytics Ready": "insights.sessionReady",
+  "CompletedRevenue": "insights.completedRevenue",
+  "ScheduledPipeline": "insights.scheduledPipeline",
+  "Cancelled Value": "insights.cancelledValue",
+  "Avg Completed Ticket": "insights.avgCompletedTicket",
+  "Revenue Trendline": "insights.revenueMomentum",
+  "Revenue Trendline Subtitle": "insights.revenueMomentumSubtitle",
+  "Top Performing Services": "insights.topRevenueServices",
+  "Top Performing Services Subtitle": "insights.topRevenueServicesSubtitle",
+  "Booking Status Distribution": "insights.bookingStatusMix",
+  "Booking Status Distribution Subtitle": "insights.bookingStatusMixSubtitle",
+
+  "Reports Hero Subtitle": "reports.heroSubtitle",
+  "Daily Pdf Export": "reports.dailyPdfExport",
+  "Daily Pdf Export Subtitle": "reports.dailyPdfExportSubtitle",
+  "Reporting Workflow": "reports.reportingWorkflow",
+  "Reporting WorkflowSubtitle": "reports.reportingWorkflowSubtitle",
+  "Pick Date Step Title": "reports.stepPickDate",
+  "Pick Date Step Subtitle": "reports.stepPickDateSubtitle",
+  "Export Summary Step Title": "reports.stepExportSummary",
+  "Export Summary Step Subtitle": "reports.stepExportSummarySubtitle",
+  "Review Performance Step Title": "reports.stepReviewPerformance",
+  "Review Performance Step Subtitle": "reports.stepReviewPerformanceSubtitle",
+
+  "Client Snapshot": "common.clientSnapshot",
+  "Client Registry Hero Subtitle": "clients.heroSubtitle",
+  "Client Snapshot Subtitle": "clients.snapshotSubtitle",
+  "Create ClientEntry": "clients.createClientEntry",
+
+  "Service CatalogHeroSubtitle": "services.heroSubtitle",
+  "Catalog Snapshot": "services.catalogSnapshot",
+  "Catalog SnapshotSubtitle": "services.catalogSnapshotSubtitle",
+  "Create ServiceEntry": "services.createServiceEntry",
+};
+
+function readNestedTranslation(locale: AppLanguage, path: string): string | undefined {
+  const source = nestedTranslations[locale] ?? nestedTranslations.en;
+  const value = path
+    .split(".")
+    .reduce<unknown>((acc, part) => {
+      if (!acc || typeof acc !== "object") return undefined;
+      return (acc as Record<string, unknown>)[part];
+    }, source);
+
+  return typeof value === "string" ? value : undefined;
+}
 
 const dict: Record<string, string> = {
   "Dashboard": "Dashboard",
@@ -84,5 +174,11 @@ export const translations = {
 };
 
 export function t(key: string, locale: AppLanguage = defaultLanguage): string {
+  const bridgePath = bridgeMap[key];
+  if (bridgePath) {
+    const bridged = readNestedTranslation(locale, bridgePath);
+    if (bridged) return bridged;
+  }
+
   return translations[locale]?.[key] ?? translations.en[key] ?? key;
 }
