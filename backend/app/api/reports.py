@@ -1,12 +1,15 @@
 from datetime import UTC, date, datetime, time
 from io import BytesIO
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
@@ -14,6 +17,129 @@ from app.api.deps import require_auth
 from app.db.mongo import get_database
 
 router = APIRouter()
+
+
+PDF_TRANSLATIONS = {
+    "en": {
+        "title": "SalonFlow AI - Daily Summary Report",
+        "report_date": "Report date",
+        "generated_at": "Generated at",
+        "overview": "Overview",
+        "metric": "Metric",
+        "value": "Value",
+        "total_clients": "Total clients",
+        "total_services": "Total services",
+        "total_appointments": "Total appointments",
+        "appointments_on_date": "Appointments on report date",
+        "scheduled_on_date": "Scheduled on report date",
+        "completed_on_date": "Completed on report date",
+        "cancelled_on_date": "Cancelled on report date",
+        "appointments": "Appointments",
+        "no_appointments": "No appointments found for this date.",
+        "start": "Start",
+        "client": "Client",
+        "service": "Service",
+        "status": "Status",
+        "notes": "Notes",
+        "scheduled": "Scheduled",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+    },
+    "hy": {
+        "title": "SalonFlow AI - Օրական ամփոփ հաշվետվություն",
+        "report_date": "Հաշվետվության ամսաթիվ",
+        "generated_at": "Ստեղծվել է",
+        "overview": "Ամփոփում",
+        "metric": "Ցուցիչ",
+        "value": "Արժեք",
+        "total_clients": "Ընդհանուր հաճախորդներ",
+        "total_services": "Ընդհանուր ծառայություններ",
+        "total_appointments": "Ընդհանուր ամրագրումներ",
+        "appointments_on_date": "Ամրագրումներ ընտրված օրը",
+        "scheduled_on_date": "Պլանավորված ընտրված օրը",
+        "completed_on_date": "Ավարտված ընտրված օրը",
+        "cancelled_on_date": "Չեղարկված ընտրված օրը",
+        "appointments": "Ամրագրումներ",
+        "no_appointments": "Այս ամսաթվի համար ամրագրումներ չեն գտնվել։",
+        "start": "Սկիզբ",
+        "client": "Հաճախորդ",
+        "service": "Ծառայություն",
+        "status": "Կարգավիճակ",
+        "notes": "Նշումներ",
+        "scheduled": "Պլանավորված",
+        "completed": "Ավարտված",
+        "cancelled": "Չեղարկված",
+    },
+    "ru": {
+        "title": "SalonFlow AI - Ежедневный сводный отчет",
+        "report_date": "Дата отчета",
+        "generated_at": "Создано",
+        "overview": "Сводка",
+        "metric": "Показатель",
+        "value": "Значение",
+        "total_clients": "Всего клиентов",
+        "total_services": "Всего услуг",
+        "total_appointments": "Всего записей",
+        "appointments_on_date": "Записи на выбранную дату",
+        "scheduled_on_date": "Запланировано на дату",
+        "completed_on_date": "Завершено на дату",
+        "cancelled_on_date": "Отменено на дату",
+        "appointments": "Записи",
+        "no_appointments": "На эту дату записи не найдены.",
+        "start": "Начало",
+        "client": "Клиент",
+        "service": "Услуга",
+        "status": "Статус",
+        "notes": "Заметки",
+        "scheduled": "Запланировано",
+        "completed": "Завершено",
+        "cancelled": "Отменено",
+    },
+}
+
+
+def normalize_locale(value: str | None) -> str:
+    if value in {"en", "hy", "ru"}:
+        return value
+    return "en"
+
+
+def pdf_text(locale: str, key: str) -> str:
+    return PDF_TRANSLATIONS.get(locale, PDF_TRANSLATIONS["en"]).get(
+        key,
+        PDF_TRANSLATIONS["en"].get(key, key),
+    )
+
+
+def pdf_status(locale: str, value: str | None) -> str:
+    status = (value or "").lower()
+    if status in {"scheduled", "completed", "cancelled"}:
+        return pdf_text(locale, status)
+    return value or "-"
+
+
+def resolve_pdf_fonts() -> tuple[str, str]:
+    candidates = [
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf"),
+    ]
+    bold_candidates = [
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf"),
+    ]
+
+    regular = next((item for item in candidates if item.exists()), None)
+    bold = next((item for item in bold_candidates if item.exists()), None)
+
+    if regular and bold:
+        try:
+            pdfmetrics.registerFont(TTFont("SalonFlowSans", str(regular)))
+            pdfmetrics.registerFont(TTFont("SalonFlowSansBold", str(bold)))
+            return "SalonFlowSans", "SalonFlowSansBold"
+        except Exception:
+            pass
+
+    return "Helvetica", "Helvetica-Bold"
 
 
 def fmt_dt(value: str | None) -> str:
@@ -29,8 +155,11 @@ def fmt_dt(value: str | None) -> str:
 @router.get("/daily-summary/pdf")
 async def export_daily_summary_pdf(
     date_str: str | None = Query(default=None, alias="date"),
+    locale: str | None = Query(default="en"),
     _: dict = Depends(require_auth),
 ):
+    locale = normalize_locale(locale)
+
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
@@ -73,11 +202,13 @@ async def export_daily_summary_pdf(
         bottomMargin=18 * mm,
     )
 
+    regular_font, bold_font = resolve_pdf_fonts()
+
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         "TitleCustom",
         parent=styles["Title"],
-        fontName="Helvetica-Bold",
+        fontName=bold_font,
         fontSize=22,
         leading=28,
         textColor=colors.HexColor("#111111"),
@@ -86,7 +217,7 @@ async def export_daily_summary_pdf(
     meta_style = ParagraphStyle(
         "MetaCustom",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=regular_font,
         fontSize=10,
         leading=14,
         textColor=colors.HexColor("#555555"),
@@ -95,7 +226,7 @@ async def export_daily_summary_pdf(
     section_style = ParagraphStyle(
         "SectionCustom",
         parent=styles["Heading2"],
-        fontName="Helvetica-Bold",
+        fontName=bold_font,
         fontSize=14,
         leading=18,
         textColor=colors.HexColor("#222222"),
@@ -105,7 +236,7 @@ async def export_daily_summary_pdf(
     body_style = ParagraphStyle(
         "BodyCustom",
         parent=styles["Normal"],
-        fontName="Helvetica",
+        fontName=regular_font,
         fontSize=10,
         leading=14,
         textColor=colors.HexColor("#222222"),
@@ -113,22 +244,33 @@ async def export_daily_summary_pdf(
 
     story = []
 
-    story.append(Paragraph("SalonFlow AI - Daily Summary Report", title_style))
-    story.append(Paragraph(f"Report date: {report_date.isoformat()}", meta_style))
-    story.append(Paragraph(f"Generated at: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}", meta_style))
+    story.append(Paragraph(pdf_text(locale, "title"), title_style))
+    story.append(
+        Paragraph(
+            f'{pdf_text(locale, "report_date")}: {report_date.isoformat()}',
+            meta_style,
+        )
+    )
+    story.append(
+        Paragraph(
+            f'{pdf_text(locale, "generated_at")}: '
+            f"{datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
+            meta_style,
+        )
+    )
     story.append(Spacer(1, 6))
 
-    story.append(Paragraph("Overview", section_style))
+    story.append(Paragraph(pdf_text(locale, "overview"), section_style))
 
     overview_rows = [
-        ["Metric", "Value"],
-        ["Total clients", str(total_clients)],
-        ["Total services", str(total_services)],
-        ["Total appointments", str(total_appointments)],
-        ["Appointments on report date", str(today_appointments)],
-        ["Scheduled on report date", str(scheduled_count)],
-        ["Completed on report date", str(completed_count)],
-        ["Cancelled on report date", str(cancelled_count)],
+        [pdf_text(locale, "metric"), pdf_text(locale, "value")],
+        [pdf_text(locale, "total_clients"), str(total_clients)],
+        [pdf_text(locale, "total_services"), str(total_services)],
+        [pdf_text(locale, "total_appointments"), str(total_appointments)],
+        [pdf_text(locale, "appointments_on_date"), str(today_appointments)],
+        [pdf_text(locale, "scheduled_on_date"), str(scheduled_count)],
+        [pdf_text(locale, "completed_on_date"), str(completed_count)],
+        [pdf_text(locale, "cancelled_on_date"), str(cancelled_count)],
     ]
 
     overview_table = Table(
@@ -158,19 +300,25 @@ async def export_daily_summary_pdf(
     story.append(overview_table)
     story.append(Spacer(1, 12))
 
-    story.append(Paragraph("Appointments", section_style))
+    story.append(Paragraph(pdf_text(locale, "appointments"), section_style))
 
     if not appointments:
-        story.append(Paragraph("No appointments found for this date.", body_style))
+        story.append(Paragraph(pdf_text(locale, "no_appointments"), body_style))
     else:
-        rows = [["Start", "Client", "Service", "Status", "Notes"]]
+        rows = [[
+            pdf_text(locale, "start"),
+            pdf_text(locale, "client"),
+            pdf_text(locale, "service"),
+            pdf_text(locale, "status"),
+            pdf_text(locale, "notes"),
+        ]]
         for item in appointments:
             rows.append(
                 [
                     fmt_dt(item.get("starts_at")),
                     item.get("client_name") or "-",
                     item.get("service_name") or "-",
-                    item.get("status") or "-",
+                    pdf_status(locale, item.get("status")),
                     (item.get("notes") or "-")[:70],
                 ]
             )
@@ -204,7 +352,7 @@ async def export_daily_summary_pdf(
     doc.build(story)
     buffer.seek(0)
 
-    filename = f"salonflow_daily_summary_{report_date.isoformat()}.pdf"
+    filename = f"salonflow_daily_summary_{locale}_{report_date.isoformat()}.pdf"
     headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
 
     return StreamingResponse(buffer, media_type="application/pdf", headers=headers)

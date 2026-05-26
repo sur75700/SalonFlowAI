@@ -93,7 +93,9 @@ export default function ReportsScreen() {
       const url =
         API_BASE_URL +
         "/reports/daily-summary/pdf?date=" +
-        encodeURIComponent(reportDate);
+        encodeURIComponent(reportDate) +
+        "&locale=" +
+        encodeURIComponent(locale);
 
       const response = await fetch(url, {
         method: "GET",
@@ -250,6 +252,9 @@ export default function ReportsScreen() {
               {exportingPdf ? t("Exporting", locale) : t("Export Pdf Report", locale)}
             </Text>
           </TouchableOpacity>
+          <Text style={styles.exportLocaleHint}>
+            {t("Pdf Locale Export Hint", locale)}
+          </Text>
         </SectionCard>
 
         <SectionCard
@@ -379,6 +384,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "900",
     letterSpacing: 0.3,
+  },
+  exportLocaleHint: {
+    color: "#b7adbf",
+    fontSize: UI.font.body,
+    lineHeight: 20,
+    marginTop: UI.spacing.sm,
   },
   infoBlock: {
     backgroundColor: "#141824",

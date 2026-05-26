@@ -330,6 +330,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Failed To Export Pdf": "Չհաջողվեց արտահանել PDF հաշվետվությունը",
     "Export Ui Web Only": "PDF արտահանումը հասանելի է միայն web միջավայրում։",
     "Session Expired Sign In": "Սեսիան ավարտվել է։ Խնդրում ենք կրկին մուտք գործել։",
+    "Pdf Locale Export Hint": "PDF-ը կարտահանվի ներկայում ընտրված լեզվով։",
 
   },
   ru: {
@@ -492,6 +493,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Failed To Export Pdf": "Не удалось экспортировать PDF отчет",
     "Export Ui Web Only": "Экспорт PDF доступен только в web-среде.",
     "Session Expired Sign In": "Сессия истекла. Пожалуйста, войдите снова.",
+    "Pdf Locale Export Hint": "PDF будет экспортирован на текущем выбранном языке.",
 
   },
 };
