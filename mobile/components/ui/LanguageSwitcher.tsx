@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { languageLabels, supportedLanguages } from "../../lib/i18n";
@@ -31,17 +32,17 @@ const styles = StyleSheet.create({
   wrap: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10,
-    marginBottom: 10,
+    gap: UI.spacing.xs,
+    marginTop: UI.spacing.sm,
+    marginBottom: UI.spacing.sm,
   },
   chip: {
     backgroundColor: "#11131a",
     borderWidth: 1,
     borderColor: "#2a3140",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: UI.radius.pill,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.xs,
   },
   chipActive: {
     backgroundColor: "#1f1a10",
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: "#d2c8af",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "800",
   },
   chipTextActive: {
