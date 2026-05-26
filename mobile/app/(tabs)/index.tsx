@@ -1,3 +1,4 @@
+import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import React from "react";
 import { UI } from "../../lib/theme/tokens";
 import { router } from "expo-router";
@@ -18,6 +19,7 @@ import SectionCard from "../../components/dashboard/SectionCard";
 import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
+import EmptyState from "../../components/ui/EmptyState";
 import { useSummaryData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -59,20 +61,23 @@ export default function OverviewScreen() {
   const { locale } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
-  const { summary, loading, refreshing, error, refresh } = useSummaryData(
+  const { summary, loading, refreshing, error, reload, refresh } = useSummaryData(
     token,
     clearToken
   );
 
   const statCards = [
-    { label: "Clients", value: summary?.total_clients ?? 0 },
-    { label: "Services", value: summary?.total_services ?? 0 },
-    { label: "Total Bookings", value: summary?.total_appointments ?? 0 },
-    { label: "Scheduled", value: summary?.scheduled_appointments ?? 0 },
-    { label: "Completed", value: summary?.completed_appointments ?? 0 },
-    { label: "Cancelled", value: summary?.cancelled_appointments ?? 0 },
-    { label: "Today", value: summary?.today_appointments ?? 0 },
+    { label: t("Clients", locale), value: summary?.total_clients ?? 0 },
+    { label: t("Services", locale), value: summary?.total_services ?? 0 },
+    { label: t("Total Bookings", locale), value: summary?.total_appointments ?? 0 },
+    { label: t("Scheduled", locale), value: summary?.scheduled_appointments ?? 0 },
+    { label: t("Completed", locale), value: summary?.completed_appointments ?? 0 },
+    { label: t("Cancelled", locale), value: summary?.cancelled_appointments ?? 0 },
+    { label: t("Today", locale), value: summary?.today_appointments ?? 0 },
   ];
+
+  const hasNoSummaryActivity =
+    !!summary && statCards.every((card) => Number(card.value) === 0);
 
   if (booting) {
     return <OverviewSkeleton />;
@@ -81,8 +86,8 @@ export default function OverviewScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.dashboard", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Dashboard", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -101,11 +106,11 @@ export default function OverviewScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.dashboard", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Dashboard", locale)}</Text>
           <Text style={styles.heroText}>
-            Premium salon command center for bookings, clients, services, analytics,
-            and reporting—organized into focused operational sections.
+            {t("Dashboard Hero Subtitle", locale)}
           </Text>
+          <LanguageSwitcher />
         </View>
 
         <SessionActionBar
@@ -115,13 +120,31 @@ export default function OverviewScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.operationsReady", locale)}
-          subtitle={t("common.operationsReadySubtitle", locale)}
+          title={t("Operations Ready", locale)}
+          subtitle={t("Operations ReadySubtitle", locale)}
         />
 
         {error ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>{t("Dashboard sync needs attention", locale)}</Text>
             <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? t("Retrying", locale) : t("Retry", locale)}
+                tone="warning"
+                disabled={refreshing}
+                onPress={reload}
+              />
+            </View>
+          </View>
+        ) : null}
+
+        {hasNoSummaryActivity ? (
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              title="No dashboard activity yet"
+              subtitle="Create your first client, service, or appointment to activate the command center metrics."
+            />
           </View>
         ) : null}
 
@@ -132,109 +155,109 @@ export default function OverviewScreen() {
         </View>
 
         <SectionCard
-          title={t("common.commandNavigation", locale)}
-          subtitle={t("common.commandNavigationSubtitle", locale)}
+          title={t("Command Navigation", locale)}
+          subtitle={t("Command NavigationSubtitle", locale)}
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.insights", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Insights", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.insightsInfoSubtitle", locale)}
+              {t("Insights Info Subtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.pdfReports", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Pdf Reports", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.pdfReportsInfoSubtitle", locale)}
+              {t("Pdf ReportsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.appointments", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Appointments", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.appointmentsInfoSubtitle", locale)}
+              {t("AppointmentsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.clients", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Clients", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.clientsInfoSubtitle", locale)}
+              {t("ClientsInfoSubtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.serviceCatalog", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Service Catalog", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.serviceCatalogHeroSubtitle", locale)}
+              {t("Service CatalogHeroSubtitle", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.quickActions", locale)}
-          subtitle={t("common.quickActionsSubtitle", locale)}
+          title={t("Quick Actions", locale)}
+          subtitle={t("Quick Actions Subtitle", locale)}
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
-              title={t("common.openBookings", locale)}
+              title={t("Open Bookings", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
-              title={t("common.openClients", locale)}
+              title={t("Open Clients", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
-              title={t("common.openServiceCatalog", locale)}
+              title={t("Open Service Catalog", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
-              title={t("common.openInsights", locale)}
+              title={t("Open Insights", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
-              title={t("common.openPdfReports", locale)}
+              title={t("Open Pdf Reports", locale)}
               onPress={() => router.navigate("/(tabs)/reports")}
             />
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.executiveSnapshot", locale)}
-          subtitle={t("common.executiveSnapshotSubtitle", locale)}
+          title={t("Executive Snapshot", locale)}
+          subtitle={t("Executive Snapshot Subtitle", locale)}
         >
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.totalClients", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Total Clients", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.totalServices", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Total Services", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.totalBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Total Bookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.scheduledBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("ScheduledBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.scheduled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.completedBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("CompletedBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.completed_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.cancelledBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("Cancelled Bookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.cancelled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("common.todayBookings", locale)}</Text>
+            <Text style={styles.metricLabel}>{t("TodayBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.today_appointments ?? 0}</Text>
           </View>
         </SectionCard>
@@ -245,33 +268,33 @@ export default function OverviewScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: 22, paddingBottom: 40 },
+  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
     backgroundColor: "rgba(10, 11, 16, 0.96)",
-    borderRadius: 30,
-    padding: 28,
-    marginBottom: 24,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.xl,
+    marginBottom: UI.spacing.lg,
     borderWidth: 1,
     borderColor: "#27212c",
   },
   heroOverline: {
     color: "#f2d17a",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
     marginBottom: 10,
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: 38,
+    fontSize: UI.font.hero,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 23,
   },
   statsGrid: {
@@ -285,20 +308,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#0f1118",
     borderWidth: 1,
     borderColor: "#241f27",
-    borderRadius: 20,
+    borderRadius: UI.radius.lg,
     padding: 18,
   },
   sectionSkeleton: {
     backgroundColor: "#0f1118",
     borderWidth: 1,
     borderColor: "#241f27",
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
   },
   infoBlock: {
     backgroundColor: "#11131a",
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: UI.radius.md,
+    padding: UI.spacing.md,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#232834",
@@ -340,11 +363,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  emptyWrap: {
+    marginBottom: 20,
+  },
 
   quickActionsGrid: {
     flexDirection: "row",

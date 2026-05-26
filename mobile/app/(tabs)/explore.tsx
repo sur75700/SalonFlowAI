@@ -33,70 +33,70 @@ export default function WorkspaceScreen() {
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
-        <Text style={styles.title}>{t("common.workspace", locale)}</Text>
+        <Text style={styles.title}>{t("Workspace", locale)}</Text>
         <Text style={styles.subtitle}>
-          {t("common.workspaceHeroSubtitle", locale)}
+          {t("WorkspaceHeroSubtitle", locale)}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("common.quickNavigation", locale)}</Text>
+        <Text style={styles.sectionTitle}>{t("Quick Navigation", locale)}</Text>
 
         <QuickLink
-          title={t("common.openDashboard", locale)}
-          subtitle={t("common.openDashboardSubtitle", locale)}
+          title={t("Open Dashboard", locale)}
+          subtitle={t("Open DashboardSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)")}
         />
         <QuickLink
-          title={t("common.openBookings", locale)}
-          subtitle={t("common.openBookingsSubtitle", locale)}
+          title={t("Open Bookings", locale)}
+          subtitle={t("Open Bookings Subtitle", locale)}
           onPress={() => router.navigate("/(tabs)/appointments")}
         />
         <QuickLink
-          title={t("common.openClients", locale)}
-          subtitle={t("common.openClientsSubtitle", locale)}
+          title={t("Open Clients", locale)}
+          subtitle={t("Open ClientsSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/clients")}
         />
         <QuickLink
-          title={t("common.openServiceCatalog", locale)}
-          subtitle={t("common.openServiceCatalogSubtitle", locale)}
+          title={t("Open Service Catalog", locale)}
+          subtitle={t("Open Service Catalog Subtitle", locale)}
           onPress={() => router.navigate("/(tabs)/services")}
         />
         <QuickLink
-          title={t("common.openInsights", locale)}
-          subtitle={t("common.openInsightsSubtitle", locale)}
+          title={t("Open Insights", locale)}
+          subtitle={t("Open Insights Subtitle", locale)}
           onPress={() => router.navigate("/(tabs)/analytics")}
         />
         <QuickLink
-          title={t("common.openPdfReports", locale)}
-          subtitle={t("common.openPdfReportsSubtitle", locale)}
+          title={t("Open Pdf Reports", locale)}
+          subtitle={t("Open Pdf ReportsSubtitle", locale)}
           onPress={() => router.navigate("/(tabs)/reports")}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("common.backendAccess", locale)}</Text>
+        <Text style={styles.sectionTitle}>{t("Backend Access", locale)}</Text>
 
         <QuickLink
-          title={t("common.openApiDocs", locale)}
-          subtitle={t("common.openApiDocsSubtitle", locale)}
+          title={t("Open Api Docs", locale)}
+          subtitle={t("Open Api DocsSubtitle", locale)}
           onPress={openDocs}
         />
         <QuickLink
-          title={t("common.checkBackendHealth", locale)}
-          subtitle={t("common.checkBackendHealthSubtitle", locale)}
+          title={t("Check Backend Health", locale)}
+          subtitle={t("Check Backend Health Subtitle", locale)}
           onPress={openBackend}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("common.operatorNotes", locale)}</Text>
+        <Text style={styles.sectionTitle}>{t("Operator Notes", locale)}</Text>
         <View style={styles.noteCard}>
           <Text style={styles.noteText}>
-            {t("common.operatorNotesLineOne", locale)}
+            {t("Operator Notes Line One", locale)}
           </Text>
           <Text style={styles.noteText}>
-            {t("common.operatorNotesLineTwo", locale)}
+            {t("Operator NotesLineTwo", locale)}
           </Text>
         </View>
       </View>

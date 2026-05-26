@@ -77,12 +77,12 @@ export default function ReportsScreen() {
 
   const exportPdfReport = async () => {
     if (!token) {
-      setError(t("common.sessionExpiredSignIn", locale));
+      setError(t("Session Expired Sign In", locale));
       return;
     }
 
     if (typeof window === "undefined") {
-      setError(t("common.exportUiWebOnly", locale));
+      setError(t("Export Ui Web Only", locale));
       return;
     }
 
@@ -93,7 +93,9 @@ export default function ReportsScreen() {
       const url =
         API_BASE_URL +
         "/reports/daily-summary/pdf?date=" +
-        encodeURIComponent(reportDate);
+        encodeURIComponent(reportDate) +
+        "&locale=" +
+        encodeURIComponent(locale);
 
       const response = await fetch(url, {
         method: "GET",
@@ -123,7 +125,7 @@ export default function ReportsScreen() {
           return;
         }
 
-        throw new Error(payload?.detail || t("common.failedToExportPdf", locale));
+        throw new Error(payload?.detail || t("Failed To Export Pdf", locale));
       }
 
       const blob = await response.blob();
@@ -142,7 +144,7 @@ export default function ReportsScreen() {
         return;
       }
 
-      setError(err?.message || t("common.failedToExportPdf", locale));
+      setError(err?.message || t("Failed To Export Pdf", locale));
     } finally {
       setExportingPdf(false);
     }
@@ -155,8 +157,8 @@ export default function ReportsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.pdfReports", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Pdf Reports", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -171,9 +173,9 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.pdfReports", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Pdf Reports", locale)}</Text>
           <Text style={styles.heroText}>
-            {t("common.reportsHeroSubtitle", locale)}
+            {t("Reports Hero Subtitle", locale)}
           </Text>
         </View>
 
@@ -184,23 +186,41 @@ export default function ReportsScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.reportsReady", locale)}
-          subtitle={t("common.reportsReadySubtitle", locale)}
+          title={t("Reports Ready", locale)}
+          subtitle={t("Reports Ready Subtitle", locale)}
         />
 
         {error ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>{t("Report export needs attention", locale)}</Text>
             <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.errorActions}>
+              <TouchableOpacity
+                style={[styles.retryButton, exportingPdf && styles.disabledButton]}
+                onPress={exportPdfReport}
+                disabled={exportingPdf}
+              >
+                <Text style={styles.retryButtonText}>
+                  {exportingPdf ? t("Exporting", locale) : t("Retry", locale)}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={() => setError("")}
+              >
+                <Text style={styles.secondaryButtonText}>{t("Cancel", locale)}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null}
 
         <SectionCard
-          title={t("common.dailyPdfExport", locale)}
-          subtitle={t("common.dailyPdfExportSubtitle", locale)}
+          title={t("Daily Pdf Export", locale)}
+          subtitle={t("Daily Pdf Export Subtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder={t("common.dateInputPlaceholder", locale)}
+            placeholder={t("Date Input Placeholder", locale)}
             placeholderTextColor="#9a92a3"
             value={reportDate}
             onChangeText={setReportDate}
@@ -212,14 +232,14 @@ export default function ReportsScreen() {
               style={styles.quickButton}
               onPress={() => setReportDate(todayDateInput())}
             >
-              <Text style={styles.quickButtonText}>{t("common.today", locale)}</Text>
+              <Text style={styles.quickButtonText}>{t("Today", locale)}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.quickButton}
               onPress={() => setReportDate(yesterdayDateInput())}
             >
-              <Text style={styles.quickButtonText}>{t("common.yesterday", locale)}</Text>
+              <Text style={styles.quickButtonText}>{t("Yesterday", locale)}</Text>
             </TouchableOpacity>
           </View>
 
@@ -229,50 +249,53 @@ export default function ReportsScreen() {
             disabled={exportingPdf}
           >
             <Text style={styles.primaryButtonText}>
-              {exportingPdf ? t("common.exporting", locale) : t("common.exportPdfReport", locale)}
+              {exportingPdf ? t("Exporting", locale) : t("Export Pdf Report", locale)}
             </Text>
           </TouchableOpacity>
+          <Text style={styles.exportLocaleHint}>
+            {t("Pdf Locale Export Hint", locale)}
+          </Text>
         </SectionCard>
 
         <SectionCard
-          title={t("common.exportReadiness", locale)}
-          subtitle={t("common.exportReadinessSubtitle", locale)}
+          title={t("Export Readiness", locale)}
+          subtitle={t("Export Readiness Subtitle", locale)}
         >
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t("common.selectedDate", locale)}</Text>
+            <Text style={styles.readinessLabel}>{t("Selected Date", locale)}</Text>
             <Text style={styles.readinessValue}>{reportDate}</Text>
           </View>
 
           <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t("common.exportState", locale)}</Text>
+            <Text style={styles.readinessLabel}>{t("Export State", locale)}</Text>
             <Text style={styles.readinessValue}>
-              {exportingPdf ? t("common.generatingPdf", locale) : t("common.readyToExport", locale)}
+              {exportingPdf ? t("Generating Pdf", locale) : t("Ready To Export", locale)}
             </Text>
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.reportingWorkflow", locale)}
-          subtitle={t("common.reportingWorkflowSubtitle", locale)}
+          title={t("Reporting Workflow", locale)}
+          subtitle={t("Reporting WorkflowSubtitle", locale)}
         >
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.pickDateStepTitle", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Pick Date Step Title", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.pickDateStepSubtitle", locale)}
+              {t("Pick Date Step Subtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("common.exportSummaryStepTitle", locale)}</Text>
+            <Text style={styles.infoTitle}>{t("Export Summary Step Title", locale)}</Text>
             <Text style={styles.infoText}>
-              {t("common.exportSummaryStepSubtitle", locale)}
+              {t("Export Summary Step Subtitle", locale)}
             </Text>
           </View>
 
           <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>3. Review salon performance</Text>
+            <Text style={styles.infoTitle}>{t("Review Performance Step Title", locale)}</Text>
             <Text style={styles.infoText}>
-              The report includes totals and appointments for the selected day.
+              {t("Review Performance Step Subtitle", locale)}
             </Text>
           </View>
         </SectionCard>
@@ -283,75 +306,75 @@ export default function ReportsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: 22, paddingBottom: 40 },
+  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
     backgroundColor: "rgba(8, 10, 18, 0.92)",
-    borderRadius: 30,
-    padding: 28,
-    marginBottom: 24,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.xl,
+    marginBottom: UI.spacing.lg,
     borderWidth: 1,
     borderColor: "#27212c",
   },
   heroOverline: {
     color: "#f2d17a",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
     marginBottom: 10,
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: 38,
+    fontSize: UI.font.hero,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 23,
   },
   sectionSkeleton: {
     backgroundColor: "#11131d",
     borderWidth: 1,
     borderColor: "#241f27",
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 18,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    marginBottom: UI.spacing.lg,
   },
   input: {
     backgroundColor: "#141824",
     color: "#ffffff",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 10,
+    borderRadius: UI.radius.md,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.md,
+    marginBottom: UI.spacing.sm,
     borderWidth: 1,
     borderColor: "#2e2631",
   },
   quickRow: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 12,
+    gap: UI.spacing.sm,
+    marginBottom: UI.spacing.md,
     flexWrap: "wrap",
   },
   quickButton: {
     backgroundColor: "#161922",
     borderWidth: 1,
     borderColor: "#2b2f3b",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.sm,
+    borderRadius: UI.radius.md,
   },
   quickButtonText: {
     color: "#ffffff",
-    fontSize: 13,
+    fontSize: UI.font.overline,
     fontWeight: "800",
   },
   primaryButton: {
     backgroundColor: "#f2d17a",
-    borderRadius: 16,
+    borderRadius: UI.radius.md,
     paddingVertical: 15,
     alignItems: "center",
     marginTop: 6,
@@ -362,11 +385,19 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0.3,
   },
+  exportLocaleHint: {
+    color: "#b7adbf",
+    fontSize: UI.font.body,
+    lineHeight: 20,
+    marginTop: UI.spacing.sm,
+  },
   infoBlock: {
     backgroundColor: "#141824",
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: UI.radius.md,
+    padding: UI.spacing.md,
+    marginBottom: UI.spacing.sm,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
     borderWidth: 1,
     borderColor: "#232834",
   },
@@ -378,22 +409,67 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: "#c9c2cf",
-    fontSize: 14,
+    fontSize: UI.font.body,
     lineHeight: 21,
   },
   errorBox: {
     backgroundColor: "#38161f",
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 16,
+    padding: UI.spacing.md,
+    borderRadius: UI.radius.md,
+    marginBottom: UI.spacing.md,
     borderWidth: 1,
     borderColor: "#5a232e",
+  },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
   },
   errorText: {
     color: "#ffcad3",
     fontSize: 14,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  retryButton: {
+    backgroundColor: "#78350f",
+    borderWidth: 1,
+    borderColor: "#f59e0b",
+    borderRadius: UI.radius.md,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.sm,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  secondaryButton: {
+    backgroundColor: "#171b27",
+    borderWidth: 1,
+    borderColor: "#4b556d",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  secondaryButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  disabledButton: {
+    opacity: 0.55,
+  },
 
   readinessCard: {
     backgroundColor: "#141824",

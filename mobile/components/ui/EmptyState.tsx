@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, View } from "react-native";
 
 type EmptyStateProps = {
@@ -24,27 +25,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(16, 19, 26, 0.84)",
     borderWidth: 1,
     borderColor: "#2b3040",
-    borderRadius: 24,
-    padding: 24,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.xl,
     alignItems: "center",
     justifyContent: "center",
+    boxShadow: UI.depth.soft,
+    elevation: 6,
   },
   icon: {
     color: "#f2d17a",
-    fontSize: 24,
+    fontSize: UI.font.title,
     fontWeight: "900",
-    marginBottom: 8,
+    marginBottom: UI.spacing.xs,
   },
   title: {
     color: "#ffffff",
     fontSize: 18,
     fontWeight: "900",
-    marginBottom: 7,
+    marginBottom: UI.spacing.xs,
     textAlign: "center",
   },
   subtitle: {
     color: "#b8b0c0",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 22,
     textAlign: "center",
   },

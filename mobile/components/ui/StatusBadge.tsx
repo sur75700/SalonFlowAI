@@ -1,6 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { useAppLanguage } from "../../contexts/LanguageContext";
+import { t } from "../../lib/i18n";
+
 type StatusTone = "scheduled" | "completed" | "cancelled" | "active" | "inactive";
 
 type Props = {
@@ -18,7 +21,20 @@ function normalizeStatus(status: string): StatusTone {
 }
 
 export default function StatusBadge({ status }: Props) {
+  const { language } = useAppLanguage();
   const tone = normalizeStatus(status);
+  const label =
+    tone === "scheduled"
+      ? t("Scheduled", language)
+      : tone === "completed"
+      ? t("Completed", language)
+      : tone === "cancelled"
+      ? t("Cancelled", language)
+      : tone === "active"
+      ? t("Active", language)
+      : tone === "inactive"
+      ? t("Inactive", language)
+      : status;
 
   return (
     <View
@@ -31,7 +47,7 @@ export default function StatusBadge({ status }: Props) {
         tone === "inactive" && styles.inactive,
       ]}
     >
-      <Text style={styles.text}>{status}</Text>
+      <Text style={styles.text}>{label}</Text>
     </View>
   );
 }

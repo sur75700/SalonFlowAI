@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, View } from "react-native";
 
 import ActionButton from "../dashboard/ActionButton";
@@ -19,10 +20,12 @@ export default function SessionActionBar({
   return (
     <View style={styles.wrap}>
       <View style={styles.info}>
-        <Text style={styles.label}>SESSION</Text>
+        <Text style={styles.label}>{t.workspace.sessionLabel}</Text>
         <Text style={styles.title}>{t.session.adminSessionActive}</Text>
         <Text style={styles.subtitle}>
-          {email ? `Authorized as ${email}` : "Authorized inside SalonFlow AI admin"}
+          {email
+            ? `${t.session.signedInAsPrefix} ${email}`
+            : t.session.fallbackSignedIn}
         </Text>
       </View>
 
@@ -43,9 +46,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#11131a",
     borderWidth: 1,
     borderColor: "#232834",
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 16,
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    marginBottom: UI.spacing.md,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
     gap: 12,
   },
   info: {
@@ -53,7 +58,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#f2d17a",
-    fontSize: 11,
+    fontSize: UI.font.tiny,
     fontWeight: "900",
     letterSpacing: 1,
   },
@@ -64,7 +69,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: "#c9c2cf",
-    fontSize: 14,
+    fontSize: UI.font.body,
     lineHeight: 20,
   },
   actions: {

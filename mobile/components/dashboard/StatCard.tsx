@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   card: {
     width: "48%",
     minWidth: 180,
-      maxWidth: 260,
+    maxWidth: 260,
     backgroundColor: "#0a0b10",
     borderRadius: UI.radius.xl,
     padding: UI.spacing.xl,

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "SalonFlow AI",
+    "slug": "salonflowai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "salonflowai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.surnonym19.salonflowai"
     },
     "web": {
       "output": "static",
@@ -47,7 +48,11 @@
     },
     "extra": {
       "apiBaseUrlWeb": "http://127.0.0.1:8000",
-      "apiBaseUrlNative": "http://192.168.10.17:8000"
+      "apiBaseUrlNative": "http://192.168.10.17:8000",
+      "router": {},
+      "eas": {
+        "projectId": "fbbd9eef-c2cd-4169-a12c-8efb81c654eb"
+      }
     }
   }
 }

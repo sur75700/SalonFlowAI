@@ -136,8 +136,8 @@ export default function ServicesScreen() {
       !createForm.values.duration_minutes.trim() ||
       !createForm.values.price.trim()
     ) {
-      setMutationError(t("common.serviceFieldsRequired", locale));
-      showToast(t("common.serviceFieldsRequired", locale), "error");
+      setMutationError(t("Service Fields Required", locale));
+      showToast(t("Service Fields Required", locale), "error");
       return;
     }
 
@@ -145,8 +145,8 @@ export default function ServicesScreen() {
     const price = Number(createForm.values.price);
 
     if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(price) || price < 0) {
-      setMutationError(t("common.serviceNumericInvalid", locale));
-      showToast(t("common.serviceNumericInvalid", locale), "error");
+      setMutationError(t("Service Numeric Invalid", locale));
+      showToast(t("Service Numeric Invalid", locale), "error");
       return;
     }
 
@@ -160,7 +160,7 @@ export default function ServicesScreen() {
 
     if (ok) {
       createForm.reset();
-      showToast(t("common.serviceAddedSuccessfully", locale), "success");
+      showToast(t("Service Added Successfully", locale), "success");
     }
   };
 
@@ -188,8 +188,8 @@ export default function ServicesScreen() {
       !editForm.values.duration_minutes.trim() ||
       !editForm.values.price.trim()
     ) {
-      setMutationError(t("common.serviceFieldsRequired", locale));
-      showToast(t("common.serviceFieldsRequired", locale), "error");
+      setMutationError(t("Service Fields Required", locale));
+      showToast(t("Service Fields Required", locale), "error");
       return;
     }
 
@@ -197,8 +197,8 @@ export default function ServicesScreen() {
     const price = Number(editForm.values.price);
 
     if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(price) || price < 0) {
-      setMutationError(t("common.serviceNumericInvalid", locale));
-      showToast(t("common.serviceNumericInvalid", locale), "error");
+      setMutationError(t("Service Numeric Invalid", locale));
+      showToast(t("Service Numeric Invalid", locale), "error");
       return;
     }
 
@@ -212,14 +212,14 @@ export default function ServicesScreen() {
 
     if (ok) {
       cancelEditService();
-      showToast(t("common.serviceUpdatedSuccessfully", locale), "success");
+      showToast(t("Service Updated Successfully", locale), "success");
     }
   };
 
   const handleDeleteService = async (service: ServiceItem) => {
     const approved = await confirm(
-      t("common.deleteServiceTitle", locale),
-        t("common.deleteServiceConfirmMessage", locale)
+      t("Delete Service Title", locale),
+        t("DeleteServiceConfirmMessage", locale)
     );
 
     if (!approved) return;
@@ -227,7 +227,7 @@ export default function ServicesScreen() {
     const ok = await deleteService(service.id);
 
     if (ok) {
-      showToast(t("common.serviceDeletedSuccessfully", locale), "success");
+      showToast(t("Service Deleted Successfully", locale), "success");
     }
   };
 
@@ -251,8 +251,8 @@ export default function ServicesScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.serviceCatalog", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Service Catalog", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -270,9 +270,9 @@ export default function ServicesScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.serviceCatalog", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Service Catalog", locale)}</Text>
           <Text style={styles.heroText}>
-            {t("common.serviceCatalogHeroSubtitle", locale)}
+            {t("Service CatalogHeroSubtitle", locale)}
           </Text>
         </View>
 
@@ -283,30 +283,39 @@ export default function ServicesScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.catalogReady", locale)}
-          subtitle={t("common.servicesSessionReadySubtitle", locale)}
+          title={t("Catalog Ready", locale)}
+          subtitle={t("Services Session Ready Subtitle", locale)}
         />
 
         {screenError ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>{t("Service catalog needs attention", locale)}</Text>
             <Text style={styles.errorText}>{screenError}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? t("Retrying", locale) : t("Retry", locale)}
+                tone="warning"
+                disabled={refreshing || mutationLoading}
+                onPress={reload}
+              />
+            </View>
           </View>
         ) : null}
 
         <SectionCard
-          title={t("common.createServiceEntry", locale)}
-          subtitle={t("common.createServiceEntrySubtitle", locale)}
+          title={t("Create ServiceEntry", locale)}
+          subtitle={t("Create ServiceEntrySubtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder={t("common.serviceName", locale)}
+            placeholder={t("Service Name", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.name}
             onChangeText={(value) => createForm.setField("name", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.durationInMinutes", locale)}
+            placeholder={t("Duration In Minutes", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.duration_minutes}
             onChangeText={(value) =>
@@ -316,7 +325,7 @@ export default function ServicesScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.price", locale)}
+            placeholder={t("Price", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.price}
             onChangeText={(value) => createForm.setField("price", value)}
@@ -324,7 +333,7 @@ export default function ServicesScreen() {
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.currency", locale)}
+            placeholder={t("Currency", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.currency}
             onChangeText={(value) => createForm.setField("currency", normalizeCurrency(value))}
@@ -332,7 +341,7 @@ export default function ServicesScreen() {
           />
 
           <ActionButton
-            title={mutationLoading ? t("common.creating", locale) : t("common.createService", locale)}
+            title={mutationLoading ? t("Creating", locale) : t("Create Service", locale)}
             onPress={handleCreateService}
             disabled={mutationLoading}
             tone="success"
@@ -340,32 +349,32 @@ export default function ServicesScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t("common.catalogSnapshot", locale)}
-          subtitle={t("common.catalogSnapshotSubtitle", locale)}
+          title={t("Catalog Snapshot", locale)}
+          subtitle={t("Catalog SnapshotSubtitle", locale)}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.length}</Text>
-              <Text style={styles.summaryLabel}>{t("common.total", locale)}</Text>
+              <Text style={styles.summaryLabel}>{t("Total", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.filter((item) => item.is_active).length}</Text>
-              <Text style={styles.summaryLabel}>{t("common.active", locale)}</Text>
+              <Text style={styles.summaryLabel}>{t("Active", locale)}</Text>
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryValue}>{services.filter((item) => !item.is_active).length}</Text>
-              <Text style={styles.summaryLabel}>{t("common.inactive", locale)}</Text>
+              <Text style={styles.summaryLabel}>{t("Inactive", locale)}</Text>
             </View>
           </View>
         </SectionCard>
 
         <SectionCard
-          title={t("common.serviceCatalog", locale)}
-          subtitle={t("common.serviceCatalogSubtitle", locale)}
+          title={t("Service Catalog", locale)}
+          subtitle={t("Service CatalogSubtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}
-            placeholder={t("common.searchServices", locale)}
+            placeholder={t("Search Services", locale)}
             placeholderTextColor="#9a92a3"
             value={serviceSearch}
             onChangeText={setServiceSearch}
@@ -373,13 +382,13 @@ export default function ServicesScreen() {
 
           {noServicesAtAll ? (
             <EmptyState
-              title={t("common.noServicesYet", locale)}
-              subtitle={t("common.noServicesYetSubtitle", locale)}
+              title={t("No Services Yet", locale)}
+              subtitle={t("No Services Yet Subtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title={t("common.noMatchingServices", locale)}
-              subtitle={t("common.noMatchingServicesSubtitle", locale)}
+              title={t("No Matching Services", locale)}
+              subtitle={t("No Matching ServicesSubtitle", locale)}
             />
           ) : (
             filteredServices.map((service) => (
@@ -388,14 +397,14 @@ export default function ServicesScreen() {
                   <>
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.serviceName", locale)}
+                      placeholder={t("Service Name", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.name}
                       onChangeText={(value) => editForm.setField("name", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.durationInMinutes", locale)}
+                      placeholder={t("Duration In Minutes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.duration_minutes}
                       onChangeText={(value) =>
@@ -405,7 +414,7 @@ export default function ServicesScreen() {
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.price", locale)}
+                      placeholder={t("Price", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.price}
                       onChangeText={(value) => editForm.setField("price", value)}
@@ -413,7 +422,7 @@ export default function ServicesScreen() {
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.currency", locale)}
+                      placeholder={t("Currency", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.currency}
                       onChangeText={(value) =>
@@ -431,29 +440,29 @@ export default function ServicesScreen() {
                         dropdownIconColor="#f5d27a"
                         style={styles.picker}
                       >
-                        <Picker.Item label={t("common.active", locale)} value="true" />
-                        <Picker.Item label={t("common.inactive", locale)} value="false" />
+                        <Picker.Item label={t("Active", locale)} value="true" />
+                        <Picker.Item label={t("Inactive", locale)} value="false" />
                       </Picker>
                     </View>
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={workingId === service.id ? t("common.working", locale) : t("common.save", locale)}
+                        title={workingId === service.id ? t("Working", locale) : t("Save", locale)}
                         onPress={() => handleSaveService(service.id)}
                         disabled={workingId === service.id}
                         tone="success"
                       />
-                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditService} />
+                      <ActionButton title={t("Cancel", locale)} onPress={cancelEditService} />
                     </View>
                   </>
                 ) : (
                   <>
                     <Text style={styles.cardTitle}>{service.name}</Text>
                     <Text style={styles.item}>
-                      Duration: {service.duration_minutes} min
+                      {t("Duration In Minutes", locale)}: {service.duration_minutes} {t("Minutes Short", locale)}
                     </Text>
                     <Text style={styles.item}>
-                      Price: {money(service.price, normalizeCurrency(service.currency))}
+                      {t("Price", locale)}: {money(service.price, normalizeCurrency(service.currency))}
                     </Text>
                     <View style={{ marginTop: 6, marginBottom: 6 }}>
                       <StatusBadge status={service.is_active ? "active" : "inactive"} />
@@ -461,12 +470,12 @@ export default function ServicesScreen() {
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={t("common.edit", locale)}
+                        title={t("Edit", locale)}
                         onPress={() => startEditService(service)}
                         tone="success"
                       />
                       <ActionButton
-                        title={workingId === service.id ? t("common.working", locale) : t("common.delete", locale)}
+                        title={workingId === service.id ? t("Working", locale) : t("Delete", locale)}
                         onPress={() => handleDeleteService(service)}
                         disabled={workingId === service.id}
                         tone="danger"
@@ -485,67 +494,69 @@ export default function ServicesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: 22, paddingBottom: 40 },
+  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
     backgroundColor: "rgba(8, 10, 18, 0.92)",
-    borderRadius: 30,
-    padding: 28,
-    marginBottom: 24,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.xl,
+    marginBottom: UI.spacing.lg,
     borderWidth: 1,
     borderColor: "#27212c",
   },
   heroOverline: {
     color: "#f2d17a",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
     marginBottom: 10,
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: 38,
+    fontSize: UI.font.hero,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 23,
   },
   sectionCard: {
     backgroundColor: "#11131d",
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
     borderWidth: 1,
     borderColor: "#241f27",
-    marginBottom: 18,
+    marginBottom: UI.spacing.lg,
   },
   searchInput: {
     backgroundColor: "#141824",
     color: "#ffffff",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 14,
+    borderRadius: UI.radius.md,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.md,
+    marginBottom: UI.spacing.md,
     borderWidth: 1,
     borderColor: "#2e2631",
   },
   input: {
     backgroundColor: "#141824",
     color: "#ffffff",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 10,
+    borderRadius: UI.radius.md,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.md,
+    marginBottom: UI.spacing.sm,
     borderWidth: 1,
     borderColor: "#2e2631",
   },
   pickerWrap: {
     backgroundColor: "#141824",
-    borderRadius: 16,
-    marginBottom: 10,
+    borderRadius: UI.radius.md,
+    marginBottom: UI.spacing.sm,
     borderWidth: 1,
     borderColor: "#2e2631",
     overflow: "hidden",
@@ -556,9 +567,11 @@ const styles = StyleSheet.create({
   },
   listCard: {
     backgroundColor: "#11131d",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 10,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    marginBottom: UI.spacing.md,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
     borderWidth: 1,
     borderColor: "#241f27",
   },
@@ -570,27 +583,39 @@ const styles = StyleSheet.create({
   },
   item: {
     color: "#ece7ef",
-    fontSize: 14,
+    fontSize: UI.font.body,
     marginBottom: 4,
   },
   actionRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    gap: UI.spacing.sm,
   },
   errorBox: {
     backgroundColor: "#38161f",
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 16,
+    padding: UI.spacing.md,
+    borderRadius: UI.radius.md,
+    marginBottom: UI.spacing.md,
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
-    fontSize: 14,
+    fontSize: UI.font.body,
+    lineHeight: 21,
   },
-
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
 
   summaryGrid: {
     flexDirection: "row",
@@ -604,8 +629,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: UI.radius.md,
+    padding: UI.spacing.md,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
   },
   summaryValue: {
     color: "#ffffff",

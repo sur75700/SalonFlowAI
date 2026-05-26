@@ -1,50 +1,112 @@
-# Welcome to your Expo app 👋
+# SalonFlow AI Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+SalonFlow AI Mobile is the Expo / React Native client for the SalonFlowAI salon appointment, CRM, booking, analytics, and reporting platform.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- Expo SDK 54
+- React Native
+- Expo Router
+- TypeScript
+- Axios
+- React Native Gifted Charts
+- FastAPI backend
+- MongoDB database
+- EAS Build
 
-   ```bash
-   npm install
-   ```
+## App Identity
 
-2. Start the app
+Name: SalonFlow AI
+Slug: salonflowai
+Scheme: salonflowai
+Android package: com.surnonym19.salonflowai
 
-   ```bash
-   npx expo start
-   ```
+## Environment
 
-In the output, you'll find options to open the app in a
+Local .env should contain:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+EXPO_PUBLIC_API_URL=https://salonflowai-backend.onrender.com
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+The app reads EXPO_PUBLIC_API_URL first. If it is missing, the app falls back to local development URLs from app.json.
 
-## Get a fresh project
+## Install
 
-When you're ready, run:
+Run from the mobile directory:
 
-```bash
-npm run reset-project
-```
+npm install
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Type Check
 
-## Learn more
+npm run typecheck
 
-To learn more about developing your project with Expo, look at the following resources:
+## Expo Doctor
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+npx expo-doctor
 
-## Join the community
+Expected result:
 
-Join our community of developers creating universal apps.
+17/17 checks passed.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Start Development Server
+
+npx expo start -c
+
+Web runtime:
+
+http://localhost:8081
+
+## Main Screens
+
+- Dashboard
+- Clients
+- Services
+- Appointments
+- Analytics
+- Reports
+
+## Backend Expectations
+
+Local backend:
+
+http://127.0.0.1:8000
+
+Expected checks:
+
+curl -i http://127.0.0.1:8000/healthz
+curl -i http://127.0.0.1:8000/analytics/dashboard
+
+Expected results:
+
+/healthz -> 200 OK
+/analytics/dashboard without token -> 401 Unauthorized
+
+The 401 response is correct because analytics is protected.
+
+## Android Preview Build
+
+Android preview APK has been built through EAS.
+
+Build profile: preview
+Distribution: internal
+Android package: com.surnonym19.salonflowai
+
+## QA Checklist
+
+- Login
+- Dashboard
+- Clients
+- Services
+- Appointments
+- Analytics AMD numbers
+- Reports
+- Logout/Login
+
+## Release Safety Rules
+
+- Do not commit .env
+- Do not commit node_modules
+- Do not commit .expo
+- Do not commit generated PDF reports
+- Run npm run typecheck before mobile commits
+- Run npx expo-doctor before release or mobile config commits
+- Keep backend analytics protected

@@ -114,8 +114,8 @@ export default function ClientsScreen() {
 
   const handleCreateClient = async () => {
     if (!createForm.values.full_name.trim() || !createForm.values.phone.trim()) {
-      setMutationError(t("common.clientFieldsRequired", locale));
-      showToast(t("common.clientFieldsRequired", locale), "error");
+      setMutationError(t("Client Fields Required", locale));
+      showToast(t("Client Fields Required", locale), "error");
       return;
     }
 
@@ -128,7 +128,7 @@ export default function ClientsScreen() {
 
     if (ok) {
       createForm.reset();
-      showToast(t("common.clientCreatedSuccessfully", locale), "success");
+      showToast(t("Client Created Successfully", locale), "success");
     }
   };
 
@@ -151,8 +151,8 @@ export default function ClientsScreen() {
 
   const handleSaveClient = async (clientId: string) => {
     if (!editForm.values.full_name.trim() || !editForm.values.phone.trim()) {
-      setMutationError(t("common.clientFieldsRequired", locale));
-      showToast(t("common.clientFieldsRequired", locale), "error");
+      setMutationError(t("Client Fields Required", locale));
+      showToast(t("Client Fields Required", locale), "error");
       return;
     }
 
@@ -165,14 +165,14 @@ export default function ClientsScreen() {
 
     if (ok) {
       cancelEditClient();
-      showToast(t("common.clientUpdatedSuccessfully", locale), "success");
+      showToast(t("Client Updated Successfully", locale), "success");
     }
   };
 
   const handleDeleteClient = async (client: ClientItem) => {
     const approved = await confirm(
-      t("common.deleteClientTitle", locale),
-        t("common.deleteClientConfirmMessage", locale)
+      t("Delete Client Title", locale),
+        t("Delete Client Confirm Message", locale)
     );
 
     if (!approved) return;
@@ -180,7 +180,7 @@ export default function ClientsScreen() {
     const ok = await deleteClient(client.id);
 
     if (ok) {
-      showToast(t("common.clientDeletedSuccessfully", locale), "success");
+      showToast(t("Client Deleted Successfully", locale), "success");
     }
   };
 
@@ -204,8 +204,8 @@ export default function ClientsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("common.clientSnapshot", locale)}
-        subtitle={t("common.sessionUnavailableSubtitle", locale)}
+        title={t("Client Snapshot", locale)}
+        subtitle={t("Session Unavailable Subtitle", locale)}
       />
     );
   }
@@ -223,9 +223,9 @@ export default function ClientsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("common.clientSnapshot", locale)}</Text>
+          <Text style={styles.heroTitle}>{t("Client Snapshot", locale)}</Text>
           <Text style={styles.heroText}>
-            {t("common.clientRegistryHeroSubtitle", locale)}
+            {t("Client Registry Hero Subtitle", locale)}
           </Text>
         </View>
 
@@ -236,37 +236,46 @@ export default function ClientsScreen() {
         />
 
         <SessionStatusBanner
-          title={t("common.clientRegistryConnected", locale)}
-          subtitle={t("common.clientRegistryConnectedSubtitle", locale)}
+          title={t("Client Registry Connected", locale)}
+          subtitle={t("Client Registry ConnectedSubtitle", locale)}
         />
 
         {screenError ? (
           <View style={styles.errorBox}>
+            <Text style={styles.errorTitle}>{t("Client registry needs attention", locale)}</Text>
             <Text style={styles.errorText}>{screenError}</Text>
+            <View style={styles.errorActions}>
+              <ActionButton
+                title={refreshing ? t("Retrying", locale) : t("Retry", locale)}
+                tone="warning"
+                disabled={refreshing || mutationLoading}
+                onPress={reload}
+              />
+            </View>
           </View>
         ) : null}
 
         <SectionCard
-          title={t("common.createClientEntry", locale)}
-          subtitle={t("common.createClientEntrySubtitle", locale)}
+          title={t("Create ClientEntry", locale)}
+          subtitle={t("Create ClientEntrySubtitle", locale)}
         >
           <TextInput
             style={styles.input}
-            placeholder={t("common.fullName", locale)}
+            placeholder={t("Full Name", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.full_name}
             onChangeText={(value) => createForm.setField("full_name", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.phone", locale)}
+            placeholder={t("Phone", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.phone}
             onChangeText={(value) => createForm.setField("phone", value)}
           />
           <TextInput
             style={styles.input}
-            placeholder={t("common.email", locale)}
+            placeholder={t("Email", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.email}
             onChangeText={(value) => createForm.setField("email", value)}
@@ -274,7 +283,7 @@ export default function ClientsScreen() {
           />
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder={t("common.notes", locale)}
+            placeholder={t("Notes", locale)}
             placeholderTextColor="#9a92a3"
             value={createForm.values.notes}
             onChangeText={(value) => createForm.setField("notes", value)}
@@ -282,7 +291,7 @@ export default function ClientsScreen() {
           />
 
           <ActionButton
-            title={mutationLoading ? t("common.creating", locale) : t("common.createClient", locale)}
+            title={mutationLoading ? t("Creating", locale) : t("Create Client", locale)}
             onPress={handleCreateClient}
             disabled={mutationLoading}
             tone="success"
@@ -290,12 +299,12 @@ export default function ClientsScreen() {
         </SectionCard>
 
         <SectionCard
-          title={t("common.clientSnapshot", locale)}
-          subtitle={t("common.clientSnapshotSubtitle", locale)}
+          title={t("Client Snapshot", locale)}
+          subtitle={t("Client Snapshot Subtitle", locale)}
         >
           <TextInput
             style={styles.searchInput}
-            placeholder={t("common.searchClients", locale)}
+            placeholder={t("Search Clients", locale)}
             placeholderTextColor="#9a92a3"
             value={clientSearch}
             onChangeText={setClientSearch}
@@ -303,13 +312,13 @@ export default function ClientsScreen() {
 
           {noClientsAtAll ? (
             <EmptyState
-              title={t("common.noClientsYet", locale)}
-              subtitle={t("common.noClientsYetSubtitle", locale)}
+              title={t("No Clients Yet", locale)}
+              subtitle={t("No Clients YetSubtitle", locale)}
             />
           ) : noSearchMatches ? (
             <EmptyState
-              title={t("common.noMatchingClients", locale)}
-              subtitle={t("common.noMatchingClientsSubtitle", locale)}
+              title={t("No Matching Clients", locale)}
+              subtitle={t("No Matching ClientsSubtitle", locale)}
             />
           ) : (
             filteredClients.map((client) => (
@@ -318,21 +327,21 @@ export default function ClientsScreen() {
                   <>
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.fullName", locale)}
+                      placeholder={t("Full Name", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.full_name}
                       onChangeText={(value) => editForm.setField("full_name", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.phone", locale)}
+                      placeholder={t("Phone", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.phone}
                       onChangeText={(value) => editForm.setField("phone", value)}
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder={t("common.email", locale)}
+                      placeholder={t("Email", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.email}
                       onChangeText={(value) => editForm.setField("email", value)}
@@ -340,7 +349,7 @@ export default function ClientsScreen() {
                     />
                     <TextInput
                       style={[styles.input, styles.textArea]}
-                      placeholder={t("common.notes", locale)}
+                      placeholder={t("Notes", locale)}
                       placeholderTextColor="#9a92a3"
                       value={editForm.values.notes}
                       onChangeText={(value) => editForm.setField("notes", value)}
@@ -349,29 +358,29 @@ export default function ClientsScreen() {
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={workingId === client.id ? "Working..." : "Save"}
+                        title={workingId === client.id ? t("Working", locale) : t("Save", locale)}
                         onPress={() => handleSaveClient(client.id)}
                         disabled={workingId === client.id}
                         tone="success"
                       />
-                      <ActionButton title={t("common.cancel", locale)} onPress={cancelEditClient} />
+                      <ActionButton title={t("Cancel", locale)} onPress={cancelEditClient} />
                     </View>
                   </>
                 ) : (
                   <>
                     <Text style={styles.cardTitle}>{client.full_name}</Text>
-                    <Text style={styles.item}>{t("common.phone", locale)}: {client.phone}</Text>
-                    <Text style={styles.item}>{t("common.email", locale)}: {client.email || "-"}</Text>
-                    <Text style={styles.item}>{t("common.notes", locale)}: {client.notes || "-"}</Text>
+                    <Text style={styles.item}>{t("Phone", locale)}: {client.phone}</Text>
+                    <Text style={styles.item}>{t("Email", locale)}: {client.email || "-"}</Text>
+                    <Text style={styles.item}>{t("Notes", locale)}: {client.notes || "-"}</Text>
 
                     <View style={styles.actionRow}>
                       <ActionButton
-                        title={t("common.edit", locale)}
+                        title={t("Edit", locale)}
                         onPress={() => startEditClient(client)}
                         tone="success"
                       />
                       <ActionButton
-                        title={workingId === client.id ? "Working..." : "Delete"}
+                        title={workingId === client.id ? t("Working", locale) : t("Delete", locale)}
                         onPress={() => handleDeleteClient(client)}
                         disabled={workingId === client.id}
                         tone="danger"
@@ -390,60 +399,62 @@ export default function ClientsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: 22, paddingBottom: 40 },
+  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
     backgroundColor: "rgba(8, 10, 18, 0.92)",
-    borderRadius: 30,
-    padding: 28,
-    marginBottom: 24,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.xl,
+    marginBottom: UI.spacing.lg,
     borderWidth: 1,
     borderColor: "#27212c",
   },
   heroOverline: {
     color: "#f2d17a",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
     marginBottom: 10,
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: 38,
+    fontSize: UI.font.hero,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 23,
   },
   sectionCard: {
     backgroundColor: "#11131d",
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
     borderWidth: 1,
     borderColor: "#241f27",
-    marginBottom: 18,
+    marginBottom: UI.spacing.lg,
   },
   searchInput: {
     backgroundColor: "#141824",
     color: "#ffffff",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 14,
+    borderRadius: UI.radius.md,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.md,
+    marginBottom: UI.spacing.md,
     borderWidth: 1,
     borderColor: "#2e2631",
   },
   input: {
     backgroundColor: "#141824",
     color: "#ffffff",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 10,
+    borderRadius: UI.radius.md,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.md,
+    marginBottom: UI.spacing.sm,
     borderWidth: 1,
     borderColor: "#2e2631",
   },
@@ -453,9 +464,11 @@ const styles = StyleSheet.create({
   },
   listCard: {
     backgroundColor: "#11131d",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 10,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    marginBottom: UI.spacing.md,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
     borderWidth: 1,
     borderColor: "#241f27",
   },
@@ -467,26 +480,39 @@ const styles = StyleSheet.create({
   },
   item: {
     color: "#ece7ef",
-    fontSize: 14,
+    fontSize: UI.font.body,
     marginBottom: 4,
   },
   actionRow: {
     flexDirection: "row",
-    gap: 10,
-    marginTop: 14,
+    gap: UI.spacing.sm,
+    marginTop: UI.spacing.md,
     flexWrap: "wrap",
   },
   errorBox: {
     backgroundColor: "#38161f",
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 16,
+    padding: UI.spacing.md,
+    borderRadius: UI.radius.md,
+    marginBottom: UI.spacing.md,
     borderWidth: 1,
     borderColor: "#5a232e",
   },
+  errorTitle: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
   errorText: {
     color: "#ffcad3",
-    fontSize: 14,
+    fontSize: UI.font.body,
+    lineHeight: 21,
+  },
+  errorActions: {
+    marginTop: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
   loadingText: {
     color: "#ffffff",
