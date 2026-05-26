@@ -20,10 +20,12 @@ export default function SessionActionBar({
   return (
     <View style={styles.wrap}>
       <View style={styles.info}>
-        <Text style={styles.label}>SESSION</Text>
+        <Text style={styles.label}>{t.workspace.sessionLabel}</Text>
         <Text style={styles.title}>{t.session.adminSessionActive}</Text>
         <Text style={styles.subtitle}>
-          {email ? `Authorized as ${email}` : "Authorized inside SalonFlow AI admin"}
+          {email
+            ? `${t.session.signedInAsPrefix} ${email}`
+            : t.session.fallbackSignedIn}
         </Text>
       </View>
 

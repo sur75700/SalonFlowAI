@@ -67,13 +67,13 @@ export default function OverviewScreen() {
   );
 
   const statCards = [
-    { label: "Clients", value: summary?.total_clients ?? 0 },
-    { label: "Services", value: summary?.total_services ?? 0 },
-    { label: "Total Bookings", value: summary?.total_appointments ?? 0 },
-    { label: "Scheduled", value: summary?.scheduled_appointments ?? 0 },
-    { label: "Completed", value: summary?.completed_appointments ?? 0 },
-    { label: "Cancelled", value: summary?.cancelled_appointments ?? 0 },
-    { label: "Today", value: summary?.today_appointments ?? 0 },
+    { label: t("Clients", locale), value: summary?.total_clients ?? 0 },
+    { label: t("Services", locale), value: summary?.total_services ?? 0 },
+    { label: t("Total Bookings", locale), value: summary?.total_appointments ?? 0 },
+    { label: t("Scheduled", locale), value: summary?.scheduled_appointments ?? 0 },
+    { label: t("Completed", locale), value: summary?.completed_appointments ?? 0 },
+    { label: t("Cancelled", locale), value: summary?.cancelled_appointments ?? 0 },
+    { label: t("Today", locale), value: summary?.today_appointments ?? 0 },
   ];
 
   const hasNoSummaryActivity =
@@ -108,8 +108,7 @@ export default function OverviewScreen() {
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
           <Text style={styles.heroTitle}>{t("Dashboard", locale)}</Text>
           <Text style={styles.heroText}>
-            Premium salon command center for bookings, clients, services, analytics,
-            and reporting—organized into focused operational sections.
+            {t("Dashboard Hero Subtitle", locale)}
           </Text>
           <LanguageSwitcher />
         </View>
