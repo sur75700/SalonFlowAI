@@ -4,19 +4,42 @@
 
 phase-7-royal-hardening
 
+## Production branch
+
+main
+
 ## Current release state
 
-SalonFlowAI is in Phase 8I final release status sync.
+SalonFlow AI is now past Phase 11O final four-language QA.
 
-The project has moved beyond recovery and bug-rescue into production-style hardening, mobile build readiness, release documentation, final web QA, production security audit, and Render production verification.
+The project has moved beyond recovery, backend analytics hardening, release-readiness, Android preview build preparation, final web QA, production Render verification, royal UI polish, and multilingual hardening.
 
-## Latest verified commit
+Current state:
 
-927aaad phase 8e update release status
+- Royal UI polish completed
+- Four-language product UI completed
+- Multilingual PDF export completed
+- Production backend verified on Render
+- Main branch synchronized with the latest release state
+- Android real-device QA remains the next major release gate
+
+## Latest verified checkpoint
+
+phase-11o-final-four-language-qa-passed
+
+## Active languages
+
+SalonFlow AI currently supports:
+
+- English
+- Հայերեն
+- Русский
+- Français
 
 ## Stable checkpoints
 
-- phase-7-royal-hardening-core
+### Phase 8 — Release readiness and production safety
+
 - phase-8a-release-readiness-analytics-fix
 - phase-8a-backend-analytics-cleanup
 - phase-8b-mobile-eas-ready
@@ -26,119 +49,103 @@ The project has moved beyond recovery and bug-rescue into production-style harde
 - phase-8f-final-web-qa-ready
 - phase-8g-production-security-audit-ready
 - phase-8h-production-render-env-verified
+- phase-8i-final-release-status-synced
+- phase-8j-android-qa-prepared
+- phase-8k-final-shutdown-restart-ready
 
-## Phase 8A — Backend analytics cleanup
+### Phase 9 — Demo and pilot sales readiness
 
-Status: complete
+- phase-9a-product-demo-script-ready
+- phase-9b-pilot-sales-one-pager-ready
+- phase-9c-outreach-message-pack-ready
+- phase-9d-first-20-lead-board-ready
+- phase-9e-demo-close-followup-pack-ready
+- phase-9f-founder-daily-sales-routine-ready
+- phase-9g-demo-package-command-center-ready
+- phase-9h-real-lead-capture-session-ready
+- phase-9i-first-5-yerevan-leads-captured
+- phase-9j-first-outreach-batch-ready
+- phase-9k-internal-pilot-simulation-passed
+- phase-9l-first-intro-requests-sent
+- phase-9m-incoming-lead-reply-workflow-ready
+- phase-9n-simulated-incoming-lead-test-ready
 
-Verified:
+### Phase 10 — Royal UI polish
 
-- Duplicate analytics router wiring removed
-- Legacy public analytics route removed
-- Protected analytics route active
-- /analytics/dashboard without token returns 401 Unauthorized
-- /analytics/dashboard with token returns AMD revenue data
-- Frontend analytics response mapping fixed
+- phase-10a-dashboard-component-polish
+- phase-10b-auth-component-polish
+- phase-10c-navigation-tabs-polish
+- phase-10d-analytics-insight-polish
+- phase-10e-reports-export-polish
+- phase-10f-bookings-screen-polish
+- phase-10g-clients-screen-polish
+- phase-10h-services-screen-polish
+- phase-10i-final-royal-ui-qa-passed
 
-## Phase 8B — Mobile EAS readiness
+### Phase 11 — Multilingual and PDF export
 
-Status: complete
+- phase-11b-active-languages-locked
+- phase-11c-language-switcher-visible
+- phase-11d-core-main-i18n-bridge
+- phase-11e-crud-i18n-label-overrides
+- phase-11f-dashboard-i18n-gap-polish
+- phase-11g-bookings-i18n-gap-polish
+- phase-11h-clients-i18n-gap-polish
+- phase-11i-services-i18n-gap-polish
+- phase-11j-analytics-i18n-gap-polish
+- phase-11j-analytics-pie-label-polish
+- phase-11k-reports-i18n-gap-polish
+- phase-11k-pdf-locale-export
+- phase-11k-pdf-unicode-table-fonts
+- phase-11k-pdf-unicode-table-cell-hardening
+- phase-11l-explore-i18n-gap-polish
+- phase-11m-final-multilingual-qa-passed
+- phase-11n-french-language-activated
+- phase-11n-french-ui-translation-polish
+- phase-11n-french-pdf-export
+- phase-11o-finalize-french-i18n-coverage
+- phase-11o-final-four-language-qa-passed
 
-Verified:
+## Verified product areas
 
-- App identity updated to SalonFlow AI
-- Slug updated to salonflowai
-- Scheme updated to salonflowai
-- EAS config added
-- EAS project linked
-- Android package ID saved
-- TypeScript checks passing
-- Expo Doctor passing 17/17
+The following product areas are currently polished and verified for demo/stage readiness:
 
-## Phase 8C — Release-safe API URL strategy
+- Auth / Login
+- Dashboard
+- Bookings / Appointments
+- Clients
+- Services / Service Catalog
+- Analytics / Insights
+- Reports
+- Explore / Workspace
+- Navigation tabs
+- Status badges
+- Empty states
+- Form labels
+- Action buttons
+- Error / retry states
 
-Status: complete
+## Reports PDF export
 
-Verified:
+Reports PDF export follows the selected app language.
 
-- EXPO_PUBLIC_API_URL supported
-- Preview and production EAS builds use Render backend URL
-- Local fallback strategy preserved
-- Mobile typecheck passing
-- Expo Doctor passing
+Expected behavior:
 
-## Phase 8D — Android preview APK build
+- English UI -> English PDF
+- Հայերեն UI -> Armenian PDF
+- Русский UI -> Russian PDF
+- Français UI -> French PDF
 
-Status: build complete
+Expected filename formats:
 
-Verified:
+- salonflow_daily_summary_en_YYYY-MM-DD.pdf
+- salonflow_daily_summary_hy_YYYY-MM-DD.pdf
+- salonflow_daily_summary_ru_YYYY-MM-DD.pdf
+- salonflow_daily_summary_fr_YYYY-MM-DD.pdf
 
-- Android preview APK built through EAS
-- Distribution: internal
-- Package ID: com.surnonym19.salonflowai
-- Android real-device QA is postponed until a clean Android test device is available
+PDF Unicode rendering has been hardened so Armenian and Russian table content renders correctly without square glyphs.
 
-## Phase 8E — Release QA documentation
-
-Status: complete
-
-Verified:
-
-- Release QA runbook added
-- Mobile README rewritten from default Expo starter README into SalonFlowAI-specific mobile documentation
-- Release status updated for Phase 8 release-readiness
-
-Tag:
-
-phase-8e-release-docs-ready
-
-## Phase 8F — Final web QA
-
-Status: complete
-
-Verified:
-
-- Local backend health passed
-- Local frontend web runtime passed
-- Protected analytics token flow passed
-- Final web QA checkpoint tag created
-
-Tag:
-
-phase-8f-final-web-qa-ready
-
-## Phase 8G — Production security audit
-
-Status: complete
-
-Verified:
-
-- Local secret files are ignored
-- No real secrets are tracked
-- Local JWT secret is not using the default fallback
-- Backend analytics remains protected locally
-- Security audit checkpoint tag created
-
-Tag:
-
-phase-8g-production-security-audit-ready
-
-## Phase 8H — Production Render verification
-
-Status: complete
-
-Verified:
-
-- Render production health endpoint returns 200 OK
-- Render production /analytics/dashboard without token returns 401 Unauthorized
-- Render production login returns a token
-- Render production /analytics/dashboard with token returns AMD analytics data
-- Main branch was patched to remove legacy public analytics route
-- Production public analytics leak is closed
-
-Tag:
-
-phase-8h-production-render-env-verified
+PDF export remains protected by authentication.
 
 ## Verified runtime state
 
@@ -159,13 +166,8 @@ Expected backend behavior:
 - /healthz -> 200 OK
 - /analytics/dashboard without token -> 401 Unauthorized
 - /analytics/dashboard with token -> 200 OK and AMD analytics data
-
-Current verified production analytics values:
-
-- completed_revenue: 21050 AMD
-- scheduled_pipeline: 53000 AMD
-- cancelled_value: 22000 AMD
-- avg_completed_booking_value: 7016.67 AMD
+- /reports/daily-summary/pdf without token -> 401 Unauthorized
+- /reports/daily-summary/pdf with token and locale -> 200 OK PDF export
 
 ## Mobile QA gates
 
@@ -179,15 +181,25 @@ Current expected result:
 - TypeScript passes
 - Expo Doctor passes 17/17 checks
 
+## Backend QA gates
+
+Required after backend changes:
+
+- python -m compileall app
+- Production Render deploy verification when backend code changes affect production
+
 ## Web QA checklist
 
 - Login
 - Dashboard
 - Clients
 - Services
-- Appointments
-- Analytics AMD numbers
+- Bookings / Appointments
+- Analytics / Insights
 - Reports
+- Explore / Workspace
+- Language switcher
+- PDF export by selected language
 - Logout/Login
 
 ## Android QA checklist
@@ -203,20 +215,37 @@ When a clean Android test device is available:
 - Check Dashboard
 - Check Clients
 - Check Services
-- Check Appointments
-- Check Analytics AMD numbers
+- Check Bookings / Appointments
+- Check Analytics / Insights
 - Check Reports
+- Check Explore / Workspace
+- Check language switcher
 - Check Logout/Login
 
 If Android QA passes, create tag:
 
 phase-8d-android-preview-apk-tested
 
+## Release documentation
+
+Current release QA documents:
+
+- docs/release/FINAL_ROYAL_UI_QA.md
+- docs/release/FINAL_MULTILINGUAL_QA.md
+- docs/release/FINAL_FOUR_LANGUAGE_QA.md
+- docs/release/ANDROID_REAL_DEVICE_QA.md
+- docs/release/FINAL_SHUTDOWN_RESTART_RUNBOOK.md
+- docs/release/PHASE_8E_RELEASE_QA_RUNBOOK.md
+
 ## Remaining work
 
+Primary next work:
+
 - Android real-device APK QA
+- Final demo / pilot readiness pass
+- Optional production monitoring checklist
+- Optional store-ready release QA
 - Optional iOS/TestFlight path later
-- Optional production monitoring and final sales/demo packaging
 
 ## Release safety rules
 
@@ -225,11 +254,16 @@ phase-8d-android-preview-apk-tested
 - Do not commit .expo
 - Do not commit generated PDF reports
 - Keep analytics protected
+- Keep PDF export protected
 - Verify Git clean before stopping work
 - Never print secrets in terminal logs, docs, or chat
 
 ## Release conclusion
 
-SalonFlowAI is currently in a strong release-readiness state.
+SalonFlow AI is currently in a strong release-readiness state.
 
-The backend is protected locally and in Render production, the mobile app is EAS-ready, the Android preview APK has been built, release-safe API configuration is active, final release documentation is synchronized, and the production analytics leak has been closed.
+The backend is protected locally and in Render production, the mobile app is EAS-ready, Android preview APK build preparation is complete, royal UI polish is complete, four-language multilingual UI is complete, multilingual PDF export is complete, release QA documentation is synchronized, and main is aligned with the latest production-ready milestone.
+
+Next major gate:
+
+Android real-device QA.
