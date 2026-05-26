@@ -123,17 +123,14 @@ export default function AnalyticsScreen() {
       {
         value: Number(summary.scheduled_appointments || 0),
         color: "#1d4ed8",
-        text: t("Scheduled", locale),
       },
       {
         value: Number(summary.completed_appointments || 0),
         color: "#15803d",
-        text: t("Completed", locale),
       },
       {
         value: Number(summary.cancelled_appointments || 0),
         color: "#b91c1c",
-        text: t("Cancelled", locale),
       },
     ].filter((x) => x.value > 0);
   }, [summary]);
@@ -347,11 +344,9 @@ export default function AnalyticsScreen() {
                 <PieChart
                   data={pieChartData}
                   donut
-                  showText
                   textColor="white"
                   radius={110}
                   innerRadius={58}
-                  textSize={11}
                   focusOnPress
                   strokeColor="#0a0b10"
                   strokeWidth={2}
