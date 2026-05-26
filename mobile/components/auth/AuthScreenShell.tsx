@@ -1,5 +1,6 @@
 import React from "react";
 import { UI } from "../../lib/theme/tokens";
+import LanguageSwitcher from "../ui/LanguageSwitcher";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -35,6 +36,7 @@ export default function AuthScreenShell({
             <Text style={styles.overline}>SALONFLOW AI</Text>
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.subtitle}>{subtitle}</Text>
+            <LanguageSwitcher />
           </View>
 
           <View style={styles.card}>{children}</View>

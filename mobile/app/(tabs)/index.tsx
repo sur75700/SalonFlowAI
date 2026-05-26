@@ -1,3 +1,4 @@
+import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import React from "react";
 import { UI } from "../../lib/theme/tokens";
 import { router } from "expo-router";
@@ -110,6 +111,7 @@ export default function OverviewScreen() {
             Premium salon command center for bookings, clients, services, analytics,
             and reporting—organized into focused operational sections.
           </Text>
+          <LanguageSwitcher />
         </View>
 
         <SessionActionBar
