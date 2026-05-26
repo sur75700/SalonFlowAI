@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -52,20 +53,22 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     justifyContent: "center",
-    padding: 22,
-    paddingBottom: 40,
+    padding: UI.spacing.screen,
+    paddingBottom: UI.spacing.bottom,
   },
   hero: {
-    marginBottom: 18,
+    marginBottom: UI.spacing.lg,
     backgroundColor: "#0a0b10",
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.xl,
+    boxShadow: UI.depth.hero,
+    elevation: 12,
     borderWidth: 1,
     borderColor: "#27212c",
   },
   overline: {
     color: "#f2d17a",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
     marginBottom: 10,
@@ -78,13 +81,15 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: "#b7adbf",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 22,
   },
   card: {
     backgroundColor: "#0f1118",
-    borderRadius: 26,
-    padding: 20,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    boxShadow: UI.depth.card,
+    elevation: 10,
     borderWidth: 1,
     borderColor: "#241f27",
   },

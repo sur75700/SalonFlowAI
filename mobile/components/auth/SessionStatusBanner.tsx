@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, View } from "react-native";
 
 type SessionStatusBannerProps = {
@@ -23,19 +24,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#141b30",
     borderWidth: 1,
     borderColor: "#2c4d8f",
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 16,
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    marginBottom: UI.spacing.md,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
   },
   title: {
     color: "#ffffff",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     fontWeight: "900",
     marginBottom: 6,
   },
   subtitle: {
     color: "#ced7f5",
-    fontSize: 14,
+    fontSize: UI.font.body,
     lineHeight: 20,
   },
 });
