@@ -459,10 +459,10 @@ export default function ServicesScreen() {
                   <>
                     <Text style={styles.cardTitle}>{service.name}</Text>
                     <Text style={styles.item}>
-                      Duration: {service.duration_minutes} min
+                      {t("Duration In Minutes", locale)}: {service.duration_minutes} {t("Minutes Short", locale)}
                     </Text>
                     <Text style={styles.item}>
-                      Price: {money(service.price, normalizeCurrency(service.currency))}
+                      {t("Price", locale)}: {money(service.price, normalizeCurrency(service.currency))}
                     </Text>
                     <View style={{ marginTop: 6, marginBottom: 6 }}>
                       <StatusBadge status={service.is_active ? "active" : "inactive"} />
