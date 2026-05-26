@@ -1,17 +1,16 @@
-export type AppLanguage = "en" | "hy" | "ru" | "fr";
+export type AppLanguage = "en" | "hy" | "ru";
 export type AppLocale = AppLanguage;
 export type Locale = AppLanguage;
 export type AppCurrency = "AMD" | "USD" | "EUR";
 
 export const defaultLanguage: AppLanguage = "en";
 export const defaultLocale: AppLocale = "en";
-export const supportedLanguages: AppLanguage[] = ["en", "hy", "ru", "fr"];
+export const supportedLanguages: AppLanguage[] = ["en", "hy", "ru"];
 
 export const languageLabels: Record<AppLanguage, string> = {
   en: "English",
   hy: "Հայերեն",
   ru: "Русский",
-  fr: "Français",
 };
 
 const dict: Record<string, string> = {
@@ -82,7 +81,6 @@ export const translations = {
   en: dict,
   hy: dict,
   ru: dict,
-  fr: dict,
 };
 
 export function t(key: string, locale: AppLanguage = defaultLanguage): string {
