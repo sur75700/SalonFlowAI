@@ -1,4 +1,5 @@
 import React from "react";
+import { UI } from "../../lib/theme/tokens";
 import { StyleSheet, Text, View } from "react-native";
 
 type Props = {
@@ -20,24 +21,27 @@ export default function ChartBlock({ title, subtitle, children }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     backgroundColor: "#0a0b10",
-    borderRadius: 28,
-    padding: 22,
-    marginBottom: 22,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.xl,
+    marginBottom: UI.spacing.lg,
     borderWidth: 1,
     borderColor: "#302838",
+    boxShadow: UI.depth.card,
+    elevation: 8,
   },
   title: {
     color: "#ffffff",
-    fontSize: 24,
+    fontSize: UI.font.title,
     fontWeight: "900",
     marginBottom: 4,
   },
   subtitle: {
     color: "#b7adbf",
-    fontSize: 14,
-    marginBottom: 14,
+    fontSize: UI.font.body,
+    lineHeight: 21,
+    marginBottom: UI.spacing.md,
   },
   chartBody: {
-    marginTop: 6,
+    marginTop: UI.spacing.xs,
   },
 });
