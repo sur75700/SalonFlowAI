@@ -241,6 +241,25 @@ async def export_daily_summary_pdf(
         leading=14,
         textColor=colors.HexColor("#222222"),
     )
+    table_header_style = ParagraphStyle(
+        "TableHeaderCustom",
+        parent=styles["Normal"],
+        fontName=bold_font,
+        fontSize=9,
+        leading=12,
+        textColor=colors.white,
+    )
+    table_cell_style = ParagraphStyle(
+        "TableCellCustom",
+        parent=styles["Normal"],
+        fontName=regular_font,
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor("#222222"),
+    )
+
+    def table_cell(value: object, bold: bool = False) -> Paragraph:
+        return Paragraph(str(value), table_header_style if bold else table_cell_style)
 
     story = []
 
@@ -263,14 +282,14 @@ async def export_daily_summary_pdf(
     story.append(Paragraph(pdf_text(locale, "overview"), section_style))
 
     overview_rows = [
-        [pdf_text(locale, "metric"), pdf_text(locale, "value")],
-        [pdf_text(locale, "total_clients"), str(total_clients)],
-        [pdf_text(locale, "total_services"), str(total_services)],
-        [pdf_text(locale, "total_appointments"), str(total_appointments)],
-        [pdf_text(locale, "appointments_on_date"), str(today_appointments)],
-        [pdf_text(locale, "scheduled_on_date"), str(scheduled_count)],
-        [pdf_text(locale, "completed_on_date"), str(completed_count)],
-        [pdf_text(locale, "cancelled_on_date"), str(cancelled_count)],
+        [table_cell(pdf_text(locale, "metric"), True), table_cell(pdf_text(locale, "value"), True)],
+        [table_cell(pdf_text(locale, "total_clients")), table_cell(total_clients)],
+        [table_cell(pdf_text(locale, "total_services")), table_cell(total_services)],
+        [table_cell(pdf_text(locale, "total_appointments")), table_cell(total_appointments)],
+        [table_cell(pdf_text(locale, "appointments_on_date")), table_cell(today_appointments)],
+        [table_cell(pdf_text(locale, "scheduled_on_date")), table_cell(scheduled_count)],
+        [table_cell(pdf_text(locale, "completed_on_date")), table_cell(completed_count)],
+        [table_cell(pdf_text(locale, "cancelled_on_date")), table_cell(cancelled_count)],
     ]
 
     overview_table = Table(
@@ -307,20 +326,20 @@ async def export_daily_summary_pdf(
         story.append(Paragraph(pdf_text(locale, "no_appointments"), body_style))
     else:
         rows = [[
-            pdf_text(locale, "start"),
-            pdf_text(locale, "client"),
-            pdf_text(locale, "service"),
-            pdf_text(locale, "status"),
-            pdf_text(locale, "notes"),
+            table_cell(pdf_text(locale, "start"), True),
+            table_cell(pdf_text(locale, "client"), True),
+            table_cell(pdf_text(locale, "service"), True),
+            table_cell(pdf_text(locale, "status"), True),
+            table_cell(pdf_text(locale, "notes"), True),
         ]]
         for item in appointments:
             rows.append(
                 [
-                    fmt_dt(item.get("starts_at")),
-                    item.get("client_name") or "-",
-                    item.get("service_name") or "-",
-                    pdf_status(locale, item.get("status")),
-                    (item.get("notes") or "-")[:70],
+                    table_cell(fmt_dt(item.get("starts_at"))),
+                    table_cell(item.get("client_name") or "-"),
+                    table_cell(item.get("service_name") or "-"),
+                    table_cell(pdf_status(locale, item.get("status"))),
+                    table_cell((item.get("notes") or "-")[:70]),
                 ]
             )
 
