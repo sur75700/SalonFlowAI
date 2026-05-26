@@ -283,7 +283,8 @@ async def export_daily_summary_pdf(
             [
                 ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#111827")),
                 ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTNAME", (0, 0), (-1, 0), bold_font),
+                ("FONTNAME", (0, 1), (-1, -1), regular_font),
                 ("FONTSIZE", (0, 0), (-1, -1), 10),
                 ("LEADING", (0, 0), (-1, -1), 13),
                 ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#F8FAFC")),
@@ -334,7 +335,8 @@ async def export_daily_summary_pdf(
                 [
                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#7C3AED")),
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTNAME", (0, 0), (-1, 0), bold_font),
+                    ("FONTNAME", (0, 1), (-1, -1), regular_font),
                     ("FONTSIZE", (0, 0), (-1, -1), 9),
                     ("LEADING", (0, 0), (-1, -1), 12),
                     ("BACKGROUND", (0, 1), (-1, -1), colors.white),
