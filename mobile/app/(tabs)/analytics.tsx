@@ -78,7 +78,7 @@ export default function AnalyticsScreen() {
     if (trend.length) {
       return trend.map((item: any, index: number) => ({
         value: Number(item.completed_revenue ?? item.revenue ?? item.value ?? 0),
-        label: item.date ? shortDay(item.date) : `D${index + 1}`,
+        label: item.date ? shortDay(item.date) : `${t("Day Short", locale)}${index + 1}`,
       }));
     }
 
@@ -95,7 +95,7 @@ export default function AnalyticsScreen() {
       { value: Math.round(total * 0.25), label: "D2" },
       { value: Math.round(total * 0.40), label: "D3" },
       { value: Math.round(total * 0.65), label: "D4" },
-      { value: total, label: "Now" },
+      { value: total, label: t("Now", locale) },
     ].filter((x) => x.value > 0);
   }, [analytics]);
 
@@ -107,7 +107,7 @@ export default function AnalyticsScreen() {
       [];
 
     return services.map((item: any) => {
-      const name = item.name ?? item.service_name ?? "Service";
+      const name = item.name ?? item.service_name ?? t("Service", locale);
       return {
         value: Number(item.revenue || 0),
         label: name.length > 10 ? name.slice(0, 10) + "…" : name,
@@ -123,17 +123,17 @@ export default function AnalyticsScreen() {
       {
         value: Number(summary.scheduled_appointments || 0),
         color: "#1d4ed8",
-        text: "Scheduled",
+        text: t("Scheduled", locale),
       },
       {
         value: Number(summary.completed_appointments || 0),
         color: "#15803d",
-        text: "Completed",
+        text: t("Completed", locale),
       },
       {
         value: Number(summary.cancelled_appointments || 0),
         color: "#b91c1c",
-        text: "Cancelled",
+        text: t("Cancelled", locale),
       },
     ].filter((x) => x.value > 0);
   }, [summary]);
