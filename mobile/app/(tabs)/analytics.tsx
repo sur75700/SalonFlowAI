@@ -140,28 +140,28 @@ export default function AnalyticsScreen() {
 
   const analyticsCards = [
     {
-      label: "Completed Revenue",
+      label: t("CompletedRevenue", locale),
       value: money(
         analytics?.completedRevenue ?? analytics?.completed_revenue ?? analytics?.total_revenue ?? analytics?.totals?.completed_revenue,
         normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
     {
-      label: "Scheduled Pipeline",
+      label: t("ScheduledPipeline", locale),
       value: money(
         analytics?.scheduledPipeline ?? analytics?.scheduled_pipeline ?? analytics?.totals?.scheduled_pipeline,
         normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
     {
-      label: "Cancelled Value",
+      label: t("Cancelled Value", locale),
       value: money(
         analytics?.cancelledValue ?? analytics?.cancelled_value ?? analytics?.totals?.cancelled_value,
         normalizeAnalyticsCurrency(analytics?.currency)
       ),
     },
     {
-      label: "Avg Completed Ticket",
+      label: t("Avg Completed Ticket", locale),
       value: money(
         analytics?.avgCompletedTicket ?? analytics?.avg_completed_ticket ?? analytics?.totals?.avg_completed_booking_value,
         normalizeAnalyticsCurrency(analytics?.currency)
@@ -427,87 +427,87 @@ export default function AnalyticsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: 22, paddingBottom: 40 },
+  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
     backgroundColor: "rgba(8, 10, 18, 0.92)",
-    borderRadius: 30,
-    padding: 28,
-    marginBottom: 24,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.xl,
+    marginBottom: UI.spacing.lg,
     borderWidth: 1,
     borderColor: "#27212c",
   },
   heroOverline: {
     color: "#f2d17a",
-    fontSize: 12,
+    fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
     marginBottom: 10,
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: 38,
+    fontSize: UI.font.hero,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: 15,
+    fontSize: UI.font.subtitle,
     lineHeight: 23,
   },
   analyticsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
-    marginBottom: 18,
+    marginBottom: UI.spacing.lg,
   },
   statSkeletonCard: {
     width: "48%",
     backgroundColor: "#11131d",
     borderWidth: 1,
     borderColor: "#241f27",
-    borderRadius: 20,
-    padding: 18,
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.lg,
   },
   sectionSkeleton: {
     backgroundColor: "#11131d",
     borderWidth: 1,
     borderColor: "#241f27",
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 18,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    marginBottom: UI.spacing.lg,
   },
   chartWrap: {
-    marginTop: 6,
-    paddingTop: 10,
+    marginTop: UI.spacing.xs,
+    paddingTop: UI.spacing.sm,
     overflow: "hidden",
   },
   pieWrap: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
+    paddingVertical: UI.spacing.sm,
   },
   legendWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 14,
-    marginTop: 12,
+    gap: UI.spacing.md,
+    marginTop: UI.spacing.sm,
     justifyContent: "center",
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: UI.spacing.xs,
   },
   legendDot: {
     width: 10,
     height: 10,
-    borderRadius: 999,
+    borderRadius: UI.radius.pill,
   },
   legendText: {
     color: "#d8dce6",
-    fontSize: 13,
+    fontSize: UI.font.overline,
     fontWeight: "700",
   },
   metricRow: {
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     color: "#f5d27a",
-    fontSize: 14,
+    fontSize: UI.font.body,
     fontWeight: "900",
   },
   item: {
@@ -531,9 +531,9 @@ const styles = StyleSheet.create({
   },
   errorBox: {
     backgroundColor: "#38161f",
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 16,
+    padding: UI.spacing.md,
+    borderRadius: UI.radius.md,
+    marginBottom: UI.spacing.md,
     borderWidth: 1,
     borderColor: "#5a232e",
   },
@@ -558,8 +558,8 @@ const styles = StyleSheet.create({
   executiveGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    marginTop: 8,
+    gap: UI.spacing.sm,
+    marginTop: UI.spacing.xs,
   },
   executiveCard: {
     flexBasis: "31%",
@@ -568,8 +568,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: UI.radius.md,
+    padding: UI.spacing.md,
+    boxShadow: UI.depth.soft,
+    elevation: 6,
   },
   executiveLabel: {
     color: "#c9c2cf",
