@@ -296,7 +296,6 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Client registry needs attention": "Le registre clients nécessite une attention",
 
     "Service CatalogHeroSubtitle": "Gérez les services, prix, durées et disponibilité depuis un catalogue propre.",
-    "Catalog Ready": "Catalogue des services prêt",
     "Services Session Ready Subtitle": "La gestion des services est prête.",
     "Create ServiceEntry": "Créer une fiche service",
     "Create ServiceEntrySubtitle": "Ajoutez le nom du service, la durée, le prix et le statut.",
@@ -382,6 +381,24 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Operator NotesLineTwo": "Les URL production s’ouvrent dans le navigateur externe et ne modifient pas les données de l’application.",
 
     "Session Unavailable Subtitle": "Connectez-vous pour accéder à cet espace.",
+    "Admin credentials loaded": "Identifiants admin chargés",
+    "Admin session restored": "Session admin restaurée",
+    "Booking flow needs attention": "Le flux de réservation nécessite une attention",
+    "Command Navigation": "Navigation de commande",
+    "Command NavigationSubtitle": "Accès rapide aux sections opérationnelles.",
+    "Quick Actions": "Actions rapides",
+    "Quick Actions Subtitle": "Raccourcis pour les opérations les plus courantes.",
+    "Executive Snapshot Subtitle": "Vue d’ensemble rapide des indicateurs opérationnels.",
+    "Insights Info Subtitle": "Vue analytique des revenus, services et réservations.",
+    "Pdf ReportsInfoSubtitle": "Exportez des rapports PDF quotidiens pour les opérations du salon.",
+    "AppointmentsInfoSubtitle": "Gérer les visites, horaires et statuts de réservation.",
+    "ClientsInfoSubtitle": "Gérer les informations clients et les contacts.",
+    "TodayLabel": "Aujourd’hui",
+    "Total Label": "Total",
+    "Upcoming Label": "À venir",
+    "Operations Ready": "Opérations prêtes",
+    "Catalog Ready": "Catalogue prêt",
+    "ServicesSessionReadySubtitle": "Le catalogue des services est prêt.",
 
   },
   hy: {
