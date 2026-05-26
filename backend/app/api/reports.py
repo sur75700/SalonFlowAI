@@ -95,11 +95,36 @@ PDF_TRANSLATIONS = {
         "completed": "Завершено",
         "cancelled": "Отменено",
     },
+    "fr": {
+        "title": "SalonFlow AI - Rapport quotidien",
+        "report_date": "Date du rapport",
+        "generated_at": "Généré le",
+        "overview": "Vue d’ensemble",
+        "metric": "Indicateur",
+        "value": "Valeur",
+        "total_clients": "Total des clients",
+        "total_services": "Total des services",
+        "total_appointments": "Total des réservations",
+        "appointments_on_date": "Réservations à la date sélectionnée",
+        "scheduled_on_date": "Planifiées à cette date",
+        "completed_on_date": "Terminées à cette date",
+        "cancelled_on_date": "Annulées à cette date",
+        "appointments": "Réservations",
+        "no_appointments": "Aucune réservation trouvée pour cette date.",
+        "start": "Début",
+        "client": "Client",
+        "service": "Service",
+        "status": "Statut",
+        "notes": "Notes",
+        "scheduled": "Planifié",
+        "completed": "Terminé",
+        "cancelled": "Annulé",
+    },
 }
 
 
 def normalize_locale(value: str | None) -> str:
-    if value in {"en", "hy", "ru"}:
+    if value in {"en", "hy", "ru", "fr"}:
         return value
     return "en"
 
