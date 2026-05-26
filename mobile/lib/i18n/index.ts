@@ -1,18 +1,19 @@
 import { translations as nestedTranslations } from "../../translations";
 
-export type AppLanguage = "en" | "hy" | "ru";
+export type AppLanguage = "en" | "hy" | "ru" | "fr";
 export type AppLocale = AppLanguage;
 export type Locale = AppLanguage;
 export type AppCurrency = "AMD" | "USD" | "EUR";
 
 export const defaultLanguage: AppLanguage = "en";
 export const defaultLocale: AppLocale = "en";
-export const supportedLanguages: AppLanguage[] = ["en", "hy", "ru"];
+export const supportedLanguages: AppLanguage[] = ["en", "hy", "ru", "fr"];
 
 export const languageLabels: Record<AppLanguage, string> = {
   en: "English",
   hy: "Հայերեն",
   ru: "Русский",
+  fr: "Français",
 };
 
 
@@ -170,6 +171,7 @@ const dict: Record<string, string> = {
 
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
+  fr: {},
   hy: {
     "Full Name": "Անուն Ազգանուն",
     "Phone": "Հեռախոս",
@@ -538,6 +540,7 @@ export const translations = {
   en: dict,
   hy: dict,
   ru: dict,
+  fr: dict,
 };
 
 export function t(key: string, locale: AppLanguage = defaultLanguage): string {
