@@ -10,6 +10,13 @@ export const api = axios.create({
   timeout: 15000,
 });
 
+type BrowserStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+
+function getBrowserStorage(): BrowserStorage | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage ?? null;
+}
+
 export function authHeaders(token?: string) {
   return token
     ? {
@@ -38,24 +45,19 @@ export async function saveTokenFromCredentials(
     throw new Error("No access token returned");
   }
 
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEYS.token, token);
-  }
+  getBrowserStorage()?.setItem(STORAGE_KEYS.token, token);
 
   return token;
 }
 
 export function readStoredToken(): string {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem(STORAGE_KEYS.token) || "";
+  return getBrowserStorage()?.getItem(STORAGE_KEYS.token) || "";
 }
 
 export function writeStoredToken(token: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEYS.token, token);
+  getBrowserStorage()?.setItem(STORAGE_KEYS.token, token);
 }
 
 export function clearStoredToken() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(STORAGE_KEYS.token);
+  getBrowserStorage()?.removeItem(STORAGE_KEYS.token);
 }
