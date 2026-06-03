@@ -35,12 +35,13 @@ export function getApiBaseUrl(): string {
 
   const extra = getExtra();
 
-  const webDefault = "http://127.0.0.1:8000";
-  const nativeDefault = "http://10.0.2.2:8000";
+  const productionDefault = "https://salonflowai-backend.onrender.com";
+  const webDefault = extra.apiBaseUrlWeb || productionDefault;
+  const nativeDefault = extra.apiBaseUrlNative || productionDefault;
 
   if (Platform.OS === "web") {
-    return extra.apiBaseUrlWeb || webDefault;
+    return webDefault;
   }
 
-  return extra.apiBaseUrlNative || nativeDefault;
+  return nativeDefault;
 }
