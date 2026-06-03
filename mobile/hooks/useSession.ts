@@ -9,10 +9,20 @@ import { getTokenEmail } from "../lib/jwt";
 
 const SESSION_EVENT = "salonflow-session-changed";
 
+function canUseBrowserSessionEvents(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.addEventListener === "function" &&
+    typeof window.removeEventListener === "function" &&
+    typeof window.dispatchEvent === "function" &&
+    typeof Event === "function"
+  );
+}
+
 function emitSessionChanged() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(SESSION_EVENT));
-  }
+  if (!canUseBrowserSessionEvents()) return;
+
+  window.dispatchEvent(new Event(SESSION_EVENT));
 }
 
 export function useSession() {
@@ -28,17 +38,17 @@ export function useSession() {
 
     syncFromStorage();
 
-    if (typeof window !== "undefined") {
-      window.addEventListener(SESSION_EVENT, syncFromStorage);
-      window.addEventListener("storage", syncFromStorage);
-
-      return () => {
-        window.removeEventListener(SESSION_EVENT, syncFromStorage);
-        window.removeEventListener("storage", syncFromStorage);
-      };
+    if (!canUseBrowserSessionEvents()) {
+      return;
     }
 
-    return;
+    window.addEventListener(SESSION_EVENT, syncFromStorage);
+    window.addEventListener("storage", syncFromStorage);
+
+    return () => {
+      window.removeEventListener(SESSION_EVENT, syncFromStorage);
+      window.removeEventListener("storage", syncFromStorage);
+    };
   }, []);
 
   const setToken = (nextToken: string) => {
