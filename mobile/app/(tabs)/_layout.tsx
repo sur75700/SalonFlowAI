@@ -18,14 +18,14 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: "#0a0b10",
           borderTopColor: "#1e2230",
-          height: 68,
-          paddingBottom: UI.spacing.xs,
-          paddingTop: UI.spacing.xs,
+          height: 74,
+          paddingBottom: 10,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: UI.font.tiny,
+          fontSize: 10,
           fontWeight: "900",
-          letterSpacing: 0.2,
+          letterSpacing: 0,
         },
         tabBarIconStyle: {
           marginBottom: 1,
@@ -62,7 +62,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="services"
         options={{
-          title: t("Service Catalog", locale),
+          title: t("Services", locale),
           tabBarIcon: ({ color }) => (
             <IconSymbol name="scissors" color={color} size={22} />
           ),
@@ -80,7 +80,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="reports"
         options={{
-          title: t("Pdf Reports", locale),
+          title: "Reports",
           tabBarIcon: ({ color }) => (
             <IconSymbol name="doc.text.fill" color={color} size={22} />
           ),

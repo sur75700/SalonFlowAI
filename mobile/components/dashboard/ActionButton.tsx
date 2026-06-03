@@ -28,7 +28,7 @@ export default function ActionButton({
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={styles.text} numberOfLines={1}>
+      <Text style={styles.text} numberOfLines={2} adjustsFontSizeToFit>
         {title}
       </Text>
     </TouchableOpacity>
@@ -38,10 +38,10 @@ export default function ActionButton({
 const styles = StyleSheet.create({
   button: {
     flex: 1,
-    minWidth: 118,
+    minWidth: 104,
     borderRadius: UI.radius.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#171b27",
@@ -67,9 +67,11 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#ffffff",
-    fontSize: UI.font.body,
+    fontSize: 13,
     fontWeight: "900",
-    letterSpacing: 1.4,
+    letterSpacing: 0.8,
     textTransform: "uppercase",
+    textAlign: "center",
+    lineHeight: 17,
   },
 });
