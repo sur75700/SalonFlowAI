@@ -9,6 +9,9 @@ import { getTokenEmail } from "../lib/jwt";
 
 const SESSION_EVENT = "salonflow-session-changed";
 
+let memoryToken = "";
+const listeners = new Set<(token: string) => void>();
+
 function canUseBrowserSessionEvents(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -19,10 +22,20 @@ function canUseBrowserSessionEvents(): boolean {
   );
 }
 
-function emitSessionChanged() {
-  if (!canUseBrowserSessionEvents()) return;
+function getCurrentToken(): string {
+  return memoryToken || readStoredToken();
+}
 
-  window.dispatchEvent(new Event(SESSION_EVENT));
+function notifySessionChanged(nextToken: string) {
+  memoryToken = nextToken;
+
+  listeners.forEach((listener) => {
+    listener(nextToken);
+  });
+
+  if (canUseBrowserSessionEvents()) {
+    window.dispatchEvent(new Event(SESSION_EVENT));
+  }
 }
 
 export function useSession() {
@@ -31,36 +44,43 @@ export function useSession() {
 
   useEffect(() => {
     const syncFromStorage = () => {
-      const stored = readStoredToken();
+      const stored = getCurrentToken();
       setTokenState(stored);
       setBooting(false);
     };
 
+    const syncFromMemory = (nextToken: string) => {
+      setTokenState(nextToken);
+      setBooting(false);
+    };
+
+    listeners.add(syncFromMemory);
     syncFromStorage();
 
-    if (!canUseBrowserSessionEvents()) {
-      return;
+    if (canUseBrowserSessionEvents()) {
+      window.addEventListener(SESSION_EVENT, syncFromStorage);
+      window.addEventListener("storage", syncFromStorage);
+
+      return () => {
+        listeners.delete(syncFromMemory);
+        window.removeEventListener(SESSION_EVENT, syncFromStorage);
+        window.removeEventListener("storage", syncFromStorage);
+      };
     }
 
-    window.addEventListener(SESSION_EVENT, syncFromStorage);
-    window.addEventListener("storage", syncFromStorage);
-
     return () => {
-      window.removeEventListener(SESSION_EVENT, syncFromStorage);
-      window.removeEventListener("storage", syncFromStorage);
+      listeners.delete(syncFromMemory);
     };
   }, []);
 
   const setToken = (nextToken: string) => {
     writeStoredToken(nextToken);
-    setTokenState(nextToken);
-    emitSessionChanged();
+    notifySessionChanged(nextToken);
   };
 
   const clearToken = () => {
     clearStoredToken();
-    setTokenState("");
-    emitSessionChanged();
+    notifySessionChanged("");
   };
 
   const sessionEmail = useMemo(() => getTokenEmail(token), [token]);
