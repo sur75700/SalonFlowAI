@@ -17,29 +17,24 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#f7da85",
-        tabBarInactiveTintColor: "#b0b6c3",
-        tabBarActiveBackgroundColor: "rgba(242, 209, 122, 0.07)",
+        tabBarInactiveTintColor: "#aab2c0",
+        tabBarActiveBackgroundColor: "transparent",
         tabBarButton: HapticTab,
         tabBarHideOnKeyboard: true,
+        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: "#08090d",
           borderTopColor: "#2a2f3d",
           borderTopWidth: 1,
-          height: 66 + bottomInset,
+          height: 58 + bottomInset,
           paddingBottom: bottomInset,
-          paddingTop: 8,
+          paddingTop: 6,
         },
         tabBarItemStyle: {
-          paddingVertical: 2,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: "900",
-          letterSpacing: 0.1,
-          lineHeight: 12,
-          marginTop: 1,
+          paddingVertical: 0,
         },
         tabBarIconStyle: {
+          marginTop: 1,
           marginBottom: 0,
         },
       }}
@@ -49,7 +44,7 @@ export default function TabsLayout() {
         options={{
           title: t("Dashboard", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="house.fill" color={color} size={24} />
+            <IconSymbol name="house.fill" color={color} size={26} />
           ),
         }}
       />
@@ -58,7 +53,7 @@ export default function TabsLayout() {
         options={{
           title: t("Bookings", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="calendar" color={color} size={24} />
+            <IconSymbol name="calendar" color={color} size={26} />
           ),
         }}
       />
@@ -67,7 +62,7 @@ export default function TabsLayout() {
         options={{
           title: t("Clients", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="person.2.fill" color={color} size={24} />
+            <IconSymbol name="person.2.fill" color={color} size={26} />
           ),
         }}
       />
@@ -76,7 +71,7 @@ export default function TabsLayout() {
         options={{
           title: t("Services", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="scissors" color={color} size={24} />
+            <IconSymbol name="scissors" color={color} size={26} />
           ),
         }}
       />
@@ -85,7 +80,7 @@ export default function TabsLayout() {
         options={{
           title: t("Insights", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="chart.bar.fill" color={color} size={24} />
+            <IconSymbol name="chart.bar.fill" color={color} size={26} />
           ),
         }}
       />
@@ -94,7 +89,7 @@ export default function TabsLayout() {
         options={{
           title: "Reports",
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="doc.text.fill" color={color} size={24} />
+            <IconSymbol name="doc.text.fill" color={color} size={26} />
           ),
         }}
       />
