@@ -6,8 +6,11 @@ import { IconSymbol } from "../../components/ui/icon-symbol";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 12);
   const { locale } = useAppPreferences();
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 12);
