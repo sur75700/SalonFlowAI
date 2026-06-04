@@ -200,22 +200,32 @@ export default function OverviewScreen() {
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
+              compact
+              style={styles.quickActionCell}
               title={t("Bookings", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
+              compact
+              style={styles.quickActionCell}
               title={t("Clients", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
+              compact
+              style={styles.quickActionCell}
               title={t("Services", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
+              compact
+              style={styles.quickActionCell}
               title={t("Insights", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
+              compact
+              style={styles.quickActionCell}
               title="Reports"
               onPress={() => router.navigate("/(tabs)/reports")}
             />
@@ -387,6 +397,11 @@ const styles = StyleSheet.create({
   quickActionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
+    rowGap: 12,
+    columnGap: 12,
+  },
+  quickActionCell: {
+    width: "48%",
   },
 });
