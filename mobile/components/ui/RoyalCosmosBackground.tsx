@@ -19,10 +19,10 @@ export default function RoyalCosmosBackground({
   return (
     <SafeAreaView style={[styles.container, style]}>
       <View pointerEvents="none" style={styles.cosmosLayer}>
-        <View style={[styles.glow, styles.indigoGlow]} />
-        <View style={[styles.glow, styles.violetGlow]} />
-        <View style={[styles.glow, styles.blueMist]} />
-        <View style={styles.deepFade} />
+        <View style={styles.topNebula} />
+        <View style={styles.midnightBand} />
+        <View style={styles.violetHorizon} />
+        <View style={styles.bottomDepth} />
       </View>
 
       <View style={styles.content}>{children}</View>
@@ -40,34 +40,37 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "#050713",
   },
-  glow: {
+  topNebula: {
     position: "absolute",
-    borderRadius: 999,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "38%",
+    backgroundColor: "rgba(35, 42, 90, 0.34)",
   },
-  indigoGlow: {
-    width: 360,
-    height: 360,
-    top: -120,
-    right: -140,
-    backgroundColor: "rgba(79, 70, 229, 0.18)",
+  midnightBand: {
+    position: "absolute",
+    top: "24%",
+    left: 0,
+    right: 0,
+    height: "44%",
+    backgroundColor: "rgba(16, 24, 52, 0.42)",
   },
-  violetGlow: {
-    width: 300,
-    height: 300,
-    top: 180,
-    left: -160,
-    backgroundColor: "rgba(124, 58, 237, 0.12)",
+  violetHorizon: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: "16%",
+    height: "30%",
+    backgroundColor: "rgba(64, 38, 108, 0.2)",
   },
-  blueMist: {
-    width: 260,
-    height: 260,
-    bottom: -120,
-    right: 20,
-    backgroundColor: "rgba(14, 165, 233, 0.08)",
-  },
-  deepFade: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(4, 5, 8, 0.72)",
+  bottomDepth: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "34%",
+    backgroundColor: "rgba(4, 5, 8, 0.7)",
   },
   content: {
     flex: 1,
