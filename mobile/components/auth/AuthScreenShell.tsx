@@ -1,10 +1,10 @@
 import React from "react";
 import { UI } from "../../lib/theme/tokens";
 import LanguageSwitcher from "../ui/LanguageSwitcher";
+import RoyalCosmosBackground from "../ui/RoyalCosmosBackground";
 import {
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,7 +23,7 @@ export default function AuthScreenShell({
   children,
 }: AuthScreenShellProps) {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -42,7 +42,7 @@ export default function AuthScreenShell({
           <View style={styles.card}>{children}</View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
