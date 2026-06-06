@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import SessionActionBar from "../../components/auth/SessionActionBar";
 import ActionButton from "../../components/dashboard/ActionButton";
 import SectionCard from "../../components/dashboard/SectionCard";
 import EmptyState from "../../components/ui/EmptyState";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { useToast } from "../../components/ui/Toast";
 import { useConfirmAction } from "../../hooks/useConfirmAction";
@@ -37,7 +37,7 @@ const emptyClientForm = {
 
 function ClientsSkeleton() {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
           keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}>
@@ -66,7 +66,7 @@ function ClientsSkeleton() {
           <LoadingSkeleton height={122} width="100%" />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -214,7 +214,7 @@ export default function ClientsScreen() {
   const noSearchMatches = clients.length > 0 && filteredClients.length === 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -393,7 +393,7 @@ export default function ClientsScreen() {
           )}
         </SectionCard>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 

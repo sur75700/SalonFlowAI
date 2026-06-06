@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import {
   Platform,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +17,7 @@ import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import EmptyState from "../../components/ui/EmptyState";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { t } from "../../lib/i18n";
 import type { AppCurrency } from "../../lib/i18n/types";
@@ -30,7 +30,7 @@ import { UI } from "../../lib/theme/tokens";
 
 function AnalyticsSkeleton() {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <LoadingSkeleton height={12} width={110} style={{ marginBottom: 12 }} />
@@ -56,7 +56,7 @@ function AnalyticsSkeleton() {
           </View>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -180,7 +180,7 @@ export default function AnalyticsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -416,7 +416,7 @@ export default function AnalyticsScreen() {
           </View>
         </ChartBlock>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 

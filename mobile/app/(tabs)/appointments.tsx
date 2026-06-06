@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import ActionButton from "../../components/dashboard/ActionButton";
 import SectionCard from "../../components/dashboard/SectionCard";
 import EmptyState from "../../components/ui/EmptyState";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import FilterChip from "../../components/ui/FilterChip";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import StatusBadge from "../../components/ui/StatusBadge";
@@ -62,7 +62,7 @@ const emptyEditForm = {
 
 function AppointmentsSkeleton() {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
           keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}>
@@ -91,7 +91,7 @@ function AppointmentsSkeleton() {
           <LoadingSkeleton height={138} width="100%" />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -314,7 +314,7 @@ export default function AppointmentsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -801,7 +801,7 @@ export default function AppointmentsScreen() {
           )}
         </SectionCard>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 

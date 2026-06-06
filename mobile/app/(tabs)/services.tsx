@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,6 +16,7 @@ import SessionActionBar from "../../components/auth/SessionActionBar";
 import ActionButton from "../../components/dashboard/ActionButton";
 import SectionCard from "../../components/dashboard/SectionCard";
 import EmptyState from "../../components/ui/EmptyState";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { useToast } from "../../components/ui/Toast";
@@ -50,7 +50,7 @@ const emptyEditForm = {
 
 function ServicesSkeleton() {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
           keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}>
@@ -79,7 +79,7 @@ function ServicesSkeleton() {
           <LoadingSkeleton height={122} width="100%" />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -261,7 +261,7 @@ export default function ServicesScreen() {
   const noSearchMatches = services.length > 0 && filteredServices.length === 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -488,7 +488,7 @@ export default function ServicesScreen() {
           )}
         </SectionCard>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
