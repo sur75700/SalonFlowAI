@@ -4,7 +4,6 @@ import { UI } from "../../lib/theme/tokens";
 import { router } from "expo-router";
 import {
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,6 +19,7 @@ import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import { useSummaryData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -27,7 +27,7 @@ import { t } from "../../lib/i18n";
 
 function OverviewSkeleton() {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <LoadingSkeleton height={12} width={110} style={{ marginBottom: 12 }} />
@@ -53,7 +53,7 @@ function OverviewSkeleton() {
           <LoadingSkeleton height={48} width="100%" />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -97,7 +97,7 @@ export default function OverviewScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -272,7 +272,7 @@ export default function OverviewScreen() {
           </View>
         </SectionCard>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
