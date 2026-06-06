@@ -708,8 +708,10 @@ export default function AppointmentsScreen() {
                       multiline
                     />
 
-                    <View style={styles.actionRow}>
+                    <View style={styles.registryActionRow}>
                       <ActionButton
+                        compact
+                        style={styles.registryActionCell}
                         title={
                           savingAppointmentId === appointment.id
                             ? t("Working", locale)
@@ -719,7 +721,12 @@ export default function AppointmentsScreen() {
                         disabled={savingAppointmentId === appointment.id}
                         tone="success"
                       />
-                      <ActionButton title={t("Cancel", locale)} onPress={cancelEditAppointment} />
+                      <ActionButton
+                        compact
+                        style={styles.registryActionCell}
+                        title={t("Cancel", locale)}
+                        onPress={cancelEditAppointment}
+                      />
                     </View>
                   </>
                 ) : (
@@ -743,12 +750,17 @@ export default function AppointmentsScreen() {
                     <Text style={styles.item}>
                       {t("End Label", locale)}: {formatDateTime(appointment.ends_at)}
                     </Text>
-                    <Text style={styles.item}>
+                    <Text
+                      style={[styles.item, styles.notesItem]}
+                      numberOfLines={2}
+                    >
                       {t("Notes", locale)}: {appointment.notes || "-"}
                     </Text>
 
-                    <View style={styles.actionRow}>
+                    <View style={styles.registryActionRow}>
                       <ActionButton
+                        compact
+                        style={styles.registryActionCell}
                         title={t("Edit", locale)}
                         onPress={() => startEditAppointment(appointment)}
                         tone="success"
@@ -756,12 +768,16 @@ export default function AppointmentsScreen() {
                       {appointment.status === "scheduled" ? (
                         <>
                           <ActionButton
+                            compact
+                            style={styles.registryActionCell}
                             title={workingId === appointment.id ? t("Working", locale) : t("Complete", locale)}
                             onPress={() => handleCompleteAppointment(appointment.id)}
                             disabled={workingId === appointment.id}
                             tone="success"
                           />
                           <ActionButton
+                            compact
+                            style={styles.registryActionCell}
                             title={workingId === appointment.id ? t("Working", locale) : t("Cancel", locale)}
                             onPress={() => handleCancelAppointment(appointment.id)}
                             disabled={workingId === appointment.id}
@@ -770,6 +786,8 @@ export default function AppointmentsScreen() {
                         </>
                       ) : null}
                       <ActionButton
+                        compact
+                        style={styles.registryActionCell}
                         title={workingId === appointment.id ? t("Working", locale) : t("Delete", locale)}
                         onPress={() => handleDeleteAppointment(appointment)}
                         disabled={workingId === appointment.id}
@@ -874,13 +892,13 @@ const styles = StyleSheet.create({
   },
   appointmentCard: {
     backgroundColor: "#11131d",
-    borderRadius: UI.radius.xl,
-    padding: UI.spacing.lg,
-    marginBottom: UI.spacing.md,
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    marginBottom: UI.spacing.sm,
     boxShadow: UI.depth.soft,
-    elevation: 6,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: "#241f27",
+    borderColor: "#2a2f3a",
   },
   dayCard: {
     backgroundColor: "#141824",
@@ -903,23 +921,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    gap: 12,
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 8,
   },
   cardTitle: {
     color: "#ffffff",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "900",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   cardMuted: {
     color: "#b7adbf",
-    fontSize: UI.font.overline,
+    fontSize: 13,
+    lineHeight: 18,
   },
   item: {
     color: "#ece7ef",
-    fontSize: UI.font.body,
-    marginBottom: 4,
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 3,
+  },
+  notesItem: {
+    color: "#c9c2cf",
+    marginBottom: 8,
   },
   label: {
     color: "#f5d27a",
@@ -931,6 +955,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+  },
+  registryActionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 8,
+    columnGap: 8,
+    marginTop: 8,
+  },
+  registryActionCell: {
+    width: "48%",
   },
   errorBox: {
     backgroundColor: "#38161f",

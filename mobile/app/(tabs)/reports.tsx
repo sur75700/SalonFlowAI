@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 import {
+  Platform,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -81,21 +84,57 @@ export default function ReportsScreen() {
       return;
     }
 
-    if (typeof window === "undefined") {
-      setError(t("Export Ui Web Only", locale));
-      return;
-    }
+    const fileName = "salonflow_daily_summary_" + reportDate + ".pdf";
+    const url =
+      API_BASE_URL +
+      "/reports/daily-summary/pdf?date=" +
+      encodeURIComponent(reportDate) +
+      "&locale=" +
+      encodeURIComponent(locale);
 
     try {
       setExportingPdf(true);
       setError("");
 
-      const url =
-        API_BASE_URL +
-        "/reports/daily-summary/pdf?date=" +
-        encodeURIComponent(reportDate) +
-        "&locale=" +
-        encodeURIComponent(locale);
+      if (Platform.OS !== "web") {
+        const fileUri = (FileSystem.documentDirectory || "") + fileName;
+
+        const result = await FileSystem.downloadAsync(url, fileUri, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const fakeErr = {
+          response: {
+            status: result.status,
+            data: { detail: t("Failed To Export Pdf", locale) },
+          },
+        };
+
+        if (isAuthError(fakeErr)) {
+          clearToken();
+          return;
+        }
+
+        if (result.status < 200 || result.status >= 300) {
+          throw new Error(t("Failed To Export Pdf", locale));
+        }
+
+        const canShare = await Sharing.isAvailableAsync();
+
+        if (!canShare) {
+          throw new Error(t("Failed To Export Pdf", locale));
+        }
+
+        await Sharing.shareAsync(result.uri, {
+          mimeType: "application/pdf",
+          dialogTitle: "SalonFlow AI PDF Report",
+          UTI: "com.adobe.pdf",
+        });
+
+        return;
+      }
 
       const response = await fetch(url, {
         method: "GET",
@@ -132,7 +171,7 @@ export default function ReportsScreen() {
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = "salonflow_daily_summary_" + reportDate + ".pdf";
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       link.remove();

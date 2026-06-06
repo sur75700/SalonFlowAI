@@ -5,30 +5,37 @@ import { HapticTab } from "../../components/haptic-tab";
 import { IconSymbol } from "../../components/ui/icon-symbol";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const { locale } = useAppPreferences();
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 12);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#f2d17a",
-        tabBarInactiveTintColor: "#8f96a3",
+        tabBarActiveTintColor: "#f7da85",
+        tabBarInactiveTintColor: "#aab2c0",
+        tabBarActiveBackgroundColor: "transparent",
         tabBarButton: HapticTab,
+        tabBarHideOnKeyboard: true,
+        tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: "#0a0b10",
-          borderTopColor: "#1e2230",
-          height: 68,
-          paddingBottom: UI.spacing.xs,
-          paddingTop: UI.spacing.xs,
+          backgroundColor: "#08090d",
+          borderTopColor: "#2a2f3d",
+          borderTopWidth: 1,
+          height: 58 + bottomInset,
+          paddingBottom: bottomInset,
+          paddingTop: 6,
         },
-        tabBarLabelStyle: {
-          fontSize: UI.font.tiny,
-          fontWeight: "900",
-          letterSpacing: 0.2,
+        tabBarItemStyle: {
+          paddingVertical: 0,
         },
         tabBarIconStyle: {
-          marginBottom: 1,
+          marginTop: 1,
+          marginBottom: 0,
         },
       }}
     >
@@ -37,7 +44,7 @@ export default function TabsLayout() {
         options={{
           title: t("Dashboard", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="house.fill" color={color} size={22} />
+            <IconSymbol name="house.fill" color={color} size={26} />
           ),
         }}
       />
@@ -46,7 +53,7 @@ export default function TabsLayout() {
         options={{
           title: t("Bookings", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="calendar" color={color} size={22} />
+            <IconSymbol name="calendar" color={color} size={26} />
           ),
         }}
       />
@@ -55,16 +62,16 @@ export default function TabsLayout() {
         options={{
           title: t("Clients", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="person.2.fill" color={color} size={22} />
+            <IconSymbol name="person.2.fill" color={color} size={26} />
           ),
         }}
       />
       <Tabs.Screen
         name="services"
         options={{
-          title: t("Service Catalog", locale),
+          title: t("Services", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="scissors" color={color} size={22} />
+            <IconSymbol name="scissors" color={color} size={26} />
           ),
         }}
       />
@@ -73,16 +80,16 @@ export default function TabsLayout() {
         options={{
           title: t("Insights", locale),
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="chart.bar.fill" color={color} size={22} />
+            <IconSymbol name="chart.bar.fill" color={color} size={26} />
           ),
         }}
       />
       <Tabs.Screen
         name="reports"
         options={{
-          title: t("Pdf Reports", locale),
+          title: "Reports",
           tabBarIcon: ({ color }) => (
-            <IconSymbol name="doc.text.fill" color={color} size={22} />
+            <IconSymbol name="doc.text.fill" color={color} size={26} />
           ),
         }}
       />
