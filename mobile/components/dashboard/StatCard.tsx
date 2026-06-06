@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     maxWidth: 260,
     backgroundColor: "#0a0b10",
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.xl,
+    padding: UI.spacing.md,
     borderWidth: 1,
     boxShadow: UI.depth.card,
     elevation: 10,
@@ -42,9 +42,9 @@ const styles = StyleSheet.create({
   },
   value: {
     color: "#f5d27a",
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "900",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   valueAccent: {
     color: "#c4a1ff",
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
     fontSize: UI.font.tiny,
     fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 1.1,
+    letterSpacing: 0.7,
   },
 });

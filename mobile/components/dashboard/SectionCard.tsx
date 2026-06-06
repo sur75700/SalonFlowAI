@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#0e121c",
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.xl,
-    marginBottom: 24,
+    padding: UI.spacing.lg,
+    marginBottom: 18,
     borderWidth: 1,
     boxShadow: UI.depth.hero,
     elevation: 10,
@@ -45,14 +45,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#ffffff",
-    fontSize: UI.font.title,
+    fontSize: 21,
     fontWeight: "900",
     marginBottom: 6,
   },
   subtitle: {
     color: "#b7adbf",
     fontSize: UI.font.body,
-    lineHeight: 21,
+    lineHeight: 20,
   },
   body: {
     gap: 10,

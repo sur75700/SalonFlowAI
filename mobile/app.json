@@ -49,7 +49,7 @@
     },
     "extra": {
       "apiBaseUrlWeb": "http://127.0.0.1:8000",
-      "apiBaseUrlNative": "http://192.168.10.17:8000",
+      "apiBaseUrlNative": "https://salonflowai-backend.onrender.com",
       "router": {},
       "eas": {
         "projectId": "fbbd9eef-c2cd-4169-a12c-8efb81c654eb"

@@ -12,7 +12,7 @@ type SessionActionBarProps = {
 };
 
 export default function SessionActionBar({
-  email,
+  email: _email,
   onLogout,
   loggingOut = false,
 }: SessionActionBarProps) {
@@ -23,9 +23,7 @@ export default function SessionActionBar({
         <Text style={styles.label}>{t.workspace.sessionLabel}</Text>
         <Text style={styles.title}>{t.session.adminSessionActive}</Text>
         <Text style={styles.subtitle}>
-          {email
-            ? `${t.session.signedInAsPrefix} ${email}`
-            : t.session.fallbackSignedIn}
+          {t.session.fallbackSignedIn}
         </Text>
       </View>
 
@@ -64,7 +62,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#ffffff",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "900",
   },
   subtitle: {

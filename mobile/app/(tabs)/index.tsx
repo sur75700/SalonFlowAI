@@ -200,23 +200,33 @@ export default function OverviewScreen() {
         >
           <View style={styles.quickActionsGrid}>
             <ActionButton
-              title={t("Open Bookings", locale)}
+              compact
+              style={styles.quickActionCell}
+              title={t("Bookings", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
-              title={t("Open Clients", locale)}
+              compact
+              style={styles.quickActionCell}
+              title={t("Clients", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
-              title={t("Open Service Catalog", locale)}
+              compact
+              style={styles.quickActionCell}
+              title={t("Services", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
-              title={t("Open Insights", locale)}
+              compact
+              style={styles.quickActionCell}
+              title={t("Insights", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
-              title={t("Open Pdf Reports", locale)}
+              compact
+              style={styles.quickActionCell}
+              title="Reports"
               onPress={() => router.navigate("/(tabs)/reports")}
             />
           </View>
@@ -268,7 +278,7 @@ export default function OverviewScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
+  content: { padding: 16, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
     elevation: 12,
@@ -288,7 +298,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: UI.font.hero,
+    fontSize: 32,
     fontWeight: "900",
     marginBottom: 8,
   },
@@ -387,6 +397,11 @@ const styles = StyleSheet.create({
   quickActionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    justifyContent: "space-between",
+    rowGap: 12,
+    columnGap: 12,
+  },
+  quickActionCell: {
+    width: "48%",
   },
 });
