@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  ImageBackground,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -18,14 +19,19 @@ export default function RoyalCosmosBackground({
 }: RoyalCosmosBackgroundProps) {
   return (
     <SafeAreaView style={[styles.container, style]}>
-      <View pointerEvents="none" style={styles.cosmosLayer}>
-        <View style={styles.topNebula} />
-        <View style={styles.midnightBand} />
-        <View style={styles.violetHorizon} />
-        <View style={styles.bottomDepth} />
-      </View>
+      <ImageBackground
+        source={require("../../assets/backgrounds/royal-cosmos.jpg")}
+        resizeMode="cover"
+        style={styles.image}
+      >
+        <View pointerEvents="none" style={styles.overlay}>
+          <View style={styles.darkVeil} />
+          <View style={styles.blueCalmLayer} />
+          <View style={styles.bottomDepth} />
+        </View>
 
-      <View style={styles.content}>{children}</View>
+        <View style={styles.content}>{children}</View>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
@@ -33,44 +39,30 @@ export default function RoyalCosmosBackground({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#050713",
+    backgroundColor: "#040508",
     overflow: "hidden",
   },
-  cosmosLayer: {
+  image: {
+    flex: 1,
+  },
+  overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#050713",
   },
-  topNebula: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: "38%",
-    backgroundColor: "rgba(35, 42, 90, 0.34)",
+  darkVeil: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(3, 5, 12, 0.78)",
   },
-  midnightBand: {
-    position: "absolute",
-    top: "24%",
-    left: 0,
-    right: 0,
-    height: "44%",
-    backgroundColor: "rgba(16, 24, 52, 0.42)",
-  },
-  violetHorizon: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: "16%",
-    height: "30%",
-    backgroundColor: "rgba(64, 38, 108, 0.2)",
+  blueCalmLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(8, 16, 36, 0.34)",
   },
   bottomDepth: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    height: "34%",
-    backgroundColor: "rgba(4, 5, 8, 0.7)",
+    height: "40%",
+    backgroundColor: "rgba(4, 5, 8, 0.72)",
   },
   content: {
     flex: 1,
