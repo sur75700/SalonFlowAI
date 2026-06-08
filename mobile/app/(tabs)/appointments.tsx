@@ -1000,9 +1000,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   summaryCard: {
-    flexBasis: "31%",
+    flexBasis: "48%",
     flexGrow: 1,
-    minWidth: 220,
+    minWidth: 150,
     backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
@@ -1013,13 +1013,13 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     color: "#ffffff",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "900",
     marginBottom: 4,
   },
   summaryLabel: {
     color: "#c9c2cf",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.4,

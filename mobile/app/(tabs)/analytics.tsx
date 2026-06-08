@@ -557,9 +557,9 @@ const styles = StyleSheet.create({
     marginTop: UI.spacing.xs,
   },
   executiveCard: {
-    flexBasis: "31%",
+    flexBasis: "48%",
     flexGrow: 1,
-    minWidth: 240,
+    minWidth: 150,
     backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
