@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
@@ -27,6 +28,7 @@ import { shortDay } from "../../utils/formatters";
 import { money } from "../../utils/money";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { UI } from "../../lib/theme/tokens";
+import { getResponsiveLayout } from "../../lib/layout/responsive";
 
 function AnalyticsSkeleton() {
   return (
@@ -66,6 +68,16 @@ function normalizeAnalyticsCurrency(value: string | null | undefined): AppCurren
 }
 
 export default function AnalyticsScreen() {
+  const { width } = useWindowDimensions();
+  const layout = getResponsiveLayout(width);
+  const responsiveContentStyle = [
+    styles.content,
+    { paddingHorizontal: layout.screenPadding },
+  ];
+  const responsiveCardStyle = layout.singleColumn
+    ? styles.responsiveFullCard
+    : styles.responsiveGridCard;
+
   const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
@@ -223,12 +235,13 @@ export default function AnalyticsScreen() {
 
         <View style={styles.analyticsGrid}>
           {analyticsCards.map((card) => (
-            <StatCard
-              key={card.label}
-              label={card.label}
-              value={card.value}
-              variant="accent"
-            />
+            <View key={card.label} style={responsiveCardStyle}>
+              <StatCard
+                label={card.label}
+                value={card.value}
+                variant="accent"
+              />
+            </View>
           ))}
         </View>
 
@@ -237,21 +250,21 @@ export default function AnalyticsScreen() {
           subtitle={t("Executive Snapshot Analytics Subtitle", locale)}
         >
           <View style={styles.executiveGrid}>
-            <View style={styles.executiveCard}>
+            <View style={[styles.executiveCard, responsiveCardStyle]}>
               <Text style={styles.executiveLabel}>{t("CompletedRevenue", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.completedRevenue ?? analytics?.completed_revenue ?? analytics?.total_revenue ?? analytics?.totals?.completed_revenue, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
-            <View style={styles.executiveCard}>
+            <View style={[styles.executiveCard, responsiveCardStyle]}>
               <Text style={styles.executiveLabel}>{t("ScheduledPipeline", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.scheduledPipeline ?? analytics?.scheduled_pipeline ?? analytics?.totals?.scheduled_pipeline, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
-            <View style={styles.executiveCard}>
+            <View style={[styles.executiveCard, responsiveCardStyle]}>
               <Text style={styles.executiveLabel}>{t("Cancelled Value", locale)}</Text>
               <Text style={styles.executiveValue}>
                 {money(analytics?.cancelledValue ?? analytics?.cancelled_value ?? analytics?.totals?.cancelled_value, normalizeAnalyticsCurrency(analytics?.currency))}
@@ -456,6 +469,14 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
     marginBottom: UI.spacing.lg,
+  },
+  responsiveFullCard: {
+    width: "100%",
+  },
+  responsiveGridCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 160,
   },
   statSkeletonCard: {
     width: "48%",
