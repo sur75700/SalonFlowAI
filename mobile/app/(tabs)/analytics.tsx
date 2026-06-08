@@ -201,7 +201,7 @@ export default function AnalyticsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("Insights", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Insights", locale)}</Text>
           <Text style={styles.heroText}>
             {t("Analytics Hero Subtitle", locale)}
           </Text>
@@ -252,21 +252,21 @@ export default function AnalyticsScreen() {
           <View style={styles.executiveGrid}>
             <View style={[styles.executiveCard, responsiveCardStyle]}>
               <Text style={styles.executiveLabel}>{t("CompletedRevenue", locale)}</Text>
-              <Text style={styles.executiveValue}>
+              <Text style={styles.executiveValue} numberOfLines={1} adjustsFontSizeToFit>
                 {money(analytics?.completedRevenue ?? analytics?.completed_revenue ?? analytics?.total_revenue ?? analytics?.totals?.completed_revenue, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={[styles.executiveCard, responsiveCardStyle]}>
               <Text style={styles.executiveLabel}>{t("ScheduledPipeline", locale)}</Text>
-              <Text style={styles.executiveValue}>
+              <Text style={styles.executiveValue} numberOfLines={1} adjustsFontSizeToFit>
                 {money(analytics?.scheduledPipeline ?? analytics?.scheduled_pipeline ?? analytics?.totals?.scheduled_pipeline, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
 
             <View style={[styles.executiveCard, responsiveCardStyle]}>
               <Text style={styles.executiveLabel}>{t("Cancelled Value", locale)}</Text>
-              <Text style={styles.executiveValue}>
+              <Text style={styles.executiveValue} numberOfLines={1} adjustsFontSizeToFit>
                 {money(analytics?.cancelledValue ?? analytics?.cancelled_value ?? analytics?.totals?.cancelled_value, normalizeAnalyticsCurrency(analytics?.currency))}
               </Text>
             </View>
@@ -299,12 +299,12 @@ export default function AnalyticsScreen() {
                 xAxisColor="#2a3040"
                 rulesColor="#1c2230"
                 noOfSections={4}
-                spacing={42}
-                initialSpacing={10}
+                spacing={34}
+                initialSpacing={6}
                 textColor1="#cbbfe0"
-                textFontSize={11}
-                yAxisTextStyle={{ color: "#9ea3b3" }}
-                xAxisLabelTextStyle={{ color: "#9ea3b3" }}
+                textFontSize={8}
+                yAxisTextStyle={{ color: "#9ea3b3", fontSize: 8 }}
+                xAxisLabelTextStyle={{ color: "#9ea3b3", fontSize: 8 }}
                 hideOrigin
                 width={Platform.OS === "web" ? 760 : 320}
               />
@@ -333,7 +333,7 @@ export default function AnalyticsScreen() {
                 rulesColor="#1c2230"
                 xAxisColor="#2a3040"
                 yAxisColor="#2a3040"
-                yAxisTextStyle={{ color: "#9ea3b3" }}
+                yAxisTextStyle={{ color: "#9ea3b3", fontSize: 8 }}
                 xAxisLabelTextStyle={{ color: "#cbbfe0", fontSize: 10 }}
                 noOfSections={4}
                 width={Platform.OS === "web" ? 760 : 320}
@@ -395,8 +395,8 @@ export default function AnalyticsScreen() {
           subtitle={t("Business SnapshotSubtitle", locale)}
         >
           <View style={styles.metricRow}>
-            <Text style={styles.item}>{t("Total Revenue Snapshot", locale)}</Text>
-            <Text style={styles.metricValue}>
+            <Text style={styles.item} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Revenue Snapshot", locale)}</Text>
+            <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">
               {money(
                 analytics?.totals?.total_revenue_snapshot,
                 normalizeAnalyticsCurrency(analytics?.currency)
@@ -406,26 +406,26 @@ export default function AnalyticsScreen() {
 
           <View style={styles.metricRow}>
             <Text style={styles.item}>{t("Total Bookings", locale)}</Text>
-            <Text style={styles.metricValue}>
+            <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">
               {summary?.total_appointments ?? 0}
             </Text>
           </View>
 
           <View style={styles.metricRow}>
             <Text style={styles.item}>{t("TodayBookings", locale)}</Text>
-            <Text style={styles.metricValue}>
+            <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">
               {summary?.today_appointments ?? 0}
             </Text>
           </View>
 
           <View style={styles.metricRow}>
             <Text style={styles.item}>{t("Total Clients", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
+            <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
             <Text style={styles.item}>{t("Total Services", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
+            <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{summary?.total_services ?? 0}</Text>
           </View>
         </ChartBlock>
       </ScrollView>
@@ -454,15 +454,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroTitle: {
+    width: "100%",
     color: "#ffffff",
-    fontSize: UI.font.hero,
+    fontSize: 24,
+    lineHeight: 29,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: UI.font.subtitle,
-    lineHeight: 23,
+    fontSize: 13,
+    lineHeight: 18,
   },
   analyticsGrid: {
     flexDirection: "row",
@@ -474,9 +476,10 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   responsiveGridCard: {
-    flexBasis: "48%",
-    flexGrow: 1,
-    minWidth: 160,
+    width: "100%",
+    flexBasis: "100%",
+    flexGrow: 0,
+    minWidth: 0,
   },
   statSkeletonCard: {
     width: "48%",
@@ -527,18 +530,22 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   metricRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
+    flexDirection: "column",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    gap: 4,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#1e2230",
   },
   metricValue: {
+    width: 84,
+    flexShrink: 0,
     color: "#f5d27a",
-    fontSize: UI.font.body,
+    fontSize: 12,
+    lineHeight: 16,
     fontWeight: "900",
+    textAlign: "right",
   },
   item: {
     color: "#ece7ef",
@@ -578,9 +585,10 @@ const styles = StyleSheet.create({
     marginTop: UI.spacing.xs,
   },
   executiveCard: {
-    flexBasis: "48%",
-    flexGrow: 1,
-    minWidth: 150,
+    width: "100%",
+    flexBasis: "100%",
+    flexGrow: 0,
+    minWidth: 0,
     backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
@@ -591,15 +599,16 @@ const styles = StyleSheet.create({
   },
   executiveLabel: {
     color: "#c9c2cf",
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: "800",
     marginBottom: 6,
     textTransform: "uppercase",
-    letterSpacing: 0.4,
+    letterSpacing: 0.05,
   },
   executiveValue: {
     color: "#ffffff",
-    fontSize: 22,
+    fontSize: 18,
+    lineHeight: 22,
     fontWeight: "900",
   },
 });

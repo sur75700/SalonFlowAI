@@ -270,7 +270,7 @@ export default function ServicesScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("Service Catalog", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Service Catalog", locale)}</Text>
           <Text style={styles.heroText}>
             {t("Service CatalogHeroSubtitle", locale)}
           </Text>
@@ -513,15 +513,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroTitle: {
+    width: "100%",
     color: "#ffffff",
-    fontSize: UI.font.hero,
+    fontSize: 26,
+    lineHeight: 31,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: UI.font.subtitle,
-    lineHeight: 23,
+    fontSize: 13,
+    lineHeight: 18,
   },
   sectionCard: {
     backgroundColor: "#11131d",

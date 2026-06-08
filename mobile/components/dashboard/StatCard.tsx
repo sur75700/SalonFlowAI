@@ -42,17 +42,17 @@ const styles = StyleSheet.create({
   },
   value: {
     color: "#f5d27a",
-    fontSize: 26,
+    fontSize: 18,
     fontWeight: "900",
     marginBottom: 8,
   },
   valueAccent: {
     color: "#c4a1ff",
-    fontSize: 26,
+    fontSize: 18,
   },
   label: {
     color: "#c1b4c7",
-    fontSize: UI.font.tiny,
+    fontSize: 9,
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.7,

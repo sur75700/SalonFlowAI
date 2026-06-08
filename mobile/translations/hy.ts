@@ -113,9 +113,9 @@ const hy = {
     topRevenueServices: "Եկամտաբեր ծառայություններ",
     topRevenueServicesSubtitle:
       "Ամենաբարձր եկամուտ բերող ծառայությունների դասակարգում։",
-    completedRevenue: "Ավարտված եկամուտ",
-    scheduledPipeline: "Պլանավորված հոսք",
-    cancelledValue: "Չեղարկված արժեք",
+    completedRevenue: "Եկամուտ",
+    scheduledPipeline: "Հոսք",
+    cancelledValue: "Չեղարկված",
     avgCompletedTicket: "Միջին ավարտված չեկ",
     bookingStatusMix: "Ամրագրումների կարգավիճակներ",
     bookingStatusMixSubtitle:

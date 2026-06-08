@@ -212,7 +212,7 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("Pdf Reports", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Pdf Reports", locale)}</Text>
           <Text style={styles.heroText}>
             {t("Reports Hero Subtitle", locale)}
           </Text>
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: UI.font.hero,
+    fontSize: 28,
     fontWeight: "900",
     marginBottom: 8,
   },

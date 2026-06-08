@@ -474,7 +474,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Booking RegistrySubtitle": "Որոնեք, խմբագրեք, ավարտեք, չեղարկեք կամ ջնջեք ամրագրումները։",
     "No Appointments Yet Subtitle": "Ստեղծեք առաջին ամրագրումը՝ ցուցակը ակտիվացնելու համար։",
     "No Matching AppointmentsSubtitle": "Փորձեք փոխել որոնման բառը կամ ֆիլտրը։",
-    "Edit": "Խմբագրել",
+    "Edit": "Փոխել",
     "Delete": "Ջնջել",
     "Cancel": "Չեղարկել",
     "Working": "Կատարվում է...",

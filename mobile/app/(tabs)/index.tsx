@@ -118,7 +118,7 @@ export default function OverviewScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("Dashboard", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Dashboard", locale)}</Text>
           <Text style={styles.heroText}>
             {t("Dashboard Hero Subtitle", locale)}
           </Text>
@@ -251,37 +251,37 @@ export default function OverviewScreen() {
           subtitle={t("Executive Snapshot Subtitle", locale)}
         >
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("Total Clients", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Clients", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("Total Services", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Services", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("Total Bookings", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Bookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.total_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("ScheduledBookings", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("ScheduledBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.scheduled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("CompletedBookings", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("CompletedBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.completed_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("Cancelled Bookings", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Cancelled Bookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.cancelled_appointments ?? 0}</Text>
           </View>
 
           <View style={styles.metricRow}>
-            <Text style={styles.metricLabel}>{t("TodayBookings", locale)}</Text>
+            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("TodayBookings", locale)}</Text>
             <Text style={styles.metricValue}>{summary?.today_appointments ?? 0}</Text>
           </View>
         </SectionCard>
@@ -311,15 +311,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroTitle: {
+    width: "100%",
     color: "#ffffff",
-    fontSize: 32,
+    fontSize: 24,
+    lineHeight: 29,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: UI.font.subtitle,
-    lineHeight: 23,
+    fontSize: 13,
+    lineHeight: 18,
   },
   statsGrid: {
     flexDirection: "row",
@@ -373,19 +375,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    gap: 8,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#1e2230",
   },
   metricLabel: {
+    flex: 1,
     color: "#ece7ef",
-    fontSize: 14,
+    fontSize: 12,
+    lineHeight: 16,
+    paddingRight: 10,
   },
   metricValue: {
+    width: 48,
+    flexShrink: 0,
     color: "#f5d27a",
     fontSize: 14,
     fontWeight: "900",
+    textAlign: "right",
   },
   errorBox: {
     backgroundColor: "#301218",

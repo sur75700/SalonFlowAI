@@ -338,7 +338,7 @@ export default function AppointmentsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("Bookings", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Bookings", locale)}</Text>
           <Text style={styles.heroText}>
               {t("Appointments Hero Subtitle", locale)}
             </Text>
@@ -496,7 +496,7 @@ export default function AppointmentsScreen() {
             todayAppointments.map((appointment) => (
               <View key={appointment.id} style={styles.dayCard}>
                 <View style={styles.dayCardTop}>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.appointmentTextBlock}>
                     <Text style={styles.cardTitle}>{appointment.client_name}</Text>
                     <Text style={styles.cardMuted}>
                       {appointment.service_name || "-"}
@@ -530,7 +530,7 @@ export default function AppointmentsScreen() {
             upcomingAppointments.map((appointment) => (
               <View key={appointment.id} style={styles.dayCard}>
                 <View style={styles.dayCardTop}>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.appointmentTextBlock}>
                     <Text style={styles.cardTitle}>{appointment.client_name}</Text>
                     <Text style={styles.cardMuted}>
                       {appointment.service_name || "-"}
@@ -751,7 +751,7 @@ export default function AppointmentsScreen() {
                 ) : (
                   <>
                     <View style={styles.appointmentHeader}>
-                      <View style={{ flex: 1 }}>
+                      <View style={styles.appointmentTextBlock}>
                         <Text style={styles.cardTitle}>
                           {appointment.client_name}
                         </Text>
@@ -845,15 +845,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   heroTitle: {
+    width: "100%",
     color: "#ffffff",
-    fontSize: UI.font.hero,
+    fontSize: 24,
+    lineHeight: 29,
     fontWeight: "900",
     marginBottom: 8,
   },
   heroText: {
     color: "#b7adbf",
-    fontSize: UI.font.subtitle,
-    lineHeight: 23,
+    fontSize: 13,
+    lineHeight: 18,
   },
   sectionCard: {
     backgroundColor: "#11131d",
@@ -930,29 +932,33 @@ const styles = StyleSheet.create({
     borderColor: "#2b2f3a",
   },
   dayCardTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 10,
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 8,
     marginBottom: 10,
   },
   appointmentHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 10,
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 8,
     marginBottom: 8,
   },
+  appointmentTextBlock: {
+    width: "100%",
+  },
   cardTitle: {
+    width: "100%",
     color: "#ffffff",
-    fontSize: 17,
+    fontSize: 15,
+    lineHeight: 19,
     fontWeight: "900",
     marginBottom: 4,
   },
   cardMuted: {
+    width: "100%",
     color: "#b7adbf",
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
   },
   item: {
     color: "#ece7ef",
@@ -984,7 +990,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   registryActionCell: {
-    width: "48%",
+    width: "100%",
   },
   errorBox: {
     backgroundColor: "#38161f",
@@ -1032,9 +1038,10 @@ const styles = StyleSheet.create({
     minWidth: 132,
   },
   summaryCard: {
-    flexBasis: "48%",
-    flexGrow: 1,
-    minWidth: 150,
+    width: "100%",
+    flexBasis: "100%",
+    flexGrow: 0,
+    minWidth: 0,
     backgroundColor: "#141824",
     borderWidth: 1,
     borderColor: "#2a3140",
@@ -1057,9 +1064,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   filterActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
+    flexDirection: "column",
+    gap: 8,
     marginTop: 10,
     marginBottom: 12,
   },
