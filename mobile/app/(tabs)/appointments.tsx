@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -43,6 +44,7 @@ import {
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
 import { UI } from "../../lib/theme/tokens";
+import { getResponsiveLayout } from "../../lib/layout/responsive";
 type FilterType = "all" | AppointmentStatus;
 
 const emptyCreateForm = {
@@ -96,6 +98,19 @@ function AppointmentsSkeleton() {
 }
 
 export default function AppointmentsScreen() {
+  const { width } = useWindowDimensions();
+  const layout = getResponsiveLayout(width);
+  const responsiveContentStyle = [
+    styles.content,
+    { paddingHorizontal: layout.screenPadding },
+  ];
+  const responsiveCardStyle = layout.singleColumn
+    ? styles.responsiveFullCard
+    : styles.responsiveGridCard;
+  const responsiveActionStyle = layout.singleColumn
+    ? styles.responsiveFullCard
+    : styles.responsiveActionCard;
+
   const { locale, currency: preferredCurrency } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
@@ -316,7 +331,7 @@ export default function AppointmentsScreen() {
   return (
     <RoyalCosmosBackground style={styles.container}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={responsiveContentStyle}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
@@ -541,15 +556,15 @@ export default function AppointmentsScreen() {
           subtitle={t("Booking Filters Subtitle", locale)}
         >
           <View style={styles.summaryGrid}>
-            <View style={styles.summaryCard}>
+            <View style={[styles.summaryCard, responsiveCardStyle]}>
               <Text style={styles.summaryValue}>{todayAppointments.length}</Text>
               <Text style={styles.summaryLabel}>{t("TodayLabel", locale)}</Text>
             </View>
-            <View style={styles.summaryCard}>
+            <View style={[styles.summaryCard, responsiveCardStyle]}>
               <Text style={styles.summaryValue}>{upcomingAppointments.length}</Text>
               <Text style={styles.summaryLabel}>{t("Upcoming Label", locale)}</Text>
             </View>
-            <View style={styles.summaryCard}>
+            <View style={[styles.summaryCard, responsiveCardStyle]}>
               <Text style={styles.summaryValue}>{appointments.length}</Text>
               <Text style={styles.summaryLabel}>{t("Total Label", locale)}</Text>
             </View>
@@ -557,18 +572,22 @@ export default function AppointmentsScreen() {
 
           <View style={styles.filterActions}>
             <ActionButton
+              style={responsiveActionStyle}
               title={t("All", locale)}
               onPress={() => setAppointmentFilter("all")}
             />
             <ActionButton
+              style={responsiveActionStyle}
               title={t("Scheduled", locale)}
               onPress={() => setAppointmentFilter("scheduled")}
             />
             <ActionButton
+              style={responsiveActionStyle}
               title={t("Completed", locale)}
               onPress={() => setAppointmentFilter("completed")}
             />
             <ActionButton
+              style={responsiveActionStyle}
               title={t("Cancelled", locale)}
               onPress={() => setAppointmentFilter("cancelled")}
             />
@@ -711,7 +730,7 @@ export default function AppointmentsScreen() {
                     <View style={styles.registryActionRow}>
                       <ActionButton
                         compact
-                        style={styles.registryActionCell}
+                        style={[styles.registryActionCell, responsiveActionStyle]}
                         title={
                           savingAppointmentId === appointment.id
                             ? t("Working", locale)
@@ -723,7 +742,7 @@ export default function AppointmentsScreen() {
                       />
                       <ActionButton
                         compact
-                        style={styles.registryActionCell}
+                        style={[styles.registryActionCell, responsiveActionStyle]}
                         title={t("Cancel", locale)}
                         onPress={cancelEditAppointment}
                       />
@@ -760,7 +779,7 @@ export default function AppointmentsScreen() {
                     <View style={styles.registryActionRow}>
                       <ActionButton
                         compact
-                        style={styles.registryActionCell}
+                        style={[styles.registryActionCell, responsiveActionStyle]}
                         title={t("Edit", locale)}
                         onPress={() => startEditAppointment(appointment)}
                         tone="success"
@@ -769,7 +788,7 @@ export default function AppointmentsScreen() {
                         <>
                           <ActionButton
                             compact
-                            style={styles.registryActionCell}
+                            style={[styles.registryActionCell, responsiveActionStyle]}
                             title={workingId === appointment.id ? t("Working", locale) : t("Complete", locale)}
                             onPress={() => handleCompleteAppointment(appointment.id)}
                             disabled={workingId === appointment.id}
@@ -777,7 +796,7 @@ export default function AppointmentsScreen() {
                           />
                           <ActionButton
                             compact
-                            style={styles.registryActionCell}
+                            style={[styles.registryActionCell, responsiveActionStyle]}
                             title={workingId === appointment.id ? t("Working", locale) : t("Cancel", locale)}
                             onPress={() => handleCancelAppointment(appointment.id)}
                             disabled={workingId === appointment.id}
@@ -787,7 +806,7 @@ export default function AppointmentsScreen() {
                       ) : null}
                       <ActionButton
                         compact
-                        style={styles.registryActionCell}
+                        style={[styles.registryActionCell, responsiveActionStyle]}
                         title={workingId === appointment.id ? t("Working", locale) : t("Delete", locale)}
                         onPress={() => handleDeleteAppointment(appointment)}
                         disabled={workingId === appointment.id}
@@ -998,6 +1017,19 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     gap: 12,
+  },
+  responsiveFullCard: {
+    width: "100%",
+  },
+  responsiveGridCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 150,
+  },
+  responsiveActionCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 132,
   },
   summaryCard: {
     flexBasis: "48%",
