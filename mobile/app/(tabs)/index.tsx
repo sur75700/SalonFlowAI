@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -24,6 +25,7 @@ import { useSummaryData } from "../../hooks/useDashboardData";
 import { useSession } from "../../hooks/useSession";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
+import { getResponsiveLayout } from "../../lib/layout/responsive";
 
 function OverviewSkeleton() {
   return (
@@ -58,6 +60,16 @@ function OverviewSkeleton() {
 }
 
 export default function OverviewScreen() {
+  const { width } = useWindowDimensions();
+  const layout = getResponsiveLayout(width);
+  const responsiveContentStyle = [
+    styles.content,
+    { paddingHorizontal: layout.screenPadding },
+  ];
+  const responsiveCardStyle = layout.singleColumn
+    ? styles.responsiveFullCard
+    : styles.responsiveGridCard;
+
   const { locale } = useAppPreferences();
   const { token, booting, clearToken, sessionEmail } = useSession();
   const { logout, loggingOut } = useLogout();
@@ -99,7 +111,7 @@ export default function OverviewScreen() {
   return (
     <RoyalCosmosBackground style={styles.container}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={responsiveContentStyle}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
@@ -150,7 +162,9 @@ export default function OverviewScreen() {
 
         <View style={styles.statsGrid}>
           {statCards.map((card) => (
-            <StatCard key={card.label} label={card.label} value={card.value} />
+            <View key={card.label} style={responsiveCardStyle}>
+              <StatCard label={card.label} value={card.value} />
+            </View>
           ))}
         </View>
 
@@ -201,31 +215,31 @@ export default function OverviewScreen() {
           <View style={styles.quickActionsGrid}>
             <ActionButton
               compact
-              style={styles.quickActionCell}
+              style={[styles.quickActionCell, responsiveCardStyle]}
               title={t("Bookings", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
             <ActionButton
               compact
-              style={styles.quickActionCell}
+              style={[styles.quickActionCell, responsiveCardStyle]}
               title={t("Clients", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
             <ActionButton
               compact
-              style={styles.quickActionCell}
+              style={[styles.quickActionCell, responsiveCardStyle]}
               title={t("Services", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
             <ActionButton
               compact
-              style={styles.quickActionCell}
+              style={[styles.quickActionCell, responsiveCardStyle]}
               title={t("Insights", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
               compact
-              style={styles.quickActionCell}
+              style={[styles.quickActionCell, responsiveCardStyle]}
               title="Reports"
               onPress={() => router.navigate("/(tabs)/reports")}
             />
@@ -312,6 +326,14 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
     marginBottom: 20,
+  },
+  responsiveFullCard: {
+    width: "100%",
+  },
+  responsiveGridCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 156,
   },
   statSkeletonCard: {
     width: "48%",
