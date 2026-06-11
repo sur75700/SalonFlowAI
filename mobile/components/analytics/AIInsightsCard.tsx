@@ -18,6 +18,14 @@ function interpolate(template: string, params: AnalyticsInsight["params"] = {}) 
   });
 }
 
+function insightIcon(item: AnalyticsInsight) {
+  if (item.tone === "warning") return "⚠️";
+  if (item.type === "service") return "👑";
+  if (item.type === "growth" || item.type === "trend") return "📈";
+  if (item.type === "ticket") return "💎";
+  return "⚡";
+}
+
 function insightTitle(item: AnalyticsInsight, locale: string) {
   if (!item.code) return item.title;
   const translated = t(`AI Insight ${item.code} Title`, locale as any);
@@ -64,12 +72,21 @@ export default function AIInsightsCard({ insights = [] }: Props) {
         {visibleInsights.length ? (
           visibleInsights.map((item, index) => (
             <View key={`${item.type}-${index}`} style={styles.item}>
-              <Text style={styles.itemTitle} numberOfLines={1} adjustsFontSizeToFit>
-                {insightTitle(item, locale)}
-              </Text>
-              <Text style={styles.itemMessage}>
-                {insightMessage(item, locale)}
-              </Text>
+              <View style={styles.itemTop}>
+                <View style={styles.iconBubble}>
+                  <Text style={styles.iconText}>{insightIcon(item)}</Text>
+                </View>
+
+                <View style={styles.itemCopy}>
+                  <Text style={styles.itemTitle} numberOfLines={2} adjustsFontSizeToFit>
+                    {insightTitle(item, locale)}
+                  </Text>
+
+                  <Text style={styles.itemMessage}>
+                    {insightMessage(item, locale)}
+                  </Text>
+                </View>
+              </View>
 
               {item.action_code ? (
                 <View style={styles.actionBox}>
@@ -97,24 +114,26 @@ export default function AIInsightsCard({ insights = [] }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#10131f",
-    borderRadius: UI.radius.xl,
+    borderRadius: UI.radius.hero,
     padding: UI.spacing.lg,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: "#4c3575",
-    boxShadow: UI.depth.hero,
-    elevation: 12,
+    borderColor: "#6d4fc2",
+    boxShadow: "0px 16px 32px rgba(124, 58, 237, 0.26)",
+    elevation: 16,
   },
   overline: {
     color: "#f2d17a",
     fontSize: UI.font.tiny,
     fontWeight: "900",
-    letterSpacing: 1.4,
+    letterSpacing: 1.8,
     marginBottom: 8,
+    textTransform: "uppercase",
   },
   title: {
     color: "#ffffff",
-    fontSize: 21,
+    fontSize: 23,
+    lineHeight: 28,
     fontWeight: "900",
     marginBottom: 6,
   },
@@ -129,10 +148,32 @@ const styles = StyleSheet.create({
   },
   item: {
     backgroundColor: "#171b27",
-    borderRadius: UI.radius.md,
+    borderRadius: UI.radius.lg,
     padding: UI.spacing.md,
     borderWidth: 1,
-    borderColor: "#2f3650",
+    borderColor: "#37405d",
+  },
+  itemTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  iconBubble: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#241b3a",
+    borderWidth: 1,
+    borderColor: "#6d4fc2",
+  },
+  iconText: {
+    fontSize: 16,
+  },
+  itemCopy: {
+    flex: 1,
+    minWidth: 0,
   },
   itemTitle: {
     color: "#f5d27a",
@@ -146,17 +187,20 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   actionBox: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#2f3650",
+    marginTop: 12,
+    padding: 12,
+    borderRadius: UI.radius.md,
+    backgroundColor: "#0f2433",
+    borderWidth: 1,
+    borderColor: "#155e75",
   },
   actionLabel: {
     color: "#7dd3fc",
     fontSize: 11,
     fontWeight: "900",
-    marginBottom: 4,
+    marginBottom: 5,
     textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   actionText: {
     color: "#ffffff",
