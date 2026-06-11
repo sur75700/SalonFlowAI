@@ -48,28 +48,77 @@ function insightAction(item: AnalyticsInsight, locale: string) {
     : translated;
 }
 
-function priorityLabel(item: AnalyticsInsight) {
+function priorityLabel(item: AnalyticsInsight, locale: string) {
   const level = (item.priority_level || "").toLowerCase();
 
-  if (level === "high") return "🔴 HIGH";
-  if (level === "medium") return "🟠 MEDIUM";
-  if (level === "low") return "🟢 LOW";
+  if (level === "high") return `🔴 ${t("AI Priority High", locale as any)}`;
+  if (level === "medium") return `🟠 ${t("AI Priority Medium", locale as any)}`;
+  if (level === "low") return `🟢 ${t("AI Priority Low", locale as any)}`;
 
   return "";
 }
 
-function confidenceLabel(item: AnalyticsInsight) {
+function confidenceLabel(item: AnalyticsInsight, locale: string) {
   if (typeof item.confidence !== "number") return "";
 
-  return `${item.confidence}% AI Confidence`;
+  return `${item.confidence}% ${t("AI Confidence", locale as any)}`;
 }
 
-function impactLabel(item: AnalyticsInsight) {
+function impactLabel(item: AnalyticsInsight, locale: string) {
   if (!item.impact_code) return "";
 
-  return item.impact_code
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const translated = t(`AI Impact ${item.impact_code}`, locale as any);
+
+  return translated === `AI Impact ${item.impact_code}`
+    ? item.impact_code.replace(/_/g, " ")
+    : translated;
+}
+
+function buildHealthScore(items: AnalyticsInsight[]) {
+  if (!items.length) {
+    return {
+      score: 0,
+      label: "waiting",
+    };
+  }
+
+  const confidenceValues = items
+    .map((item) => item.confidence)
+    .filter((value): value is number => typeof value === "number");
+
+  const averageConfidence = confidenceValues.length
+    ? Math.round(
+        confidenceValues.reduce((total, value) => total + value, 0) /
+          confidenceValues.length
+      )
+    : 70;
+
+  const highPriorityCount = items.filter(
+    (item) => (item.priority_level || "").toLowerCase() === "high"
+  ).length;
+  const warningCount = items.filter((item) => item.tone === "warning").length;
+  const growthSignals = items.filter(
+    (item) => item.tone === "success" || item.type === "service"
+  ).length;
+
+  const rawScore =
+    averageConfidence +
+    growthSignals * 3 -
+    highPriorityCount * 6 -
+    warningCount * 4;
+
+  const score = Math.max(0, Math.min(100, Math.round(rawScore)));
+
+  let label = "critical";
+  if (score >= 95) label = "elite";
+  else if (score >= 85) label = "strong";
+  else if (score >= 70) label = "healthy";
+  else if (score >= 50) label = "needs_attention";
+
+  return {
+    score,
+    label,
+  };
 }
 
 function buildExecutiveSummary(items: AnalyticsInsight[]) {
@@ -115,6 +164,7 @@ export default function AIInsightsCard({ insights = [] }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
+  const healthScore = buildHealthScore(visibleInsights);
 
   return (
     <View style={styles.card}>
@@ -126,6 +176,19 @@ export default function AIInsightsCard({ insights = [] }: Props) {
 
       {visibleInsights.length ? (
         <View style={styles.summaryPanel}>
+          <View style={styles.healthScorePanel}>
+            <Text style={styles.healthLabel}>{t("AI Score", locale)}</Text>
+            <Text style={styles.healthValue}>{healthScore.score} / 100</Text>
+            <Text style={styles.healthBadge}>
+              {t(
+                `AI Health ${healthScore.label
+                  .replace("_", " ")
+                  .replace(/\b\w/g, (letter) => letter.toUpperCase())}`,
+                locale as any
+              )}
+            </Text>
+          </View>
+
           <Text style={styles.summaryOverline}>{t("AI Executive Summary", locale)}</Text>
 
           <View style={styles.summaryGrid}>
@@ -177,18 +240,18 @@ export default function AIInsightsCard({ insights = [] }: Props) {
                   </Text>
 
                   <View style={styles.metaRow}>
-                    {priorityLabel(item) ? (
-                      <Text style={styles.priorityPill}>{priorityLabel(item)}</Text>
+                    {priorityLabel(item, locale) ? (
+                      <Text style={styles.priorityPill}>{priorityLabel(item, locale)}</Text>
                     ) : null}
 
-                    {confidenceLabel(item) ? (
-                      <Text style={styles.confidencePill}>{confidenceLabel(item)}</Text>
+                    {confidenceLabel(item, locale) ? (
+                      <Text style={styles.confidencePill}>{confidenceLabel(item, locale)}</Text>
                     ) : null}
                   </View>
 
-                  {impactLabel(item) ? (
+                  {impactLabel(item, locale) ? (
                     <Text style={styles.impactText}>
-                      Expected Impact: {impactLabel(item)}
+                      {t("AI Expected Impact", locale)}: {impactLabel(item, locale)}
                     </Text>
                   ) : null}
                 </View>
@@ -256,6 +319,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#5b45a3",
     marginBottom: 14,
+  },
+  healthScorePanel: {
+    backgroundColor: "#0b1020",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#f2d17a",
+    marginBottom: 12,
+  },
+  healthLabel: {
+    color: "#f2d17a",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  healthValue: {
+    color: "#ffffff",
+    fontSize: 28,
+    fontWeight: "900",
+    lineHeight: 34,
+  },
+  healthBadge: {
+    color: "#a7f3d0",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 4,
+    textTransform: "uppercase",
   },
   summaryOverline: {
     color: "#f2d17a",
