@@ -72,6 +72,37 @@ function impactLabel(item: AnalyticsInsight) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function buildExecutiveSummary(items: AnalyticsInsight[]) {
+  const activeCount = items.length;
+  const highPriorityCount = items.filter(
+    (item) => (item.priority_level || "").toLowerCase() === "high"
+  ).length;
+
+  const confidenceValues = items
+    .map((item) => item.confidence)
+    .filter((value): value is number => typeof value === "number");
+
+  const averageConfidence = confidenceValues.length
+    ? Math.round(
+        confidenceValues.reduce((total, value) => total + value, 0) /
+          confidenceValues.length
+      )
+    : 0;
+
+  const topAction =
+    items.find((item) => (item.priority_level || "").toLowerCase() === "high")
+      ?.action_code ||
+    items.find((item) => item.action_code)?.action_code ||
+    "";
+
+  return {
+    activeCount,
+    highPriorityCount,
+    averageConfidence,
+    topAction,
+  };
+}
+
 function insightMessage(item: AnalyticsInsight, locale: string) {
   if (!item.code) return item.message;
   const translated = t(`AI Insight ${item.code} Message`, locale as any);
@@ -83,6 +114,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
 export default function AIInsightsCard({ insights = [] }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
+  const executiveSummary = buildExecutiveSummary(visibleInsights);
 
   return (
     <View style={styles.card}>
@@ -91,6 +123,40 @@ export default function AIInsightsCard({ insights = [] }: Props) {
       <Text style={styles.subtitle}>
         {t("AI Business Insights Subtitle", locale)}
       </Text>
+
+      {visibleInsights.length ? (
+        <View style={styles.summaryPanel}>
+          <Text style={styles.summaryOverline}>{t("AI Executive Summary", locale)}</Text>
+
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryCell}>
+              <Text style={styles.summaryValue}>{executiveSummary.activeCount}</Text>
+              <Text style={styles.summaryLabel}>{t("AI Active Insights", locale)}</Text>
+            </View>
+
+            <View style={styles.summaryCell}>
+              <Text style={styles.summaryValue}>{executiveSummary.highPriorityCount}</Text>
+              <Text style={styles.summaryLabel}>{t("AI High Priority", locale)}</Text>
+            </View>
+
+            <View style={styles.summaryCell}>
+              <Text style={styles.summaryValue}>
+                {executiveSummary.averageConfidence}%
+              </Text>
+              <Text style={styles.summaryLabel}>{t("AI Avg Confidence", locale)}</Text>
+            </View>
+          </View>
+
+          {executiveSummary.topAction ? (
+            <View style={styles.topActionBox}>
+              <Text style={styles.topActionLabel}>{t("AI Top Action", locale)}</Text>
+              <Text style={styles.topActionText}>
+                {t(`AI Action ${executiveSummary.topAction}`, locale as any)}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       <View style={styles.list}>
         {visibleInsights.length ? (
@@ -182,6 +248,68 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 14,
+  },
+  summaryPanel: {
+    backgroundColor: "#12172a",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#5b45a3",
+    marginBottom: 14,
+  },
+  summaryOverline: {
+    color: "#f2d17a",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  summaryGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  summaryCell: {
+    flex: 1,
+    minWidth: 0,
+    backgroundColor: "#171b27",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#2f3650",
+  },
+  summaryValue: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 3,
+  },
+  summaryLabel: {
+    color: "#b7adbf",
+    fontSize: 10,
+    fontWeight: "800",
+    lineHeight: 13,
+    textTransform: "uppercase",
+  },
+  topActionBox: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#2f3650",
+  },
+  topActionLabel: {
+    color: "#7dd3fc",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
+  topActionText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 17,
   },
   list: {
     gap: 10,

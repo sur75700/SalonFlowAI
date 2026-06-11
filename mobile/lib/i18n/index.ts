@@ -166,6 +166,11 @@ const dict: Record<string, string> = {
   "AI Business Insights": "SalonFlow AI Intelligence",
   "AI Business Insights Subtitle": "Smart signals generated from revenue, bookings, cancellations, and services.",
   "AI Business Insights Empty": "Create more booking activity to unlock AI business insights.",
+  "AI Executive Summary": "Executive AI Summary",
+  "AI Active Insights": "Active Insights",
+  "AI High Priority": "High Priority",
+  "AI Avg Confidence": "Avg Confidence",
+  "AI Top Action": "Top Action",
   "AI Recommended Action": "Recommended Action",
   "AI Action create_first_booking": "Create the first booking to activate insights.",
   "AI Action follow_up_scheduled_clients": "Follow up with scheduled clients within 24 hours.",
@@ -210,6 +215,11 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI Executive Summary": "Résumé exécutif AI",
+    "AI Active Insights": "Insights actifs",
+    "AI High Priority": "Priorité élevée",
+    "AI Avg Confidence": "Confiance moyenne AI",
+    "AI Top Action": "Action principale",
     "AI Recommended Action": "Action recommandée",
     "AI Action create_first_booking": "Créez la première réservation pour activer l’analyse.",
     "AI Action follow_up_scheduled_clients": "Relancez les clients planifiés dans les 24 heures.",
@@ -467,6 +477,11 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Executive Summary": "AI գործադիր ամփոփում",
+    "AI Active Insights": "Ակտիվ վերլուծություններ",
+    "AI High Priority": "Բարձր առաջնահերթություն",
+    "AI Avg Confidence": "AI միջին վստահություն",
+    "AI Top Action": "Գլխավոր գործողություն",
     "AI Recommended Action": "Առաջարկվող գործողություն",
     "AI Action create_first_booking": "Ստեղծեք առաջին ամրագրումը՝ վերլուծությունը ակտիվացնելու համար։",
     "AI Action follow_up_scheduled_clients": "Կապ հաստատեք պլանավորված հաճախորդների հետ 24 ժամվա ընթացքում։",
@@ -660,6 +675,11 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Executive Summary": "Исполнительная AI-сводка",
+    "AI Active Insights": "Активные инсайты",
+    "AI High Priority": "Высокий приоритет",
+    "AI Avg Confidence": "Средняя уверенность AI",
+    "AI Top Action": "Главное действие",
     "AI Recommended Action": "Рекомендуемое действие",
     "AI Action create_first_booking": "Создайте первую запись, чтобы активировать аналитику.",
     "AI Action follow_up_scheduled_clients": "Свяжитесь с запланированными клиентами в течение 24 часов.",
