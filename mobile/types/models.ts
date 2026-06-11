@@ -64,6 +64,14 @@ export type AnalyticsRevenuePoint = {
   completed_revenue: number;
 };
 
+export type AnalyticsInsight = {
+  type: string;
+  tone: string;
+  title: string;
+  message: string;
+  priority?: number;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -83,4 +91,5 @@ export type AnalyticsData = {
   totals: AnalyticsTotals;
   top_services: AnalyticsTopService[];
   revenue_last_7_days: AnalyticsRevenuePoint[];
+  insights?: AnalyticsInsight[];
 };

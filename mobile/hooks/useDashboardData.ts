@@ -105,11 +105,14 @@ export function useAnalyticsData(
     try {
       setError("");
 
-      const [summaryRes, analyticsRes] = await Promise.all([
+      const [summaryRes, analyticsRes, insightsRes] = await Promise.all([
         api.get("/appointments/dashboard/summary", {
           headers: authHeaders(token),
         }),
         api.get("/analytics/dashboard", {
+          headers: authHeaders(token),
+        }),
+        api.get("/analytics/insights", {
           headers: authHeaders(token),
         }),
       ]);
@@ -145,6 +148,7 @@ export function useAnalyticsData(
           analyticsRes.data.top_performing_services ??
           analyticsRes.data.top_services ??
           [],
+        insights: insightsRes.data?.insights ?? [],
       });
     } catch (err: any) {
       if (isAuthError(err)) {

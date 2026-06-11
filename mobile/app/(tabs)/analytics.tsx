@@ -13,6 +13,7 @@ import { BarChart, LineChart, PieChart } from "react-native-gifted-charts";
 import ChartBlock from "../../components/dashboard/ChartBlock";
 import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
+import AIInsightsCard from "../../components/analytics/AIInsightsCard";
 import DevLoginCard from "../../components/auth/DevLoginCard";
 import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
@@ -217,6 +218,8 @@ export default function AnalyticsScreen() {
           title={t("Analytics Ready", locale)}
           subtitle={t("Analytics Ready Subtitle", locale)}
         />
+
+        <AIInsightsCard insights={analytics?.insights} />
 
         {error ? (
           <View style={styles.errorBox}>
