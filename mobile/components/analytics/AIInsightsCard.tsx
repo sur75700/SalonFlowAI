@@ -26,6 +26,20 @@ function insightTitle(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
+
+function insightAction(item: AnalyticsInsight, locale: string) {
+  if (!item.action_code) return "";
+
+  const translated = t(
+    `AI Action ${item.action_code}`,
+    locale as any
+  );
+
+  return translated === `AI Action ${item.action_code}`
+    ? item.action_code
+    : translated;
+}
+
 function insightMessage(item: AnalyticsInsight, locale: string) {
   if (!item.code) return item.message;
   const translated = t(`AI Insight ${item.code} Message`, locale as any);
@@ -53,7 +67,21 @@ export default function AIInsightsCard({ insights = [] }: Props) {
               <Text style={styles.itemTitle} numberOfLines={1} adjustsFontSizeToFit>
                 {insightTitle(item, locale)}
               </Text>
-              <Text style={styles.itemMessage}>{insightMessage(item, locale)}</Text>
+              <Text style={styles.itemMessage}>
+                {insightMessage(item, locale)}
+              </Text>
+
+              {item.action_code ? (
+                <View style={styles.actionBox}>
+                  <Text style={styles.actionLabel}>
+                    ⚡ {t("AI Recommended Action", locale)}
+                  </Text>
+
+                  <Text style={styles.actionText}>
+                    {insightAction(item, locale)}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           ))
         ) : (
@@ -116,6 +144,25 @@ const styles = StyleSheet.create({
     color: "#d8dce6",
     fontSize: 12,
     lineHeight: 17,
+  },
+  actionBox: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#2f3650",
+  },
+  actionLabel: {
+    color: "#7dd3fc",
+    fontSize: 11,
+    fontWeight: "900",
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
+  actionText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
   },
   emptyText: {
     color: "#c9c2cf",

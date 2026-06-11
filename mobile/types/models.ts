@@ -69,6 +69,8 @@ export type AnalyticsInsight = {
   tone: string;
   code?: string;
   params?: Record<string, string | number | boolean | null | undefined>;
+  action_code?: string;
+  action_params?: Record<string, string | number | boolean | null | undefined>;
   title: string;
   message: string;
   priority?: number;
