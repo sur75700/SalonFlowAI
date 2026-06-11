@@ -67,6 +67,8 @@ export type AnalyticsRevenuePoint = {
 export type AnalyticsInsight = {
   type: string;
   tone: string;
+  code?: string;
+  params?: Record<string, string | number | boolean | null | undefined>;
   title: string;
   message: string;
   priority?: number;

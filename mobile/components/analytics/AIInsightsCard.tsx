@@ -2,21 +2,48 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { UI } from "../../lib/theme/tokens";
+import { t } from "../../lib/i18n";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
 import type { AnalyticsInsight } from "../../types/models";
 
 type Props = {
   insights?: AnalyticsInsight[];
 };
 
+
+function interpolate(template: string, params: AnalyticsInsight["params"] = {}) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => {
+    const value = params?.[key];
+    return value === undefined || value === null ? "" : String(value);
+  });
+}
+
+function insightTitle(item: AnalyticsInsight, locale: string) {
+  if (!item.code) return item.title;
+  const translated = t(`AI Insight ${item.code} Title`, locale as any);
+  return translated === `AI Insight ${item.code} Title`
+    ? item.title
+    : interpolate(translated, item.params);
+}
+
+function insightMessage(item: AnalyticsInsight, locale: string) {
+  if (!item.code) return item.message;
+  const translated = t(`AI Insight ${item.code} Message`, locale as any);
+  return translated === `AI Insight ${item.code} Message`
+    ? item.message
+    : interpolate(translated, item.params);
+}
+
 export default function AIInsightsCard({ insights = [] }: Props) {
+  const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
 
   return (
     <View style={styles.card}>
-      <Text style={styles.overline}>AI COMMAND CENTER</Text>
-      <Text style={styles.title}>AI Business Insights</Text>
+      <Text style={styles.overline}>{t("AI Command Center", locale)}</Text>
+      <Text style={styles.title}>{t("AI Business Insights", locale)}</Text>
       <Text style={styles.subtitle}>
-        Smart signals generated from revenue, bookings, cancellations, and services.
+        {t("AI Business Insights Subtitle", locale)}
       </Text>
 
       <View style={styles.list}>
@@ -24,14 +51,14 @@ export default function AIInsightsCard({ insights = [] }: Props) {
           visibleInsights.map((item, index) => (
             <View key={`${item.type}-${index}`} style={styles.item}>
               <Text style={styles.itemTitle} numberOfLines={1} adjustsFontSizeToFit>
-                {item.title}
+                {insightTitle(item, locale)}
               </Text>
-              <Text style={styles.itemMessage}>{item.message}</Text>
+              <Text style={styles.itemMessage}>{insightMessage(item, locale)}</Text>
             </View>
           ))
         ) : (
           <Text style={styles.emptyText}>
-            Create more booking activity to unlock AI business insights.
+            {t("AI Business Insights Empty", locale)}
           </Text>
         )}
       </View>
