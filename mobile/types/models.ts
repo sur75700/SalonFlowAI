@@ -71,6 +71,9 @@ export type AnalyticsInsight = {
   params?: Record<string, string | number | boolean | null | undefined>;
   action_code?: string;
   action_params?: Record<string, string | number | boolean | null | undefined>;
+  priority_level?: string;
+  confidence?: number;
+  impact_code?: string;
   title: string;
   message: string;
   priority?: number;

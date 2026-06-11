@@ -48,6 +48,30 @@ function insightAction(item: AnalyticsInsight, locale: string) {
     : translated;
 }
 
+function priorityLabel(item: AnalyticsInsight) {
+  const level = (item.priority_level || "").toLowerCase();
+
+  if (level === "high") return "🔴 HIGH";
+  if (level === "medium") return "🟠 MEDIUM";
+  if (level === "low") return "🟢 LOW";
+
+  return "";
+}
+
+function confidenceLabel(item: AnalyticsInsight) {
+  if (typeof item.confidence !== "number") return "";
+
+  return `${item.confidence}% AI Confidence`;
+}
+
+function impactLabel(item: AnalyticsInsight) {
+  if (!item.impact_code) return "";
+
+  return item.impact_code
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function insightMessage(item: AnalyticsInsight, locale: string) {
   if (!item.code) return item.message;
   const translated = t(`AI Insight ${item.code} Message`, locale as any);
@@ -85,6 +109,22 @@ export default function AIInsightsCard({ insights = [] }: Props) {
                   <Text style={styles.itemMessage}>
                     {insightMessage(item, locale)}
                   </Text>
+
+                  <View style={styles.metaRow}>
+                    {priorityLabel(item) ? (
+                      <Text style={styles.priorityPill}>{priorityLabel(item)}</Text>
+                    ) : null}
+
+                    {confidenceLabel(item) ? (
+                      <Text style={styles.confidencePill}>{confidenceLabel(item)}</Text>
+                    ) : null}
+                  </View>
+
+                  {impactLabel(item) ? (
+                    <Text style={styles.impactText}>
+                      Expected Impact: {impactLabel(item)}
+                    </Text>
+                  ) : null}
                 </View>
               </View>
 
@@ -185,6 +225,43 @@ const styles = StyleSheet.create({
     color: "#d8dce6",
     fontSize: 12,
     lineHeight: 17,
+  },
+  metaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 10,
+  },
+  priorityPill: {
+    color: "#ffffff",
+    fontSize: 10,
+    fontWeight: "900",
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: UI.radius.pill,
+    backgroundColor: "#3a1f2f",
+    borderWidth: 1,
+    borderColor: "#7f1d1d",
+    overflow: "hidden",
+  },
+  confidencePill: {
+    color: "#d8b4fe",
+    fontSize: 10,
+    fontWeight: "900",
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: UI.radius.pill,
+    backgroundColor: "#211536",
+    borderWidth: 1,
+    borderColor: "#6d4fc2",
+    overflow: "hidden",
+  },
+  impactText: {
+    color: "#a7f3d0",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 8,
   },
   actionBox: {
     marginTop: 12,
