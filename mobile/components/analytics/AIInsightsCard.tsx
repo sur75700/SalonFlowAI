@@ -57,6 +57,9 @@ type Props = {
     impact: number;
     confidence: number;
     action: string;
+    urgency?: string;
+    roi_score?: number;
+    execution_window_days?: number;
   }[];
 };
 
@@ -302,9 +305,27 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
                     </Text>
                   </View>
 
+                  <View style={styles.missionBadgeRow}>
+                    <Text style={styles.missionUrgency}>
+                      {t(`AI Mission Urgency ${mission.urgency || "medium"}`, locale as any)}
+                    </Text>
+
+                    {typeof mission.roi_score === "number" ? (
+                      <Text style={styles.missionRoi}>
+                        ROI {mission.roi_score}/100
+                      </Text>
+                    ) : null}
+                  </View>
+
                   <Text style={styles.missionMeta}>
                     {t("AI Mission Impact", locale)}: +{Math.round(mission.impact).toLocaleString()} AMD · {mission.confidence}% {t("AI Confidence", locale as any)}
                   </Text>
+
+                  {typeof mission.execution_window_days === "number" ? (
+                    <Text style={styles.missionWindow}>
+                      {t("AI Mission Execution Window", locale)}: {mission.execution_window_days} {t("AI Mission Days", locale)}
+                    </Text>
+                  ) : null}
 
                   <Text style={styles.missionAction}>
                     {t("AI Action Now", locale)}: {t(`AI Action ${mission.action}`, locale as any)}
@@ -760,11 +781,44 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     flex: 1,
   },
+  missionBadgeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 6,
+  },
+  missionUrgency: {
+    color: "#fecaca",
+    backgroundColor: "#7f1d1d",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  missionRoi: {
+    color: "#bbf7d0",
+    backgroundColor: "#14532d",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
   missionMeta: {
     color: "#ddd6fe",
     fontSize: 11,
     fontWeight: "800",
     lineHeight: 16,
+  },
+  missionWindow: {
+    color: "#f2d17a",
+    fontSize: 11,
+    fontWeight: "900",
+    lineHeight: 16,
+    marginTop: 4,
   },
   missionAction: {
     color: "#f5f3ff",

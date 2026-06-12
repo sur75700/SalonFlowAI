@@ -193,6 +193,11 @@ const dict: Record<string, string> = {
   "AI Client Risk": "Client Risk & Reactivation",
   "AI Mission Control": "AI Mission Control",
   "AI Mission Impact": "Impact",
+  "AI Mission Execution Window": "Execute within",
+  "AI Mission Days": "days",
+  "AI Mission Urgency high": "High urgency",
+  "AI Mission Urgency medium": "Medium urgency",
+  "AI Mission Urgency low": "Low urgency",
   "AI Mission reactivate_at_risk_clients": "Reactivate at-risk clients",
   "AI Mission capture_growth_opportunity": "Capture growth opportunity",
   "AI Mission reduce_business_risk": "Reduce business risk",
@@ -302,6 +307,11 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   fr: {
     "AI Mission Control": "Centre de missions IA",
     "AI Mission Impact": "Impact",
+  "AI Mission Execution Window": "Execute within",
+  "AI Mission Days": "days",
+  "AI Mission Urgency high": "High urgency",
+  "AI Mission Urgency medium": "Medium urgency",
+  "AI Mission Urgency low": "Low urgency",
     "AI Mission reactivate_at_risk_clients": "Réactiver les clients à risque",
     "AI Mission capture_growth_opportunity": "Saisir l’opportunité de croissance",
     "AI Mission reduce_business_risk": "Réduire le risque business",
@@ -647,6 +657,11 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Mission Execution Window": "Կատարել մինչև",
+    "AI Mission Days": "օր",
+    "AI Mission Urgency high": "Բարձր շտապություն",
+    "AI Mission Urgency medium": "Միջին շտապություն",
+    "AI Mission Urgency low": "Ցածր շտապություն",
     "AI Mission Control": "AI առաջադրանքների կենտրոն",
     "AI Mission Impact": "Ազդեցություն",
     "AI Mission reactivate_at_risk_clients": "Վերադարձնել ռիսկային հաճախորդներին",
@@ -930,6 +945,11 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Mission Execution Window": "Выполнить за",
+    "AI Mission Days": "дней",
+    "AI Mission Urgency high": "Высокая срочность",
+    "AI Mission Urgency medium": "Средняя срочность",
+    "AI Mission Urgency low": "Низкая срочность",
     "AI Mission Control": "AI центр задач",
     "AI Mission Impact": "Эффект",
     "AI Mission reactivate_at_risk_clients": "Вернуть клиентов в риске",
