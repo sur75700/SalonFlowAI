@@ -481,6 +481,9 @@ def build_mission_control(
             "impact": round(reactivation_amount, 2),
             "confidence": 89,
             "action": "launch_reactivation_campaign",
+            "urgency": "high",
+            "roi_score": min(100, max(75, round(reactivation_amount / 1000))),
+            "execution_window_days": 7,
         })
 
     growth_amount = float(growth_summary.get("growth_opportunity") or 0)
@@ -492,6 +495,9 @@ def build_mission_control(
             "impact": round(growth_amount, 2),
             "confidence": 84,
             "action": growth_summary.get("recommended_action") or "promote_top_service",
+            "urgency": "medium",
+            "roi_score": min(100, max(65, round(growth_amount / 1000))),
+            "execution_window_days": 14,
         })
 
     if int(risk_summary.get("highest_risk_score") or 0) >= 45:
@@ -502,6 +508,9 @@ def build_mission_control(
             "impact": round(float(executive_decision.get("expected_impact") or 0) * 0.35, 2),
             "confidence": 78,
             "action": "enable_reminders",
+            "urgency": "high",
+            "roi_score": 82,
+            "execution_window_days": 3,
         })
 
     if not missions:
@@ -512,6 +521,9 @@ def build_mission_control(
             "impact": 0,
             "confidence": 88,
             "action": "create_first_booking",
+            "urgency": "medium",
+            "roi_score": 70,
+            "execution_window_days": 7,
         })
 
     return sorted(missions, key=lambda item: item["priority"])[:3]
