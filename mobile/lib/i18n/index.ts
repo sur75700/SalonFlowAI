@@ -183,6 +183,12 @@ const dict: Record<string, string> = {
   "AI Priority Low": "LOW",
   "AI Confidence": "AI Confidence",
   "AI Expected Impact": "Expected Impact",
+  "AI Revenue Opportunity": "Revenue Opportunity",
+  "AI Opportunity recover_cancelled_revenue": "Recover Cancelled Revenue",
+  "AI Opportunity convert_pipeline_revenue": "Convert Scheduled Pipeline",
+  "AI Opportunity increase_service_revenue": "Increase Service Revenue",
+  "AI Opportunity recover_revenue_momentum": "Recover Revenue Momentum",
+  "AI Opportunity increase_average_ticket": "Increase Average Ticket",
   "AI Impact reduce_cancellations": "Reduce Cancellations",
   "AI Impact increase_service_revenue": "Increase Service Revenue",
   "AI Impact lift_average_ticket": "Lift Average Ticket",
@@ -234,6 +240,12 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI Revenue Opportunity": "Opportunité de revenu",
+    "AI Opportunity recover_cancelled_revenue": "Récupération du revenu annulé",
+    "AI Opportunity convert_pipeline_revenue": "Conversion du pipeline planifié",
+    "AI Opportunity increase_service_revenue": "Augmentation du revenu du service",
+    "AI Opportunity recover_revenue_momentum": "Récupération de la dynamique revenu",
+    "AI Opportunity increase_average_ticket": "Augmentation du ticket moyen",
     "AI Score": "Indice SalonFlow AI",
     "AI Health Waiting": "En attente",
     "AI Health Critical": "État critique",
@@ -515,6 +527,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Revenue Opportunity": "Եկամտային հնարավորություն",
+    "AI Opportunity recover_cancelled_revenue": "Չեղարկված եկամտի վերականգնում",
+    "AI Opportunity convert_pipeline_revenue": "Պլանավորված եկամտի փոխակերպում",
+    "AI Opportunity increase_service_revenue": "Ծառայության եկամտի աճ",
+    "AI Opportunity recover_revenue_momentum": "Եկամտի դինամիկայի վերականգնում",
+    "AI Opportunity increase_average_ticket": "Միջին չեկի աճ",
     "AI Score": "SalonFlow AI գնահատական",
     "AI Health Waiting": "Սպասման վիճակ",
     "AI Health Critical": "Կրիտիկական վիճակ",
@@ -732,6 +750,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Revenue Opportunity": "Потенциал выручки",
+    "AI Opportunity recover_cancelled_revenue": "Восстановление отменённой выручки",
+    "AI Opportunity convert_pipeline_revenue": "Конвертация запланированной выручки",
+    "AI Opportunity increase_service_revenue": "Рост выручки услуги",
+    "AI Opportunity recover_revenue_momentum": "Восстановление динамики выручки",
+    "AI Opportunity increase_average_ticket": "Рост среднего чека",
     "AI Score": "Оценка SalonFlow AI",
     "AI Health Waiting": "Ожидание данных",
     "AI Health Critical": "Критическое состояние",

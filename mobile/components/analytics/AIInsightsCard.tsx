@@ -64,6 +64,16 @@ function confidenceLabel(item: AnalyticsInsight, locale: string) {
   return `${item.confidence}% ${t("AI Confidence", locale as any)}`;
 }
 
+function opportunityLabel(item: AnalyticsInsight, locale: string) {
+  if (!item.opportunity_code) return "";
+
+  const translated = t(`AI Opportunity ${item.opportunity_code}`, locale as any);
+
+  return translated === `AI Opportunity ${item.opportunity_code}`
+    ? item.opportunity_code.replace(/_/g, " ")
+    : translated;
+}
+
 function impactLabel(item: AnalyticsInsight, locale: string) {
   if (!item.impact_code) return "";
 
@@ -266,6 +276,24 @@ export default function AIInsightsCard({ insights = [] }: Props) {
                   <Text style={styles.actionText}>
                     {insightAction(item, locale)}
                   </Text>
+
+                  {typeof item.opportunity_amount === "number" ? (
+                    <View style={styles.opportunityBox}>
+                      <Text style={styles.opportunityLabel}>
+                        💰 {t("AI Revenue Opportunity", locale)}
+                      </Text>
+
+                      <Text style={styles.opportunityValue}>
+                        +{Math.round(item.opportunity_amount).toLocaleString()} AMD
+                      </Text>
+
+                      {opportunityLabel(item, locale) ? (
+                        <Text style={styles.opportunityText}>
+                          {opportunityLabel(item, locale)}
+                        </Text>
+                      ) : null}
+                    </View>
+                  ) : null}
                 </View>
               ) : null}
             </View>
@@ -504,6 +532,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     lineHeight: 18,
+  },
+  opportunityBox: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#1f3b2d",
+  },
+  opportunityLabel: {
+    color: "#86efac",
+    fontSize: 11,
+    fontWeight: "900",
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
+  opportunityValue: {
+    color: "#22c55e",
+    fontSize: 18,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+  opportunityText: {
+    color: "#bbf7d0",
+    fontSize: 11,
+    fontWeight: "700",
+    marginTop: 3,
   },
   emptyText: {
     color: "#c9c2cf",

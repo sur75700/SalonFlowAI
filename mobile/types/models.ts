@@ -74,6 +74,8 @@ export type AnalyticsInsight = {
   priority_level?: string;
   confidence?: number;
   impact_code?: string;
+  opportunity_code?: string;
+  opportunity_amount?: number;
   title: string;
   message: string;
   priority?: number;
