@@ -188,6 +188,8 @@ const dict: Record<string, string> = {
   "AI Risk Command Center": "AI Risk Command Center",
   "AI Growth Intelligence": "AI Growth Intelligence",
   "AI Executive Decision": "AI Executive Decision",
+  "AI CEO Brief": "SalonFlow CEO Brief",
+  "AI Action Now": "Action Now",
   "AI Decision Score": "Decision Score",
   "AI Primary Action": "Primary Action",
   "AI Secondary Action": "Secondary Action",
@@ -279,6 +281,8 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI CEO Brief": "Résumé CEO SalonFlow",
+    "AI Action Now": "Action maintenant",
     "AI Executive Decision": "Décision exécutive IA",
     "AI Decision Score": "Score de décision",
     "AI Primary Action": "Action principale",
@@ -605,6 +609,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI CEO Brief": "SalonFlow CEO ամփոփում",
+    "AI Action Now": "Գործողություն հիմա",
     "AI Executive Decision": "AI գործադիր որոշում",
     "AI Decision Score": "Որոշման գնահատական",
     "AI Primary Action": "Գլխավոր գործողություն",
@@ -867,6 +873,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI CEO Brief": "SalonFlow CEO-сводка",
+    "AI Action Now": "Действие сейчас",
     "AI Executive Decision": "AI исполнительное решение",
     "AI Decision Score": "Оценка решения",
     "AI Primary Action": "Главное действие",

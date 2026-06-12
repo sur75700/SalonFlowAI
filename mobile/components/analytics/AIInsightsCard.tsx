@@ -229,7 +229,7 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
           {executiveDecision ? (
             <View style={styles.decisionPanel}>
               <Text style={styles.decisionTitle}>
-                👑 {t("AI Executive Decision", locale)}
+                👑 {t("AI CEO Brief", locale)}
               </Text>
 
               <Text style={styles.decisionHeadline}>
@@ -255,7 +255,7 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
               </Text>
 
               <Text style={styles.decisionAction}>
-                {t("AI Primary Action", locale)}: {t(`AI Action ${executiveDecision.primary_action}`, locale as any)}
+                {t("AI Action Now", locale)}: {t(`AI Action ${executiveDecision.primary_action}`, locale as any)}
               </Text>
 
               <Text style={styles.decisionAction}>
@@ -538,10 +538,10 @@ const styles = StyleSheet.create({
   },
   decisionPanel: {
     backgroundColor: "#1b1530",
-    borderRadius: UI.radius.lg,
-    padding: UI.spacing.md,
+    borderRadius: UI.radius.hero,
+    padding: UI.spacing.lg,
     borderWidth: 1,
-    borderColor: "#7c3aed",
+    borderColor: "#f2d17a",
     marginBottom: 12,
   },
   decisionTitle: {
@@ -554,10 +554,10 @@ const styles = StyleSheet.create({
   },
   decisionHeadline: {
     color: "#ffffff",
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "900",
-    lineHeight: 20,
-    marginBottom: 10,
+    lineHeight: 22,
+    marginBottom: 12,
   },
   decisionGrid: {
     flexDirection: "row",
