@@ -462,6 +462,77 @@ def build_executive_decision(
     }
 
 
+def build_performance_center(
+    *,
+    forecast: dict,
+    risk_summary: dict,
+    growth_summary: dict,
+    client_summary: dict,
+    client_risk: dict,
+):
+    revenue_efficiency = min(
+        100,
+        max(
+            0,
+            round(
+                int(forecast.get("confidence") or 0) * 0.5 +
+                int(growth_summary.get("growth_score") or 0) * 0.5
+            ),
+        ),
+    )
+
+    client_efficiency = min(
+        100,
+        max(
+            0,
+            round(
+                float(client_summary.get("retention_score") or 0) * 0.65 +
+                max(0, 100 - float(client_risk.get("risk_score") or 0)) * 0.35
+            ),
+        ),
+    )
+
+    service_efficiency = min(
+        100,
+        max(
+            0,
+            round(
+                55 +
+                (15 if growth_summary.get("best_service") and growth_summary.get("best_service") != "No service yet" else 0) +
+                (20 if float(growth_summary.get("growth_opportunity") or 0) > 0 else 0)
+            ),
+        ),
+    )
+
+    operational_efficiency = min(
+        100,
+        max(
+            0,
+            round(
+                100 -
+                int(risk_summary.get("highest_risk_score") or 0) * 0.45 -
+                float(client_risk.get("risk_score") or 0) * 0.25
+            ),
+        ),
+    )
+
+    overall_efficiency = round(
+        revenue_efficiency * 0.3 +
+        client_efficiency * 0.25 +
+        service_efficiency * 0.25 +
+        operational_efficiency * 0.2,
+        0,
+    )
+
+    return {
+        "overall_efficiency": int(overall_efficiency),
+        "revenue_efficiency": revenue_efficiency,
+        "client_efficiency": client_efficiency,
+        "service_efficiency": service_efficiency,
+        "operational_efficiency": operational_efficiency,
+    }
+
+
 def build_mission_control(
     *,
     executive_decision: dict,
@@ -746,6 +817,13 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         client_risk=client_risk,
         risk_summary=risk_summary,
     )
+    performance_center = build_performance_center(
+        forecast=forecast,
+        risk_summary=risk_summary,
+        growth_summary=growth_summary,
+        client_summary=client_summary,
+        client_risk=client_risk,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -757,5 +835,6 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         "client_summary": client_summary,
         "client_risk": client_risk,
         "mission_control": mission_control,
+        "performance_center": performance_center,
         "insights": insights,
     }
