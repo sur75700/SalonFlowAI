@@ -35,6 +35,14 @@ type Props = {
     secondary_action: string;
     expected_impact: number;
   };
+  clientSummary?: {
+    total_clients: number;
+    new_clients: number;
+    returning_clients: number;
+    vip_clients: number;
+    inactive_clients: number;
+    retention_score: number;
+  };
 };
 
 
@@ -197,7 +205,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -354,6 +362,42 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
 
               <Text style={styles.growthAction}>
                 {t("AI Growth Recommended Action", locale)}: {t(`AI Action ${growthSummary.recommended_action}`, locale as any)}
+              </Text>
+            </View>
+          ) : null}
+
+          {clientSummary ? (
+            <View style={styles.clientPanel}>
+              <Text style={styles.clientTitle}>
+                👥 {t("AI Client Intelligence", locale)}
+              </Text>
+
+              <View style={styles.clientGrid}>
+                <View style={styles.clientCell}>
+                  <Text style={styles.clientValue}>{clientSummary.total_clients}</Text>
+                  <Text style={styles.clientLabel}>{t("AI Total Clients", locale)}</Text>
+                </View>
+
+                <View style={styles.clientCell}>
+                  <Text style={styles.clientValue}>{clientSummary.retention_score}%</Text>
+                  <Text style={styles.clientLabel}>{t("AI Retention Score", locale)}</Text>
+                </View>
+              </View>
+
+              <View style={styles.clientGrid}>
+                <View style={styles.clientCell}>
+                  <Text style={styles.clientValue}>{clientSummary.returning_clients}</Text>
+                  <Text style={styles.clientLabel}>{t("AI Returning Clients", locale)}</Text>
+                </View>
+
+                <View style={styles.clientCell}>
+                  <Text style={styles.clientValue}>{clientSummary.vip_clients}</Text>
+                  <Text style={styles.clientLabel}>{t("AI VIP Clients", locale)}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.clientMeta}>
+                {t("AI New Clients", locale)}: {clientSummary.new_clients} · {t("AI Inactive Clients", locale)}: {clientSummary.inactive_clients}
               </Text>
             </View>
           ) : null}
@@ -758,6 +802,54 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 16,
     marginTop: 6,
+  },
+  clientPanel: {
+    backgroundColor: "#101827",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#2563eb",
+    marginBottom: 12,
+  },
+  clientTitle: {
+    color: "#93c5fd",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  clientGrid: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  clientCell: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#1d4ed8",
+  },
+  clientValue: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  clientLabel: {
+    color: "#bfdbfe",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  clientMeta: {
+    color: "#dbeafe",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 2,
   },
   summaryOverline: {
     color: "#f2d17a",

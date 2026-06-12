@@ -112,6 +112,15 @@ export type AnalyticsExecutiveDecision = {
   expected_impact: number;
 };
 
+export type AnalyticsClientSummary = {
+  total_clients: number;
+  new_clients: number;
+  returning_clients: number;
+  vip_clients: number;
+  inactive_clients: number;
+  retention_score: number;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -135,5 +144,6 @@ export type AnalyticsData = {
   risk_summary?: AnalyticsRiskSummary;
   growth_summary?: AnalyticsGrowthSummary;
   executive_decision?: AnalyticsExecutiveDecision;
+  client_summary?: AnalyticsClientSummary;
   insights?: AnalyticsInsight[];
 };
