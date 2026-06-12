@@ -102,6 +102,43 @@ async def analytics_dashboard(_: dict = Depends(require_auth)):
     }
 
 
+def build_revenue_forecast(revenue_last_7_days: list[dict]):
+    completed_days = [
+        float(day.get("completed_revenue") or 0)
+        for day in revenue_last_7_days
+    ]
+
+    active_days = [value for value in completed_days if value > 0]
+    daily_average = sum(active_days) / len(active_days) if active_days else 0
+
+    first_half = sum(completed_days[:3])
+    second_half = sum(completed_days[-3:])
+
+    trend = "stable"
+    if second_half > first_half and second_half > 0:
+        trend = "up"
+    elif second_half < first_half and first_half > 0:
+        trend = "down"
+
+    confidence = 72
+    if len(active_days) >= 5:
+        confidence = 88
+    elif len(active_days) >= 3:
+        confidence = 82
+    elif len(active_days) >= 1:
+        confidence = 76
+
+    if trend == "stable":
+        confidence = max(68, confidence - 4)
+
+    return {
+        "revenue_7_days": round(daily_average * 7, 2),
+        "revenue_30_days": round(daily_average * 30, 2),
+        "confidence": confidence,
+        "trend": trend,
+    }
+
+
 def build_business_insights(
     *,
     completed_revenue: float,
@@ -257,17 +294,20 @@ async def analytics_insights(_: dict = Depends(require_auth)):
     dashboard = await analytics_dashboard(_)
 
     totals = dashboard.get("totals", {})
+    revenue_last_7_days = dashboard.get("revenue_last_7_days") or []
     insights = build_business_insights(
         completed_revenue=float(totals.get("completed_revenue") or 0),
         scheduled_pipeline=float(totals.get("scheduled_pipeline") or 0),
         cancelled_value=float(totals.get("cancelled_value") or 0),
         avg_booking_value=float(totals.get("avg_completed_booking_value") or 0),
         top_services=dashboard.get("top_services") or [],
-        revenue_last_7_days=dashboard.get("revenue_last_7_days") or [],
+        revenue_last_7_days=revenue_last_7_days,
     )
+    forecast = build_revenue_forecast(revenue_last_7_days)
 
     return {
         "currency": dashboard.get("currency", "AMD"),
         "generated_at": datetime.now(UTC).isoformat(),
+        "forecast": forecast,
         "insights": insights,
     }

@@ -81,6 +81,13 @@ export type AnalyticsInsight = {
   priority?: number;
 };
 
+export type AnalyticsForecast = {
+  revenue_7_days: number;
+  revenue_30_days: number;
+  confidence: number;
+  trend: string;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -100,5 +107,6 @@ export type AnalyticsData = {
   totals: AnalyticsTotals;
   top_services: AnalyticsTopService[];
   revenue_last_7_days: AnalyticsRevenuePoint[];
+  forecast?: AnalyticsForecast;
   insights?: AnalyticsInsight[];
 };

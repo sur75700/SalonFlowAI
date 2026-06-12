@@ -8,6 +8,12 @@ import type { AnalyticsInsight } from "../../types/models";
 
 type Props = {
   insights?: AnalyticsInsight[];
+  forecast?: {
+    revenue_7_days: number;
+    revenue_30_days: number;
+    confidence: number;
+    trend: string;
+  };
 };
 
 
@@ -170,7 +176,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [] }: Props) {
+export default function AIInsightsCard({ insights = [], forecast }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -198,6 +204,38 @@ export default function AIInsightsCard({ insights = [] }: Props) {
               )}
             </Text>
           </View>
+
+          {forecast ? (
+            <View style={styles.forecastPanel}>
+              <Text style={styles.forecastTitle}>
+                {t("AI Revenue Forecast", locale)}
+              </Text>
+
+              <View style={styles.forecastGrid}>
+                <View style={styles.forecastCell}>
+                  <Text style={styles.forecastValue}>
+                    {Math.round(forecast.revenue_7_days).toLocaleString()} AMD
+                  </Text>
+                  <Text style={styles.forecastLabel}>
+                    {t("AI Forecast 7 Days", locale)}
+                  </Text>
+                </View>
+
+                <View style={styles.forecastCell}>
+                  <Text style={styles.forecastValue}>
+                    {Math.round(forecast.revenue_30_days).toLocaleString()} AMD
+                  </Text>
+                  <Text style={styles.forecastLabel}>
+                    {t("AI Forecast 30 Days", locale)}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.forecastMeta}>
+                {t("AI Forecast Confidence", locale)}: {forecast.confidence}% · {t(`AI Forecast Trend ${forecast.trend}`, locale as any)}
+              </Text>
+            </View>
+          ) : null}
 
           <Text style={styles.summaryOverline}>{t("AI Executive Summary", locale)}</Text>
 
@@ -376,6 +414,53 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 4,
     textTransform: "uppercase",
+  },
+  forecastPanel: {
+    backgroundColor: "#0f1e2e",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#155e75",
+    marginBottom: 12,
+  },
+  forecastTitle: {
+    color: "#7dd3fc",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  forecastGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  forecastCell: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#1f3b52",
+  },
+  forecastValue: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  forecastLabel: {
+    color: "#bae6fd",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  forecastMeta: {
+    color: "#d8dce6",
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 16,
+    marginTop: 10,
   },
   summaryOverline: {
     color: "#f2d17a",

@@ -148,6 +148,7 @@ export function useAnalyticsData(
           analyticsRes.data.top_performing_services ??
           analyticsRes.data.top_services ??
           [],
+        forecast: insightsRes.data?.forecast,
         insights: insightsRes.data?.insights ?? [],
       });
     } catch (err: any) {
