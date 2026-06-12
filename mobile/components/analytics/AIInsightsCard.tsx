@@ -50,6 +50,14 @@ type Props = {
     reactivation_opportunity: number;
     risk_score: number;
   };
+  missionControl?: {
+    priority: number;
+    code: string;
+    title: string;
+    impact: number;
+    confidence: number;
+    action: string;
+  }[];
 };
 
 
@@ -212,7 +220,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -276,6 +284,33 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
               <Text style={styles.decisionAction}>
                 {t("AI Secondary Action", locale)}: {t(`AI Action ${executiveDecision.secondary_action}`, locale as any)}
               </Text>
+            </View>
+          ) : null}
+
+          {missionControl?.length ? (
+            <View style={styles.missionPanel}>
+              <Text style={styles.missionTitle}>
+                🎯 {t("AI Mission Control", locale)}
+              </Text>
+
+              {missionControl.slice(0, 3).map((mission) => (
+                <View key={`${mission.priority}-${mission.code}`} style={styles.missionItem}>
+                  <View style={styles.missionHeader}>
+                    <Text style={styles.missionPriority}>#{mission.priority}</Text>
+                    <Text style={styles.missionName}>
+                      {t(`AI Mission ${mission.code}`, locale as any)}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.missionMeta}>
+                    {t("AI Mission Impact", locale)}: +{Math.round(mission.impact).toLocaleString()} AMD · {mission.confidence}% {t("AI Confidence", locale as any)}
+                  </Text>
+
+                  <Text style={styles.missionAction}>
+                    {t("AI Action Now", locale)}: {t(`AI Action ${mission.action}`, locale as any)}
+                  </Text>
+                </View>
+              ))}
             </View>
           ) : null}
 
@@ -683,6 +718,60 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 16,
     marginTop: 5,
+  },
+  missionPanel: {
+    backgroundColor: "#17112b",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#a855f7",
+    marginBottom: 12,
+  },
+  missionTitle: {
+    color: "#e9d5ff",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  missionItem: {
+    backgroundColor: "#111827",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#6d28d9",
+    marginBottom: 8,
+  },
+  missionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  missionPriority: {
+    color: "#f2d17a",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  missionName: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+    flex: 1,
+  },
+  missionMeta: {
+    color: "#ddd6fe",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+  },
+  missionAction: {
+    color: "#f5f3ff",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 4,
   },
   forecastPanel: {
     backgroundColor: "#0f1e2e",

@@ -129,6 +129,15 @@ export type AnalyticsClientRisk = {
   risk_score: number;
 };
 
+export type AnalyticsMission = {
+  priority: number;
+  code: string;
+  title: string;
+  impact: number;
+  confidence: number;
+  action: string;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -154,5 +163,6 @@ export type AnalyticsData = {
   executive_decision?: AnalyticsExecutiveDecision;
   client_summary?: AnalyticsClientSummary;
   client_risk?: AnalyticsClientRisk;
+  mission_control?: AnalyticsMission[];
   insights?: AnalyticsInsight[];
 };

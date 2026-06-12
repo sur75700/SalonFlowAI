@@ -191,6 +191,12 @@ const dict: Record<string, string> = {
   "AI CEO Brief": "SalonFlow CEO Brief",
   "AI Client Intelligence": "AI Client Intelligence",
   "AI Client Risk": "Client Risk & Reactivation",
+  "AI Mission Control": "AI Mission Control",
+  "AI Mission Impact": "Impact",
+  "AI Mission reactivate_at_risk_clients": "Reactivate at-risk clients",
+  "AI Mission capture_growth_opportunity": "Capture growth opportunity",
+  "AI Mission reduce_business_risk": "Reduce business risk",
+  "AI Mission create_first_booking": "Create first booking",
   "AI Client Risk Score": "Risk Score",
   "AI At Risk Clients": "At Risk",
   "AI High Risk Clients": "High Risk",
@@ -294,6 +300,12 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI Mission Control": "Centre de missions IA",
+    "AI Mission Impact": "Impact",
+    "AI Mission reactivate_at_risk_clients": "Réactiver les clients à risque",
+    "AI Mission capture_growth_opportunity": "Saisir l’opportunité de croissance",
+    "AI Mission reduce_business_risk": "Réduire le risque business",
+    "AI Mission create_first_booking": "Créer la première réservation",
     "AI Client Risk": "Risque client et réactivation",
     "AI Client Risk Score": "Score de risque",
     "AI At Risk Clients": "À risque",
@@ -635,6 +647,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Mission Control": "AI առաջադրանքների կենտրոն",
+    "AI Mission Impact": "Ազդեցություն",
+    "AI Mission reactivate_at_risk_clients": "Վերադարձնել ռիսկային հաճախորդներին",
+    "AI Mission capture_growth_opportunity": "Օգտագործել աճի հնարավորությունը",
+    "AI Mission reduce_business_risk": "Նվազեցնել բիզնես ռիսկը",
+    "AI Mission create_first_booking": "Ստեղծել առաջին ամրագրումը",
     "AI Client Risk": "Հաճախորդների ռիսկ և վերադարձ",
     "AI Client Risk Score": "Ռիսկի գնահատական",
     "AI At Risk Clients": "Ռիսկային",
@@ -912,6 +930,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Mission Control": "AI центр задач",
+    "AI Mission Impact": "Эффект",
+    "AI Mission reactivate_at_risk_clients": "Вернуть клиентов в риске",
+    "AI Mission capture_growth_opportunity": "Использовать возможность роста",
+    "AI Mission reduce_business_risk": "Снизить бизнес-риск",
+    "AI Mission create_first_booking": "Создать первое бронирование",
     "AI Client Risk": "Риск клиентов и реактивация",
     "AI Client Risk Score": "Оценка риска",
     "AI At Risk Clients": "В риске",
