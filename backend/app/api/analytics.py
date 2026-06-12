@@ -484,6 +484,9 @@ def build_mission_control(
             "urgency": "high",
             "roi_score": min(100, max(75, round(reactivation_amount / 1000))),
             "execution_window_days": 7,
+            "action_label": "Launch Reactivation Campaign",
+            "execution_playbook": "Contact at-risk clients and offer a return visit incentive.",
+            "expected_result": "Recover inactive client revenue.",
         })
 
     growth_amount = float(growth_summary.get("growth_opportunity") or 0)
@@ -498,6 +501,9 @@ def build_mission_control(
             "urgency": "medium",
             "roi_score": min(100, max(65, round(growth_amount / 1000))),
             "execution_window_days": 14,
+            "action_label": "Capture Growth Opportunity",
+            "execution_playbook": "Promote the strongest service and convert scheduled pipeline.",
+            "expected_result": "Increase bookings and completed revenue.",
         })
 
     if int(risk_summary.get("highest_risk_score") or 0) >= 45:
@@ -511,6 +517,9 @@ def build_mission_control(
             "urgency": "high",
             "roi_score": 82,
             "execution_window_days": 3,
+            "action_label": "Reduce Business Risk",
+            "execution_playbook": "Enable reminders, confirm visits, and reduce cancellation pressure.",
+            "expected_result": "Protect pipeline revenue and stabilize operations.",
         })
 
     if not missions:
@@ -524,6 +533,9 @@ def build_mission_control(
             "urgency": "medium",
             "roi_score": 70,
             "execution_window_days": 7,
+            "action_label": "Create First Booking",
+            "execution_playbook": "Create the first scheduled or completed booking to activate AI intelligence.",
+            "expected_result": "Unlock revenue visibility and operational insights.",
         })
 
     return sorted(missions, key=lambda item: item["priority"])[:3]
