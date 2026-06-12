@@ -151,6 +151,7 @@ export function useAnalyticsData(
         forecast: insightsRes.data?.forecast,
         risk_summary: insightsRes.data?.risk_summary,
         growth_summary: insightsRes.data?.growth_summary,
+        executive_decision: insightsRes.data?.executive_decision,
         insights: insightsRes.data?.insights ?? [],
       });
     } catch (err: any) {

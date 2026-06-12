@@ -224,6 +224,7 @@ export default function AnalyticsScreen() {
           forecast={analytics?.forecast}
           riskSummary={analytics?.risk_summary}
           growthSummary={analytics?.growth_summary}
+          executiveDecision={analytics?.executive_decision}
         />
 
         {error ? (

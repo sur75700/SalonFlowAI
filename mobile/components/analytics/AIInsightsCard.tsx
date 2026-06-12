@@ -27,6 +27,14 @@ type Props = {
     growth_opportunity: number;
     recommended_action: string;
   };
+  executiveDecision?: {
+    decision_score: number;
+    decision_level: string;
+    headline: string;
+    primary_action: string;
+    secondary_action: string;
+    expected_impact: number;
+  };
 };
 
 
@@ -189,7 +197,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -217,6 +225,44 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
               )}
             </Text>
           </View>
+
+          {executiveDecision ? (
+            <View style={styles.decisionPanel}>
+              <Text style={styles.decisionTitle}>
+                👑 {t("AI Executive Decision", locale)}
+              </Text>
+
+              <Text style={styles.decisionHeadline}>
+                {t(`AI Decision Headline ${executiveDecision.headline}`, locale as any)}
+              </Text>
+
+              <View style={styles.decisionGrid}>
+                <View style={styles.decisionCell}>
+                  <Text style={styles.decisionValue}>{executiveDecision.decision_score}%</Text>
+                  <Text style={styles.decisionLabel}>{t("AI Decision Score", locale)}</Text>
+                </View>
+
+                <View style={styles.decisionCell}>
+                  <Text style={styles.decisionValue}>
+                    +{Math.round(executiveDecision.expected_impact).toLocaleString()} AMD
+                  </Text>
+                  <Text style={styles.decisionLabel}>{t("AI Expected Impact Value", locale)}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.decisionLevel}>
+                {t(`AI Decision Level ${executiveDecision.decision_level}`, locale as any)}
+              </Text>
+
+              <Text style={styles.decisionAction}>
+                {t("AI Primary Action", locale)}: {t(`AI Action ${executiveDecision.primary_action}`, locale as any)}
+              </Text>
+
+              <Text style={styles.decisionAction}>
+                {t("AI Secondary Action", locale)}: {t(`AI Action ${executiveDecision.secondary_action}`, locale as any)}
+              </Text>
+            </View>
+          ) : null}
 
           {forecast ? (
             <View style={styles.forecastPanel}>
@@ -489,6 +535,67 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 4,
     textTransform: "uppercase",
+  },
+  decisionPanel: {
+    backgroundColor: "#1b1530",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#7c3aed",
+    marginBottom: 12,
+  },
+  decisionTitle: {
+    color: "#f2d17a",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    textTransform: "uppercase",
+  },
+  decisionHeadline: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "900",
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  decisionGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  decisionCell: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#4c3575",
+  },
+  decisionValue: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  decisionLabel: {
+    color: "#ddd6fe",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  decisionLevel: {
+    color: "#f2d17a",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 10,
+    textTransform: "uppercase",
+  },
+  decisionAction: {
+    color: "#ede9fe",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 5,
   },
   forecastPanel: {
     backgroundColor: "#0f1e2e",

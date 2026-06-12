@@ -262,6 +262,65 @@ def build_growth_summary(
     }
 
 
+def decision_level_from_score(score: int):
+    if score >= 85:
+        return "execute"
+    if score >= 70:
+        return "accelerate"
+    if score >= 45:
+        return "monitor"
+    return "stabilize"
+
+
+def build_executive_decision(
+    *,
+    forecast: dict,
+    risk_summary: dict,
+    growth_summary: dict,
+):
+    growth_score = int(growth_summary.get("growth_score") or 0)
+    risk_score = int(risk_summary.get("highest_risk_score") or 0)
+    forecast_confidence = int(forecast.get("confidence") or 0)
+
+    decision_score = max(
+        0,
+        min(
+            100,
+            round(
+                growth_score * 0.5 +
+                forecast_confidence * 0.3 -
+                risk_score * 0.2
+            ),
+        ),
+    )
+
+    primary_action = (
+        growth_summary.get("recommended_action")
+        or "follow_up_scheduled_clients"
+    )
+
+    secondary_action = "promote_top_service"
+
+    expected_impact = round(
+        float(growth_summary.get("growth_opportunity") or 0),
+        2,
+    )
+
+    headline = "Growth opportunity detected"
+
+    if risk_score >= 70:
+        headline = "Risk mitigation required"
+
+    return {
+        "decision_score": decision_score,
+        "decision_level": decision_level_from_score(decision_score),
+        "headline": headline,
+        "primary_action": primary_action,
+        "secondary_action": secondary_action,
+        "expected_impact": expected_impact,
+    }
+
+
 def build_business_insights(
     *,
     completed_revenue: float,
@@ -442,11 +501,18 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         revenue_last_7_days=revenue_last_7_days,
     )
 
+    executive_decision = build_executive_decision(
+        forecast=forecast,
+        risk_summary=risk_summary,
+        growth_summary=growth_summary,
+    )
+
     return {
         "currency": dashboard.get("currency", "AMD"),
         "generated_at": datetime.now(UTC).isoformat(),
         "forecast": forecast,
         "risk_summary": risk_summary,
         "growth_summary": growth_summary,
+        "executive_decision": executive_decision,
         "insights": insights,
     }

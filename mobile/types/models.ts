@@ -103,6 +103,15 @@ export type AnalyticsGrowthSummary = {
   recommended_action: string;
 };
 
+export type AnalyticsExecutiveDecision = {
+  decision_score: number;
+  decision_level: string;
+  headline: string;
+  primary_action: string;
+  secondary_action: string;
+  expected_impact: number;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -125,5 +134,6 @@ export type AnalyticsData = {
   forecast?: AnalyticsForecast;
   risk_summary?: AnalyticsRiskSummary;
   growth_summary?: AnalyticsGrowthSummary;
+  executive_decision?: AnalyticsExecutiveDecision;
   insights?: AnalyticsInsight[];
 };
