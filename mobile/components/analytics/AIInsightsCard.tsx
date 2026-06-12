@@ -71,6 +71,16 @@ type Props = {
     service_efficiency: number;
     operational_efficiency: number;
   };
+  benchmarkCenter?: {
+    benchmark_score: number;
+    salon_tier: string;
+    percentile_rank: number;
+    top_percent: number;
+    revenue_score: number;
+    client_score: number;
+    service_score: number;
+    operations_score: number;
+  };
 };
 
 
@@ -233,7 +243,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl, performanceCenter }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl, performanceCenter, benchmarkCenter }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -354,6 +364,44 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
                   ) : null}
                 </View>
               ))}
+            </View>
+          ) : null}
+
+          {benchmarkCenter ? (
+            <View style={styles.benchmarkPanel}>
+              <Text style={styles.benchmarkTitle}>
+                🏆 {t("AI Benchmark Center", locale)}
+              </Text>
+
+              <Text style={styles.benchmarkTier}>
+                {t(`AI Benchmark Tier ${benchmarkCenter.salon_tier}`, locale as any)}
+              </Text>
+
+              <Text style={styles.benchmarkMeta}>
+                {t("AI Benchmark Top Percent", locale)}: Top {benchmarkCenter.top_percent}%
+              </Text>
+
+              <View style={styles.benchmarkGrid}>
+                <View style={styles.benchmarkCell}>
+                  <Text style={styles.benchmarkValue}>{benchmarkCenter.benchmark_score}%</Text>
+                  <Text style={styles.benchmarkLabel}>{t("AI Benchmark Score", locale)}</Text>
+                </View>
+
+                <View style={styles.benchmarkCell}>
+                  <Text style={styles.benchmarkValue}>{benchmarkCenter.percentile_rank}%</Text>
+                  <Text style={styles.benchmarkLabel}>{t("AI Percentile Rank", locale)}</Text>
+                </View>
+
+                <View style={styles.benchmarkCell}>
+                  <Text style={styles.benchmarkValue}>{benchmarkCenter.revenue_score}%</Text>
+                  <Text style={styles.benchmarkLabel}>{t("AI Revenue Score", locale)}</Text>
+                </View>
+
+                <View style={styles.benchmarkCell}>
+                  <Text style={styles.benchmarkValue}>{benchmarkCenter.client_score}%</Text>
+                  <Text style={styles.benchmarkLabel}>{t("AI Client Score", locale)}</Text>
+                </View>
+              </View>
             </View>
           ) : null}
 
@@ -916,6 +964,59 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     lineHeight: 16,
+    marginTop: 4,
+  },
+  benchmarkPanel: {
+    backgroundColor: "#1b1530",
+    borderWidth: 1,
+    borderColor: "#f2d17a",
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 14,
+  },
+  benchmarkTitle: {
+    color: "#f2d17a",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 10,
+  },
+  benchmarkTier: {
+    color: "#ffffff",
+    fontSize: 24,
+    fontWeight: "900",
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  benchmarkMeta: {
+    color: "#fde68a",
+    fontSize: 12,
+    fontWeight: "900",
+    marginBottom: 14,
+    textTransform: "uppercase",
+  },
+  benchmarkGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  benchmarkCell: {
+    width: "48%",
+    backgroundColor: "#111827",
+    borderRadius: 14,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#4c3575",
+  },
+  benchmarkValue: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  benchmarkLabel: {
+    color: "#ddd6fe",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
     marginTop: 4,
   },
   performancePanel: {

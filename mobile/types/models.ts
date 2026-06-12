@@ -177,5 +177,15 @@ export type AnalyticsData = {
     service_efficiency: number;
     operational_efficiency: number;
   };
+  benchmark_center?: {
+    benchmark_score: number;
+    salon_tier: string;
+    percentile_rank: number;
+    top_percent: number;
+    revenue_score: number;
+    client_score: number;
+    service_score: number;
+    operations_score: number;
+  };
   insights?: AnalyticsInsight[];
 };
