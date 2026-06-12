@@ -462,6 +462,61 @@ def build_executive_decision(
     }
 
 
+def build_mission_control(
+    *,
+    executive_decision: dict,
+    growth_summary: dict,
+    client_risk: dict,
+    risk_summary: dict,
+):
+    missions = []
+
+    reactivation_amount = float(client_risk.get("reactivation_opportunity") or 0)
+    at_risk_clients = int(client_risk.get("at_risk_clients") or 0)
+    if at_risk_clients > 0:
+        missions.append({
+            "priority": 1,
+            "code": "reactivate_at_risk_clients",
+            "title": "Reactivate at-risk clients",
+            "impact": round(reactivation_amount, 2),
+            "confidence": 89,
+            "action": "launch_reactivation_campaign",
+        })
+
+    growth_amount = float(growth_summary.get("growth_opportunity") or 0)
+    if growth_amount > 0:
+        missions.append({
+            "priority": 2,
+            "code": "capture_growth_opportunity",
+            "title": "Capture growth opportunity",
+            "impact": round(growth_amount, 2),
+            "confidence": 84,
+            "action": growth_summary.get("recommended_action") or "promote_top_service",
+        })
+
+    if int(risk_summary.get("highest_risk_score") or 0) >= 45:
+        missions.append({
+            "priority": 3,
+            "code": "reduce_business_risk",
+            "title": "Reduce business risk",
+            "impact": round(float(executive_decision.get("expected_impact") or 0) * 0.35, 2),
+            "confidence": 78,
+            "action": "enable_reminders",
+        })
+
+    if not missions:
+        missions.append({
+            "priority": 1,
+            "code": "create_first_booking",
+            "title": "Create first booking",
+            "impact": 0,
+            "confidence": 88,
+            "action": "create_first_booking",
+        })
+
+    return sorted(missions, key=lambda item: item["priority"])[:3]
+
+
 def build_business_insights(
     *,
     completed_revenue: float,
@@ -661,6 +716,12 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         clients=clients,
         appointments=appointments,
     )
+    mission_control = build_mission_control(
+        executive_decision=executive_decision,
+        growth_summary=growth_summary,
+        client_risk=client_risk,
+        risk_summary=risk_summary,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -671,5 +732,6 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         "executive_decision": executive_decision,
         "client_summary": client_summary,
         "client_risk": client_risk,
+        "mission_control": mission_control,
         "insights": insights,
     }
