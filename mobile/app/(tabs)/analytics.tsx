@@ -219,7 +219,11 @@ export default function AnalyticsScreen() {
           subtitle={t("Analytics Ready Subtitle", locale)}
         />
 
-        <AIInsightsCard insights={analytics?.insights} forecast={analytics?.forecast} />
+        <AIInsightsCard
+          insights={analytics?.insights}
+          forecast={analytics?.forecast}
+          riskSummary={analytics?.risk_summary}
+        />
 
         {error ? (
           <View style={styles.errorBox}>

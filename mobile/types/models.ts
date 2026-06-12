@@ -88,6 +88,13 @@ export type AnalyticsForecast = {
   trend: string;
 };
 
+export type AnalyticsRiskSummary = {
+  active_risks: number;
+  highest_risk_code: string;
+  highest_risk_score: number;
+  risk_level: string;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -108,5 +115,6 @@ export type AnalyticsData = {
   top_services: AnalyticsTopService[];
   revenue_last_7_days: AnalyticsRevenuePoint[];
   forecast?: AnalyticsForecast;
+  risk_summary?: AnalyticsRiskSummary;
   insights?: AnalyticsInsight[];
 };

@@ -14,6 +14,12 @@ type Props = {
     confidence: number;
     trend: string;
   };
+  riskSummary?: {
+    active_risks: number;
+    highest_risk_code: string;
+    highest_risk_score: number;
+    risk_level: string;
+  };
 };
 
 
@@ -176,7 +182,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -233,6 +239,34 @@ export default function AIInsightsCard({ insights = [], forecast }: Props) {
 
               <Text style={styles.forecastMeta}>
                 {t("AI Forecast Confidence", locale)}: {forecast.confidence}% · {t(`AI Forecast Trend ${forecast.trend}`, locale as any)}
+              </Text>
+            </View>
+          ) : null}
+
+          {riskSummary ? (
+            <View style={styles.riskPanel}>
+              <Text style={styles.riskTitle}>
+                ⚠️ {t("AI Risk Command Center", locale)}
+              </Text>
+
+              <View style={styles.riskGrid}>
+                <View style={styles.riskCell}>
+                  <Text style={styles.riskValue}>{riskSummary.active_risks}</Text>
+                  <Text style={styles.riskLabel}>{t("AI Active Risks", locale)}</Text>
+                </View>
+
+                <View style={styles.riskCell}>
+                  <Text style={styles.riskValue}>{riskSummary.highest_risk_score}%</Text>
+                  <Text style={styles.riskLabel}>{t("AI Risk Score", locale)}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.riskMeta}>
+                {t("AI Highest Risk", locale)}: {t(`AI Risk ${riskSummary.highest_risk_code}`, locale as any)}
+              </Text>
+
+              <Text style={styles.riskLevel}>
+                {t(`AI Risk Level ${riskSummary.risk_level}`, locale as any)}
               </Text>
             </View>
           ) : null}
@@ -461,6 +495,60 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 16,
     marginTop: 10,
+  },
+  riskPanel: {
+    backgroundColor: "#2a141a",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#7f1d1d",
+    marginBottom: 12,
+  },
+  riskTitle: {
+    color: "#fecaca",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  riskGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  riskCell: {
+    flex: 1,
+    backgroundColor: "#171b27",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#4b1d25",
+  },
+  riskValue: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  riskLabel: {
+    color: "#fecaca",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  riskMeta: {
+    color: "#fca5a5",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 10,
+  },
+  riskLevel: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 5,
+    textTransform: "uppercase",
   },
   summaryOverline: {
     color: "#f2d17a",

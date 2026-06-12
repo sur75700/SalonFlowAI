@@ -139,6 +139,69 @@ def build_revenue_forecast(revenue_last_7_days: list[dict]):
     }
 
 
+def risk_level_from_score(score: int):
+    if score >= 85:
+        return "critical"
+    if score >= 70:
+        return "high"
+    if score >= 45:
+        return "medium"
+    return "low"
+
+
+def build_risk_summary(
+    *,
+    completed_revenue: float,
+    scheduled_pipeline: float,
+    cancelled_value: float,
+    top_services: list[dict],
+    revenue_last_7_days: list[dict],
+):
+    risks = []
+
+    total_signal = completed_revenue + scheduled_pipeline + cancelled_value
+    cancellation_ratio = cancelled_value / total_signal if total_signal else 0
+
+    if cancellation_ratio >= 0.15:
+        risks.append({
+            "code": "cancellation_risk",
+            "score": min(100, round(cancellation_ratio * 100 * 3)),
+        })
+
+    if total_signal > 0 and top_services:
+        top_revenue = float(top_services[0].get("revenue") or 0)
+        concentration_ratio = top_revenue / total_signal
+        if concentration_ratio >= 0.6:
+            risks.append({
+                "code": "service_concentration_risk",
+                "score": min(100, round(concentration_ratio * 100)),
+            })
+
+    completed_days = [
+        float(day.get("completed_revenue") or 0)
+        for day in revenue_last_7_days
+    ]
+
+    if len(completed_days) >= 2:
+        first_half = sum(completed_days[:3])
+        second_half = sum(completed_days[-3:])
+        if second_half < first_half and first_half > 0:
+            slowdown_ratio = (first_half - second_half) / first_half
+            risks.append({
+                "code": "revenue_slowdown_risk",
+                "score": min(100, round(slowdown_ratio * 100)),
+            })
+
+    highest = max(risks, key=lambda item: item["score"], default=None)
+
+    return {
+        "active_risks": len(risks),
+        "highest_risk_code": highest["code"] if highest else "none",
+        "highest_risk_score": highest["score"] if highest else 0,
+        "risk_level": risk_level_from_score(highest["score"]) if highest else "low",
+    }
+
+
 def build_business_insights(
     *,
     completed_revenue: float,
@@ -304,10 +367,18 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         revenue_last_7_days=revenue_last_7_days,
     )
     forecast = build_revenue_forecast(revenue_last_7_days)
+    risk_summary = build_risk_summary(
+        completed_revenue=float(totals.get("completed_revenue") or 0),
+        scheduled_pipeline=float(totals.get("scheduled_pipeline") or 0),
+        cancelled_value=float(totals.get("cancelled_value") or 0),
+        top_services=dashboard.get("top_services") or [],
+        revenue_last_7_days=revenue_last_7_days,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
         "generated_at": datetime.now(UTC).isoformat(),
         "forecast": forecast,
+        "risk_summary": risk_summary,
         "insights": insights,
     }
