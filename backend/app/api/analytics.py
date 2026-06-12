@@ -533,6 +533,67 @@ def build_performance_center(
     }
 
 
+def benchmark_tier_from_score(score: int):
+    if score >= 90:
+        return "royal"
+    if score >= 75:
+        return "elite"
+    if score >= 60:
+        return "professional"
+    if score >= 40:
+        return "growth"
+    return "starter"
+
+
+def build_benchmark_center(
+    *,
+    performance_center: dict,
+    growth_summary: dict,
+    client_summary: dict,
+    client_risk: dict,
+):
+    overall = int(performance_center.get("overall_efficiency") or 0)
+    revenue = int(performance_center.get("revenue_efficiency") or 0)
+    clients = int(performance_center.get("client_efficiency") or 0)
+    services = int(performance_center.get("service_efficiency") or 0)
+    operations = int(performance_center.get("operational_efficiency") or 0)
+
+    growth_score = int(growth_summary.get("growth_score") or 0)
+    retention_score = int(client_summary.get("retention_score") or 0)
+    risk_score = int(client_risk.get("risk_score") or 0)
+
+    benchmark_score = max(
+        0,
+        min(
+            100,
+            round(
+                overall * 0.35 +
+                revenue * 0.2 +
+                clients * 0.15 +
+                services * 0.1 +
+                operations * 0.1 +
+                growth_score * 0.05 +
+                retention_score * 0.03 +
+                max(0, 100 - risk_score) * 0.02
+            ),
+        ),
+    )
+
+    percentile_rank = max(1, min(99, round(benchmark_score * 0.92 + 4)))
+    top_percent = max(1, min(99, 100 - percentile_rank))
+
+    return {
+        "benchmark_score": benchmark_score,
+        "salon_tier": benchmark_tier_from_score(benchmark_score),
+        "percentile_rank": percentile_rank,
+        "top_percent": top_percent,
+        "revenue_score": revenue,
+        "client_score": clients,
+        "service_score": services,
+        "operations_score": operations,
+    }
+
+
 def build_mission_control(
     *,
     executive_decision: dict,
@@ -824,6 +885,12 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         client_summary=client_summary,
         client_risk=client_risk,
     )
+    benchmark_center = build_benchmark_center(
+        performance_center=performance_center,
+        growth_summary=growth_summary,
+        client_summary=client_summary,
+        client_risk=client_risk,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -836,5 +903,6 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         "client_risk": client_risk,
         "mission_control": mission_control,
         "performance_center": performance_center,
+        "benchmark_center": benchmark_center,
         "insights": insights,
     }
