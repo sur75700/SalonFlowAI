@@ -193,6 +193,8 @@ const dict: Record<string, string> = {
   "AI Client Risk": "Client Risk & Reactivation",
   "AI Mission Control": "AI Mission Control",
   "AI Mission Impact": "Impact",
+  "AI Mission Playbook": "Playbook",
+  "AI Mission Expected Result": "Expected Result",
   "AI Mission Execution Window": "Execute within",
   "AI Mission Days": "days",
   "AI Mission Urgency high": "High urgency",
@@ -307,6 +309,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   fr: {
     "AI Mission Control": "Centre de missions IA",
     "AI Mission Impact": "Impact",
+  "AI Mission Playbook": "Playbook",
+  "AI Mission Expected Result": "Expected Result",
   "AI Mission Execution Window": "Execute within",
   "AI Mission Days": "days",
   "AI Mission Urgency high": "High urgency",
@@ -657,6 +661,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Mission Playbook": "Գործողությունների պլան",
+    "AI Mission Expected Result": "Սպասվող արդյունք",
     "AI Mission Execution Window": "Կատարել մինչև",
     "AI Mission Days": "օր",
     "AI Mission Urgency high": "Բարձր շտապություն",
@@ -945,6 +951,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Mission Playbook": "План действий",
+    "AI Mission Expected Result": "Ожидаемый результат",
     "AI Mission Execution Window": "Выполнить за",
     "AI Mission Days": "дней",
     "AI Mission Urgency high": "Высокая срочность",

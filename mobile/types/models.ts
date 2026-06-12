@@ -139,6 +139,9 @@ export type AnalyticsMission = {
   urgency?: string;
   roi_score?: number;
   execution_window_days?: number;
+  action_label?: string;
+  execution_playbook?: string;
+  expected_result?: string;
 };
 
 export type AnalyticsData = {

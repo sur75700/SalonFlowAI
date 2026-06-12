@@ -60,6 +60,9 @@ type Props = {
     urgency?: string;
     roi_score?: number;
     execution_window_days?: number;
+    action_label?: string;
+    execution_playbook?: string;
+    expected_result?: string;
   }[];
 };
 
@@ -328,8 +331,20 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
                   ) : null}
 
                   <Text style={styles.missionAction}>
-                    {t("AI Action Now", locale)}: {t(`AI Action ${mission.action}`, locale as any)}
+                    {t("AI Action Now", locale)}: {mission.action_label || t(`AI Action ${mission.action}`, locale as any)}
                   </Text>
+
+                  {mission.execution_playbook ? (
+                    <Text style={styles.missionPlaybook}>
+                      {t("AI Mission Playbook", locale)}: {mission.execution_playbook}
+                    </Text>
+                  ) : null}
+
+                  {mission.expected_result ? (
+                    <Text style={styles.missionResult}>
+                      {t("AI Mission Expected Result", locale)}: {mission.expected_result}
+                    </Text>
+                  ) : null}
                 </View>
               ))}
             </View>
@@ -824,6 +839,20 @@ const styles = StyleSheet.create({
     color: "#f5f3ff",
     fontSize: 11,
     fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  missionPlaybook: {
+    color: "#ddd6fe",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 6,
+  },
+  missionResult: {
+    color: "#bbf7d0",
+    fontSize: 11,
+    fontWeight: "900",
     lineHeight: 16,
     marginTop: 4,
   },
