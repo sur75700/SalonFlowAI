@@ -335,6 +335,74 @@ def build_client_summary(
     }
 
 
+def build_client_risk_summary(
+    *,
+    clients: list[dict],
+    appointments: list[dict],
+):
+    now = datetime.now(UTC)
+
+    client_revenue: dict[str, float] = defaultdict(float)
+    last_seen: dict[str, datetime] = {}
+
+    for item in appointments:
+        client_id = str(item.get("client_id") or "")
+        if not client_id:
+            continue
+
+        if (item.get("status") or "").lower() == "completed":
+            client_revenue[client_id] += float(item.get("price_snapshot") or 0)
+
+        starts_at = parse_dt(item.get("starts_at"))
+        if starts_at and (client_id not in last_seen or starts_at > last_seen[client_id]):
+            last_seen[client_id] = starts_at
+
+    at_risk_clients = 0
+    high_risk_clients = 0
+    lost_clients = 0
+    reactivation_opportunity = 0.0
+
+    average_client_revenue = (
+        sum(client_revenue.values()) / max(1, len([v for v in client_revenue.values() if v > 0]))
+    )
+
+    for client in clients:
+        client_id = str(client.get("_id") or "")
+        last_visit = last_seen.get(client_id)
+
+        if last_visit is None:
+            inactive_days = 999
+        else:
+            inactive_days = (now - last_visit).days
+
+        if inactive_days >= 30:
+            at_risk_clients += 1
+            reactivation_opportunity += max(
+                client_revenue.get(client_id, 0.0),
+                average_client_revenue,
+            )
+
+        if inactive_days >= 60:
+            high_risk_clients += 1
+
+        if inactive_days >= 90:
+            lost_clients += 1
+
+    total_clients = len(clients)
+    risk_score = round(
+        ((at_risk_clients + high_risk_clients * 2 + lost_clients * 3) / max(1, total_clients * 3)) * 100,
+        0,
+    ) if total_clients else 0
+
+    return {
+        "at_risk_clients": at_risk_clients,
+        "high_risk_clients": high_risk_clients,
+        "lost_clients": lost_clients,
+        "reactivation_opportunity": round(reactivation_opportunity, 2),
+        "risk_score": min(100, risk_score),
+    }
+
+
 def decision_level_from_score(score: int):
     if score >= 85:
         return "execute"
@@ -589,6 +657,10 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         clients=clients,
         appointments=appointments,
     )
+    client_risk = build_client_risk_summary(
+        clients=clients,
+        appointments=appointments,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -598,5 +670,6 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         "growth_summary": growth_summary,
         "executive_decision": executive_decision,
         "client_summary": client_summary,
+        "client_risk": client_risk,
         "insights": insights,
     }
