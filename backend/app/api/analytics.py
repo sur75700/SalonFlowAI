@@ -202,6 +202,66 @@ def build_risk_summary(
     }
 
 
+def growth_level_from_score(score: int):
+    if score >= 85:
+        return "elite"
+    if score >= 70:
+        return "high"
+    if score >= 45:
+        return "medium"
+    return "low"
+
+
+def build_growth_summary(
+    *,
+    completed_revenue: float,
+    scheduled_pipeline: float,
+    avg_booking_value: float,
+    top_services: list[dict],
+    revenue_last_7_days: list[dict],
+):
+    completed_days = [
+        float(day.get("completed_revenue") or 0)
+        for day in revenue_last_7_days
+    ]
+
+    first_half = sum(completed_days[:3])
+    second_half = sum(completed_days[-3:])
+    trend_bonus = 15 if second_half > first_half and second_half > 0 else 0
+
+    leader = top_services[0] if top_services else {}
+    best_service = leader.get("service_name") or "No service yet"
+    best_service_revenue = float(leader.get("revenue") or 0)
+
+    pipeline_bonus = 15 if scheduled_pipeline > completed_revenue else 0
+    service_bonus = 20 if best_service_revenue > 0 else 0
+    ticket_bonus = 10 if avg_booking_value > 0 else 0
+
+    growth_score = min(
+        100,
+        45 + trend_bonus + pipeline_bonus + service_bonus + ticket_bonus,
+    )
+
+    growth_opportunity = round(
+        scheduled_pipeline * 0.25 +
+        best_service_revenue * 0.2 +
+        avg_booking_value * 5,
+        2,
+    )
+
+    recommended_action = "promote_top_service" if best_service_revenue > 0 else "create_first_booking"
+    if scheduled_pipeline > completed_revenue:
+        recommended_action = "follow_up_scheduled_clients"
+
+    return {
+        "growth_score": growth_score,
+        "growth_level": growth_level_from_score(growth_score),
+        "best_service": best_service,
+        "growth_opportunity": growth_opportunity,
+        "recommended_action": recommended_action,
+    }
+
+
 def build_business_insights(
     *,
     completed_revenue: float,
@@ -374,11 +434,19 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         top_services=dashboard.get("top_services") or [],
         revenue_last_7_days=revenue_last_7_days,
     )
+    growth_summary = build_growth_summary(
+        completed_revenue=float(totals.get("completed_revenue") or 0),
+        scheduled_pipeline=float(totals.get("scheduled_pipeline") or 0),
+        avg_booking_value=float(totals.get("avg_completed_booking_value") or 0),
+        top_services=dashboard.get("top_services") or [],
+        revenue_last_7_days=revenue_last_7_days,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
         "generated_at": datetime.now(UTC).isoformat(),
         "forecast": forecast,
         "risk_summary": risk_summary,
+        "growth_summary": growth_summary,
         "insights": insights,
     }

@@ -95,6 +95,14 @@ export type AnalyticsRiskSummary = {
   risk_level: string;
 };
 
+export type AnalyticsGrowthSummary = {
+  growth_score: number;
+  growth_level: string;
+  best_service: string;
+  growth_opportunity: number;
+  recommended_action: string;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -116,5 +124,6 @@ export type AnalyticsData = {
   revenue_last_7_days: AnalyticsRevenuePoint[];
   forecast?: AnalyticsForecast;
   risk_summary?: AnalyticsRiskSummary;
+  growth_summary?: AnalyticsGrowthSummary;
   insights?: AnalyticsInsight[];
 };

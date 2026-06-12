@@ -20,6 +20,13 @@ type Props = {
     highest_risk_score: number;
     risk_level: string;
   };
+  growthSummary?: {
+    growth_score: number;
+    growth_level: string;
+    best_service: string;
+    growth_opportunity: number;
+    recommended_action: string;
+  };
 };
 
 
@@ -182,7 +189,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -267,6 +274,40 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary }:
 
               <Text style={styles.riskLevel}>
                 {t(`AI Risk Level ${riskSummary.risk_level}`, locale as any)}
+              </Text>
+            </View>
+          ) : null}
+
+          {growthSummary ? (
+            <View style={styles.growthPanel}>
+              <Text style={styles.growthTitle}>
+                🚀 {t("AI Growth Intelligence", locale)}
+              </Text>
+
+              <View style={styles.growthGrid}>
+                <View style={styles.growthCell}>
+                  <Text style={styles.growthValue}>{growthSummary.growth_score}%</Text>
+                  <Text style={styles.growthLabel}>{t("AI Growth Score", locale)}</Text>
+                </View>
+
+                <View style={styles.growthCell}>
+                  <Text style={styles.growthValue}>
+                    +{Math.round(growthSummary.growth_opportunity).toLocaleString()} AMD
+                  </Text>
+                  <Text style={styles.growthLabel}>{t("AI Growth Opportunity", locale)}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.growthMeta}>
+                {t("AI Best Growth Service", locale)}: {growthSummary.best_service}
+              </Text>
+
+              <Text style={styles.growthLevel}>
+                {t(`AI Growth Level ${growthSummary.growth_level}`, locale as any)}
+              </Text>
+
+              <Text style={styles.growthAction}>
+                {t("AI Growth Recommended Action", locale)}: {t(`AI Action ${growthSummary.recommended_action}`, locale as any)}
               </Text>
             </View>
           ) : null}
@@ -549,6 +590,67 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 5,
     textTransform: "uppercase",
+  },
+  growthPanel: {
+    backgroundColor: "#102117",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#166534",
+    marginBottom: 12,
+  },
+  growthTitle: {
+    color: "#86efac",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  growthGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  growthCell: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#1f3b2d",
+  },
+  growthValue: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  growthLabel: {
+    color: "#bbf7d0",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  growthMeta: {
+    color: "#bbf7d0",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 10,
+  },
+  growthLevel: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 5,
+    textTransform: "uppercase",
+  },
+  growthAction: {
+    color: "#dcfce7",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 6,
   },
   summaryOverline: {
     color: "#f2d17a",
