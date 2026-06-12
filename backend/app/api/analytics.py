@@ -262,6 +262,79 @@ def build_growth_summary(
     }
 
 
+def build_client_summary(
+    *,
+    clients: list[dict],
+    appointments: list[dict],
+):
+    now = datetime.now(UTC)
+    new_cutoff = now - timedelta(days=30)
+    inactive_cutoff = now - timedelta(days=60)
+
+    appointment_counts: dict[str, int] = defaultdict(int)
+    client_revenue: dict[str, float] = defaultdict(float)
+    last_seen: dict[str, datetime] = {}
+
+    for item in appointments:
+        client_id = str(item.get("client_id") or "")
+        if not client_id:
+            continue
+
+        appointment_counts[client_id] += 1
+
+        if (item.get("status") or "").lower() == "completed":
+            client_revenue[client_id] += float(item.get("price_snapshot") or 0)
+
+        starts_at = parse_dt(item.get("starts_at"))
+        if starts_at and (client_id not in last_seen or starts_at > last_seen[client_id]):
+            last_seen[client_id] = starts_at
+
+    total_clients = len(clients)
+
+    new_clients = 0
+    returning_clients = 0
+    vip_clients = 0
+    inactive_clients = 0
+
+    average_revenue = (
+        sum(client_revenue.values()) / max(1, len([v for v in client_revenue.values() if v > 0]))
+    )
+
+    for client in clients:
+        client_id = str(client.get("_id") or "")
+
+        created_at = parse_dt(client.get("created_at"))
+        if created_at and created_at >= new_cutoff:
+            new_clients += 1
+
+        visits = appointment_counts.get(client_id, 0)
+        revenue = client_revenue.get(client_id, 0.0)
+
+        if visits >= 2:
+            returning_clients += 1
+
+        if visits >= 5 or (average_revenue > 0 and revenue >= average_revenue):
+            vip_clients += 1
+
+        last_visit = last_seen.get(client_id)
+        if last_visit is None or last_visit < inactive_cutoff:
+            inactive_clients += 1
+
+    retention_score = round(
+        returning_clients / total_clients * 100,
+        0,
+    ) if total_clients else 0
+
+    return {
+        "total_clients": total_clients,
+        "new_clients": new_clients,
+        "returning_clients": returning_clients,
+        "vip_clients": vip_clients,
+        "inactive_clients": inactive_clients,
+        "retention_score": retention_score,
+    }
+
+
 def decision_level_from_score(score: int):
     if score >= 85:
         return "execute"
@@ -474,6 +547,12 @@ def build_business_insights(
 @router.get("/insights")
 async def analytics_insights(_: dict = Depends(require_auth)):
     dashboard = await analytics_dashboard(_)
+    db = get_database()
+    clients = []
+    appointments = []
+    if db is not None:
+        clients = await db.clients.find().to_list(length=5000)
+        appointments = await db.appointments.find().to_list(length=5000)
 
     totals = dashboard.get("totals", {})
     revenue_last_7_days = dashboard.get("revenue_last_7_days") or []
@@ -506,6 +585,10 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         risk_summary=risk_summary,
         growth_summary=growth_summary,
     )
+    client_summary = build_client_summary(
+        clients=clients,
+        appointments=appointments,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -514,5 +597,6 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         "risk_summary": risk_summary,
         "growth_summary": growth_summary,
         "executive_decision": executive_decision,
+        "client_summary": client_summary,
         "insights": insights,
     }
