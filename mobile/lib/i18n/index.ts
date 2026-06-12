@@ -190,6 +190,12 @@ const dict: Record<string, string> = {
   "AI Executive Decision": "AI Executive Decision",
   "AI CEO Brief": "SalonFlow CEO Brief",
   "AI Client Intelligence": "AI Client Intelligence",
+  "AI Client Risk": "Client Risk & Reactivation",
+  "AI Client Risk Score": "Risk Score",
+  "AI At Risk Clients": "At Risk",
+  "AI High Risk Clients": "High Risk",
+  "AI Lost Clients": "Lost Clients",
+  "AI Reactivation Opportunity": "Recoverable Revenue",
   "AI Total Clients": "Total Clients",
   "AI New Clients": "New Clients",
   "AI Returning Clients": "Returning Clients",
@@ -288,6 +294,12 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI Client Risk": "Risque client et réactivation",
+    "AI Client Risk Score": "Score de risque",
+    "AI At Risk Clients": "À risque",
+    "AI High Risk Clients": "Risque élevé",
+    "AI Lost Clients": "Clients perdus",
+    "AI Reactivation Opportunity": "Revenu récupérable",
     "AI Client Intelligence": "Intelligence clients IA",
     "AI Total Clients": "Clients totaux",
     "AI New Clients": "Nouveaux clients",
@@ -623,6 +635,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Client Risk": "Հաճախորդների ռիսկ և վերադարձ",
+    "AI Client Risk Score": "Ռիսկի գնահատական",
+    "AI At Risk Clients": "Ռիսկային",
+    "AI High Risk Clients": "Բարձր ռիսկ",
+    "AI Lost Clients": "Կորցված հաճախորդներ",
+    "AI Reactivation Opportunity": "Վերադարձվող եկամուտ",
     "AI Client Intelligence": "AI հաճախորդների ինտելեկտ",
     "AI Total Clients": "Ընդհանուր հաճախորդներ",
     "AI New Clients": "Նոր հաճախորդներ",
@@ -894,6 +912,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Client Risk": "Риск клиентов и реактивация",
+    "AI Client Risk Score": "Оценка риска",
+    "AI At Risk Clients": "В риске",
+    "AI High Risk Clients": "Высокий риск",
+    "AI Lost Clients": "Потерянные клиенты",
+    "AI Reactivation Opportunity": "Возвратная выручка",
     "AI Client Intelligence": "AI интеллект клиентов",
     "AI Total Clients": "Всего клиентов",
     "AI New Clients": "Новые клиенты",

@@ -121,6 +121,14 @@ export type AnalyticsClientSummary = {
   retention_score: number;
 };
 
+export type AnalyticsClientRisk = {
+  at_risk_clients: number;
+  high_risk_clients: number;
+  lost_clients: number;
+  reactivation_opportunity: number;
+  risk_score: number;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -145,5 +153,6 @@ export type AnalyticsData = {
   growth_summary?: AnalyticsGrowthSummary;
   executive_decision?: AnalyticsExecutiveDecision;
   client_summary?: AnalyticsClientSummary;
+  client_risk?: AnalyticsClientRisk;
   insights?: AnalyticsInsight[];
 };

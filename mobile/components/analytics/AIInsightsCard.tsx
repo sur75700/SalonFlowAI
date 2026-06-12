@@ -43,6 +43,13 @@ type Props = {
     inactive_clients: number;
     retention_score: number;
   };
+  clientRisk?: {
+    at_risk_clients: number;
+    high_risk_clients: number;
+    lost_clients: number;
+    reactivation_opportunity: number;
+    risk_score: number;
+  };
 };
 
 
@@ -205,7 +212,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -398,6 +405,42 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
 
               <Text style={styles.clientMeta}>
                 {t("AI New Clients", locale)}: {clientSummary.new_clients} · {t("AI Inactive Clients", locale)}: {clientSummary.inactive_clients}
+              </Text>
+            </View>
+          ) : null}
+
+          {clientRisk ? (
+            <View style={styles.clientRiskPanel}>
+              <Text style={styles.clientRiskTitle}>
+                🚨 {t("AI Client Risk", locale)}
+              </Text>
+
+              <View style={styles.clientRiskGrid}>
+                <View style={styles.clientRiskCell}>
+                  <Text style={styles.clientRiskValue}>{clientRisk.risk_score}%</Text>
+                  <Text style={styles.clientRiskLabel}>{t("AI Client Risk Score", locale)}</Text>
+                </View>
+
+                <View style={styles.clientRiskCell}>
+                  <Text style={styles.clientRiskValue}>{clientRisk.at_risk_clients}</Text>
+                  <Text style={styles.clientRiskLabel}>{t("AI At Risk Clients", locale)}</Text>
+                </View>
+              </View>
+
+              <View style={styles.clientRiskGrid}>
+                <View style={styles.clientRiskCell}>
+                  <Text style={styles.clientRiskValue}>{clientRisk.high_risk_clients}</Text>
+                  <Text style={styles.clientRiskLabel}>{t("AI High Risk Clients", locale)}</Text>
+                </View>
+
+                <View style={styles.clientRiskCell}>
+                  <Text style={styles.clientRiskValue}>{clientRisk.lost_clients}</Text>
+                  <Text style={styles.clientRiskLabel}>{t("AI Lost Clients", locale)}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.clientRiskMeta}>
+                {t("AI Reactivation Opportunity", locale)}: +{Math.round(clientRisk.reactivation_opportunity).toLocaleString()} AMD
               </Text>
             </View>
           ) : null}
@@ -846,6 +889,54 @@ const styles = StyleSheet.create({
   },
   clientMeta: {
     color: "#dbeafe",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginTop: 2,
+  },
+  clientRiskPanel: {
+    backgroundColor: "#2a141a",
+    borderRadius: UI.radius.lg,
+    padding: UI.spacing.md,
+    borderWidth: 1,
+    borderColor: "#dc2626",
+    marginBottom: 12,
+  },
+  clientRiskTitle: {
+    color: "#fecaca",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: "uppercase",
+  },
+  clientRiskGrid: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  clientRiskCell: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: UI.radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#7f1d1d",
+  },
+  clientRiskValue: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+  clientRiskLabel: {
+    color: "#fecaca",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  clientRiskMeta: {
+    color: "#fca5a5",
     fontSize: 11,
     fontWeight: "800",
     lineHeight: 16,
