@@ -64,6 +64,13 @@ type Props = {
     execution_playbook?: string;
     expected_result?: string;
   }[];
+  performanceCenter?: {
+    overall_efficiency: number;
+    revenue_efficiency: number;
+    client_efficiency: number;
+    service_efficiency: number;
+    operational_efficiency: number;
+  };
 };
 
 
@@ -226,7 +233,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl, performanceCenter }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -347,6 +354,61 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
                   ) : null}
                 </View>
               ))}
+            </View>
+          ) : null}
+
+          {performanceCenter ? (
+            <View style={styles.performancePanel}>
+              <Text style={styles.performanceTitle}>
+                🏆 {t("AI Performance Center", locale)}
+              </Text>
+
+              <View style={styles.performanceGrid}>
+                <View style={styles.performanceCell}>
+                  <Text style={styles.performanceValue}>
+                    {performanceCenter.overall_efficiency}%
+                  </Text>
+                  <Text style={styles.performanceLabel}>
+                    {t("AI Overall Efficiency", locale)}
+                  </Text>
+                </View>
+
+                <View style={styles.performanceCell}>
+                  <Text style={styles.performanceValue}>
+                    {performanceCenter.revenue_efficiency}%
+                  </Text>
+                  <Text style={styles.performanceLabel}>
+                    {t("AI Revenue Efficiency", locale)}
+                  </Text>
+                </View>
+
+                <View style={styles.performanceCell}>
+                  <Text style={styles.performanceValue}>
+                    {performanceCenter.client_efficiency}%
+                  </Text>
+                  <Text style={styles.performanceLabel}>
+                    {t("AI Client Efficiency", locale)}
+                  </Text>
+                </View>
+
+                <View style={styles.performanceCell}>
+                  <Text style={styles.performanceValue}>
+                    {performanceCenter.service_efficiency}%
+                  </Text>
+                  <Text style={styles.performanceLabel}>
+                    {t("AI Service Efficiency", locale)}
+                  </Text>
+                </View>
+
+                <View style={styles.performanceCell}>
+                  <Text style={styles.performanceValue}>
+                    {performanceCenter.operational_efficiency}%
+                  </Text>
+                  <Text style={styles.performanceLabel}>
+                    {t("AI Operational Efficiency", locale)}
+                  </Text>
+                </View>
+              </View>
             </View>
           ) : null}
 
@@ -856,6 +918,44 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 4,
   },
+  performancePanel: {
+    backgroundColor: "#111827",
+    borderWidth: 1,
+    borderColor: "#f2d17a",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
+  },
+
+  performanceTitle: {
+    color: "#f2d17a",
+    fontSize: 18,
+    fontWeight: "900",
+    marginBottom: 14,
+  },
+
+  performanceGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+
+  performanceCell: {
+    width: "48%",
+  },
+
+  performanceValue: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "900",
+  },
+
+  performanceLabel: {
+    color: "#cbd5e1",
+    fontSize: 12,
+  },
+
+
   forecastPanel: {
     backgroundColor: "#0f1e2e",
     borderRadius: UI.radius.lg,

@@ -228,6 +228,7 @@ export default function AnalyticsScreen() {
           clientSummary={analytics?.client_summary}
           clientRisk={analytics?.client_risk}
           missionControl={analytics?.mission_control}
+          performanceCenter={analytics?.performance_center}
         />
 
         {error ? (

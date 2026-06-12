@@ -170,5 +170,12 @@ export type AnalyticsData = {
   client_summary?: AnalyticsClientSummary;
   client_risk?: AnalyticsClientRisk;
   mission_control?: AnalyticsMission[];
+  performance_center?: {
+    overall_efficiency: number;
+    revenue_efficiency: number;
+    client_efficiency: number;
+    service_efficiency: number;
+    operational_efficiency: number;
+  };
   insights?: AnalyticsInsight[];
 };
