@@ -348,18 +348,18 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
                   ) : null}
 
                   <Text style={styles.missionAction}>
-                    {t("AI Action Now", locale)}: {mission.action_label || t(`AI Action ${mission.action}`, locale as any)}
+                    {t("AI Action Now", locale)}: {t(`AI Mission Action Label ${mission.action}`, locale as any)}
                   </Text>
 
                   {mission.execution_playbook ? (
                     <Text style={styles.missionPlaybook}>
-                      {t("AI Mission Playbook", locale)}: {mission.execution_playbook}
+                      {t("AI Mission Playbook", locale)}: {t(`AI Mission Playbook ${mission.code}`, locale as any)}
                     </Text>
                   ) : null}
 
                   {mission.expected_result ? (
                     <Text style={styles.missionResult}>
-                      {t("AI Mission Expected Result", locale)}: {mission.expected_result}
+                      {t("AI Mission Expected Result", locale)}: {t(`AI Mission Result ${mission.code}`, locale as any)}
                     </Text>
                   ) : null}
                 </View>

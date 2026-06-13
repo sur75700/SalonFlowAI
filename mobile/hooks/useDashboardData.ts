@@ -152,6 +152,11 @@ export function useAnalyticsData(
         risk_summary: insightsRes.data?.risk_summary,
         growth_summary: insightsRes.data?.growth_summary,
         executive_decision: insightsRes.data?.executive_decision,
+        client_summary: insightsRes.data?.client_summary,
+        client_risk: insightsRes.data?.client_risk,
+        mission_control: insightsRes.data?.mission_control ?? [],
+        performance_center: insightsRes.data?.performance_center,
+        benchmark_center: insightsRes.data?.benchmark_center,
         insights: insightsRes.data?.insights ?? [],
       });
     } catch (err: any) {
