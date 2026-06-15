@@ -139,6 +139,63 @@ def build_revenue_forecast(revenue_last_7_days: list[dict]):
     }
 
 
+def build_revenue_simulator(
+    *,
+    completed_revenue: float,
+    scheduled_pipeline: float,
+    cancelled_value: float,
+    avg_booking_value: float,
+    forecast: dict,
+):
+    base_revenue = completed_revenue + scheduled_pipeline
+    avg_ticket = avg_booking_value if avg_booking_value > 0 else max(base_revenue * 0.1, 0)
+
+    booking_growth_delta = round(max(avg_ticket * 3, base_revenue * 0.1), 2)
+    cancellation_recovery_delta = round(cancelled_value * 0.35, 2)
+    average_ticket_delta = round(completed_revenue * 0.05, 2)
+
+    scenarios = [
+        {
+            "code": "increase_bookings_10",
+            "title": "Increase bookings by 10%",
+            "projected_revenue": round(base_revenue + booking_growth_delta, 2),
+            "delta": booking_growth_delta,
+            "confidence": min(92, int(forecast.get("confidence") or 72) + 2),
+            "action": "promote_top_service",
+            "difficulty": "medium",
+        },
+        {
+            "code": "reduce_cancellations_20",
+            "title": "Reduce cancellations by 20%",
+            "projected_revenue": round(base_revenue + cancellation_recovery_delta, 2),
+            "delta": cancellation_recovery_delta,
+            "confidence": 84,
+            "action": "enable_reminders",
+            "difficulty": "low",
+        },
+        {
+            "code": "increase_average_ticket_5",
+            "title": "Increase average ticket by 5%",
+            "projected_revenue": round(base_revenue + average_ticket_delta, 2),
+            "delta": average_ticket_delta,
+            "confidence": 78,
+            "action": "create_upsell_bundle",
+            "difficulty": "medium",
+        },
+    ]
+
+    best = max(scenarios, key=lambda item: item["delta"]) if scenarios else None
+
+    return {
+        "base_revenue": round(base_revenue, 2),
+        "completed_revenue": round(completed_revenue, 2),
+        "scheduled_pipeline": round(scheduled_pipeline, 2),
+        "cancelled_value": round(cancelled_value, 2),
+        "scenarios": scenarios,
+        "best_scenario": best,
+    }
+
+
 def risk_level_from_score(score: int):
     if score >= 85:
         return "critical"
@@ -891,6 +948,13 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         client_summary=client_summary,
         client_risk=client_risk,
     )
+    revenue_simulator = build_revenue_simulator(
+        completed_revenue=float(totals.get("completed_revenue") or 0),
+        scheduled_pipeline=float(totals.get("scheduled_pipeline") or 0),
+        cancelled_value=float(totals.get("cancelled_value") or 0),
+        avg_booking_value=float(totals.get("avg_completed_booking_value") or 0),
+        forecast=forecast,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -904,5 +968,6 @@ async def analytics_insights(_: dict = Depends(require_auth)):
         "mission_control": mission_control,
         "performance_center": performance_center,
         "benchmark_center": benchmark_center,
+        "revenue_simulator": revenue_simulator,
         "insights": insights,
     }
