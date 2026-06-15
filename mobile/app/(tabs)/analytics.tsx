@@ -14,6 +14,7 @@ import ChartBlock from "../../components/dashboard/ChartBlock";
 import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import AIInsightsCard from "../../components/analytics/AIInsightsCard";
+import RevenueSimulatorCard from "../../components/analytics/RevenueSimulatorCard";
 import DevLoginCard from "../../components/auth/DevLoginCard";
 import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
@@ -231,6 +232,8 @@ export default function AnalyticsScreen() {
           performanceCenter={analytics?.performance_center}
           benchmarkCenter={analytics?.benchmark_center}
         />
+
+        <RevenueSimulatorCard simulator={analytics?.revenue_simulator} />
 
         {error ? (
           <View style={styles.errorBox}>
