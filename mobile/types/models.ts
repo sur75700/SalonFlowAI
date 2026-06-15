@@ -144,6 +144,26 @@ export type AnalyticsMission = {
   expected_result?: string;
 };
 
+
+export type AnalyticsRevenueSimulatorScenario = {
+  code: string;
+  title: string;
+  projected_revenue: number;
+  delta: number;
+  confidence: number;
+  action: string;
+  difficulty: string;
+};
+
+export type AnalyticsRevenueSimulator = {
+  base_revenue: number;
+  completed_revenue: number;
+  scheduled_pipeline: number;
+  cancelled_value: number;
+  scenarios: AnalyticsRevenueSimulatorScenario[];
+  best_scenario?: AnalyticsRevenueSimulatorScenario;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -177,6 +197,7 @@ export type AnalyticsData = {
     service_efficiency: number;
     operational_efficiency: number;
   };
+  revenue_simulator?: AnalyticsRevenueSimulator;
   benchmark_center?: {
     benchmark_score: number;
     salon_tier: string;

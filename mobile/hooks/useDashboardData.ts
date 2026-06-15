@@ -157,6 +157,7 @@ export function useAnalyticsData(
         mission_control: insightsRes.data?.mission_control ?? [],
         performance_center: insightsRes.data?.performance_center,
         benchmark_center: insightsRes.data?.benchmark_center,
+        revenue_simulator: insightsRes.data?.revenue_simulator,
         insights: insightsRes.data?.insights ?? [],
       });
     } catch (err: any) {
