@@ -193,6 +193,7 @@ const dict: Record<string, string> = {
   "AI Best Scenario": "Best Scenario",
   "AI Projected Revenue": "Projected Revenue",
   "AI Revenue Gain": "Revenue Gain",
+  "AI Scenario Comparison": "Scenario Comparison",
   "AI Difficulty low": "Low",
   "AI Difficulty medium": "Medium",
   "AI Difficulty high": "High",
@@ -338,6 +339,7 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI Scenario Comparison": "Comparaison des scénarios",
     "AI Revenue Simulator": "Simulateur de revenus IA",
     "AI Current Revenue": "Revenu actuel",
     "AI Pipeline Revenue": "Revenu planifié",
@@ -734,6 +736,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Scenario Comparison": "Սցենարների համեմատություն",
     "AI Revenue Simulator": "AI եկամտի սիմուլյատոր",
     "AI Current Revenue": "Ընթացիկ եկամուտ",
     "AI Pipeline Revenue": "Պլանավորված եկամուտ",
@@ -1066,6 +1069,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Scenario Comparison": "Сравнение сценариев",
     "AI Revenue Simulator": "AI симулятор выручки",
     "AI Current Revenue": "Текущая выручка",
     "AI Pipeline Revenue": "Запланированная выручка",

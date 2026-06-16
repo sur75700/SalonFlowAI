@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, type DimensionValue } from "react-native";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
@@ -13,12 +13,21 @@ function money(value: number) {
   return `${Math.round(value).toLocaleString()} AMD`;
 }
 
+function percentOf(value: number, max: number): DimensionValue {
+  if (!max) return "4%";
+  return `${Math.max(4, Math.min(100, Math.round((value / max) * 100)))}%`;
+}
+
 export default function RevenueSimulatorCard({ simulator }: Props) {
   const { locale } = useAppPreferences();
 
   if (!simulator) return null;
 
   const best = simulator.best_scenario;
+  const maxDelta = Math.max(
+    ...simulator.scenarios.map((scenario) => Number(scenario.delta || 0)),
+    1
+  );
 
   return (
     <View style={styles.card}>
@@ -52,15 +61,43 @@ export default function RevenueSimulatorCard({ simulator }: Props) {
           <Text style={styles.bestTitle}>🏆 {t("AI Best Scenario", locale)}</Text>
           <Text style={styles.bestScenario}>{t(`AI Simulator Scenario ${best.code}`, locale as any)}</Text>
           <Text style={styles.bestGain}>+{Math.round(best.delta).toLocaleString()} AMD</Text>
+
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: percentOf(best.delta, maxDelta) },
+              ]}
+            />
+          </View>
+
           <Text style={styles.bestMeta}>{t("AI Projected Revenue", locale)}: {money(best.projected_revenue)}</Text>
           <Text style={styles.bestMeta}>{t("AI Confidence", locale)}: {best.confidence}%</Text>
         </View>
       ) : null}
 
-      {simulator.scenarios.map((scenario) => (
+      <Text style={styles.sectionTitle}>📊 {t("AI Scenario Comparison", locale)}</Text>
+
+      {simulator.scenarios.map((scenario, index) => (
         <View key={scenario.code} style={styles.scenario}>
-          <Text style={styles.scenarioTitle}>{t(`AI Simulator Scenario ${scenario.code}`, locale as any)}</Text>
+          <View style={styles.scenarioHeader}>
+            <Text style={styles.scenarioRank}>#{index + 1}</Text>
+            <Text style={styles.scenarioTitle}>
+              {t(`AI Simulator Scenario ${scenario.code}`, locale as any)}
+            </Text>
+          </View>
+
           <Text style={styles.scenarioGain}>+{Math.round(scenario.delta).toLocaleString()} AMD</Text>
+
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.scenarioFill,
+                { width: percentOf(scenario.delta, maxDelta) },
+              ]}
+            />
+          </View>
+
           <Text style={styles.scenarioMeta}>{t("AI Projected Revenue", locale)}: {money(scenario.projected_revenue)}</Text>
           <Text style={styles.scenarioMeta}>
             {t("AI Confidence", locale)} {scenario.confidence}% · {t(`AI Difficulty ${scenario.difficulty}`, locale as any)}
@@ -146,6 +183,47 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     marginTop: 4,
+  },
+  sectionTitle: {
+    color: "#e0f2fe",
+    fontSize: 13,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+    marginTop: 18,
+    marginBottom: 4,
+    textTransform: "uppercase",
+  },
+  progressTrack: {
+    height: 8,
+    backgroundColor: "rgba(148,163,184,0.2)",
+    borderRadius: 999,
+    marginTop: 10,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#22c55e",
+    borderRadius: 999,
+  },
+  scenarioFill: {
+    height: "100%",
+    backgroundColor: "#38bdf8",
+    borderRadius: 999,
+  },
+  scenarioHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  scenarioRank: {
+    color: "#020617",
+    backgroundColor: "#f2d17a",
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    fontSize: 11,
+    fontWeight: "900",
   },
   scenario: {
     marginTop: 12,
