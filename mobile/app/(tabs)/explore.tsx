@@ -34,14 +34,14 @@ export default function WorkspaceScreen() {
     <ScrollView contentContainerStyle={styles.content} style={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
-        <Text style={styles.title}>{t("Workspace", locale)}</Text>
+        <Text style={styles.title}>{t("Settings Center", locale)}</Text>
         <Text style={styles.subtitle}>
-          {t("WorkspaceHeroSubtitle", locale)}
+          {t("Settings Center Subtitle", locale)}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Quick Navigation", locale)}</Text>
+        <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
 
         <QuickLink
           title={t("Open Dashboard", locale)}

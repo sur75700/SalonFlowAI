@@ -93,6 +93,15 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: t("Settings", locale),
+          tabBarIcon: ({ color }) => (
+            <IconSymbol name="gearshape.fill" color={color} size={26} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
