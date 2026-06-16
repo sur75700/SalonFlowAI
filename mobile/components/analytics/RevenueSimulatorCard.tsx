@@ -50,7 +50,7 @@ export default function RevenueSimulatorCard({ simulator }: Props) {
       {best ? (
         <View style={styles.bestCard}>
           <Text style={styles.bestTitle}>🏆 {t("AI Best Scenario", locale)}</Text>
-          <Text style={styles.bestScenario}>{best.title}</Text>
+          <Text style={styles.bestScenario}>{t(`AI Simulator Scenario ${best.code}`, locale as any)}</Text>
           <Text style={styles.bestGain}>+{Math.round(best.delta).toLocaleString()} AMD</Text>
           <Text style={styles.bestMeta}>{t("AI Projected Revenue", locale)}: {money(best.projected_revenue)}</Text>
           <Text style={styles.bestMeta}>{t("AI Confidence", locale)}: {best.confidence}%</Text>
@@ -59,7 +59,7 @@ export default function RevenueSimulatorCard({ simulator }: Props) {
 
       {simulator.scenarios.map((scenario) => (
         <View key={scenario.code} style={styles.scenario}>
-          <Text style={styles.scenarioTitle}>{scenario.title}</Text>
+          <Text style={styles.scenarioTitle}>{t(`AI Simulator Scenario ${scenario.code}`, locale as any)}</Text>
           <Text style={styles.scenarioGain}>+{Math.round(scenario.delta).toLocaleString()} AMD</Text>
           <Text style={styles.scenarioMeta}>{t("AI Projected Revenue", locale)}: {money(scenario.projected_revenue)}</Text>
           <Text style={styles.scenarioMeta}>
