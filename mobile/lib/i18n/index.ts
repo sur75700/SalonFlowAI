@@ -194,6 +194,13 @@ const dict: Record<string, string> = {
   "AI Projected Revenue": "Projected Revenue",
   "AI Revenue Gain": "Revenue Gain",
   "AI Scenario Comparison": "Scenario Comparison",
+  "AI Opportunity Matrix": "AI Opportunity Matrix",
+  "AI Matrix Quick Wins": "Quick Wins",
+  "AI Matrix Strategic Bets": "Strategic Bets",
+  "AI Matrix Stability": "Stability",
+  "AI Matrix Watchlist": "Watchlist",
+  "AI Matrix No Action": "No action yet",
+  "AI Matrix Protect Pipeline": "Protect pipeline revenue",
   "AI Difficulty low": "Low",
   "AI Difficulty medium": "Medium",
   "AI Difficulty high": "High",
@@ -339,6 +346,14 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "AI Opportunity Matrix": "Matrice d’opportunités IA",
+    "AI Matrix Quick Wins": "Gains rapides",
+    "AI Matrix Strategic Bets": "Paris stratégiques",
+    "AI Matrix Stability": "Stabilité",
+    "AI Matrix Watchlist": "Risques à surveiller",
+    "AI Matrix No Action": "Aucune action pour le moment",
+    "AI Matrix Protect Pipeline": "Protéger le revenu planifié",
+
     "AI Scenario Comparison": "Comparaison des scénarios",
     "AI Revenue Simulator": "Simulateur de revenus IA",
     "AI Current Revenue": "Revenu actuel",
@@ -736,6 +751,14 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Opportunity Matrix": "AI հնարավորությունների մատրիցա",
+    "AI Matrix Quick Wins": "Արագ հաղթանակներ",
+    "AI Matrix Strategic Bets": "Ռազմավարական քայլեր",
+    "AI Matrix Stability": "Կայունություն",
+    "AI Matrix Watchlist": "Վերահսկվող ռիսկեր",
+    "AI Matrix No Action": "Գործողություն դեռ չկա",
+    "AI Matrix Protect Pipeline": "Պաշտպանել պլանավորված եկամուտը",
+
     "AI Scenario Comparison": "Սցենարների համեմատություն",
     "AI Revenue Simulator": "AI եկամտի սիմուլյատոր",
     "AI Current Revenue": "Ընթացիկ եկամուտ",
@@ -1069,6 +1092,14 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Opportunity Matrix": "AI матрица возможностей",
+    "AI Matrix Quick Wins": "Быстрые победы",
+    "AI Matrix Strategic Bets": "Стратегические ставки",
+    "AI Matrix Stability": "Стабильность",
+    "AI Matrix Watchlist": "Контроль рисков",
+    "AI Matrix No Action": "Действий пока нет",
+    "AI Matrix Protect Pipeline": "Защитить запланированную выручку",
+
     "AI Scenario Comparison": "Сравнение сценариев",
     "AI Revenue Simulator": "AI симулятор выручки",
     "AI Current Revenue": "Текущая выручка",

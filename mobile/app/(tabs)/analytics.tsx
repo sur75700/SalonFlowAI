@@ -15,6 +15,7 @@ import ActionButton from "../../components/dashboard/ActionButton";
 import StatCard from "../../components/dashboard/StatCard";
 import AIInsightsCard from "../../components/analytics/AIInsightsCard";
 import RevenueSimulatorCard from "../../components/analytics/RevenueSimulatorCard";
+import OpportunityMatrixCard from "../../components/analytics/OpportunityMatrixCard";
 import DevLoginCard from "../../components/auth/DevLoginCard";
 import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
@@ -234,6 +235,13 @@ export default function AnalyticsScreen() {
         />
 
         <RevenueSimulatorCard simulator={analytics?.revenue_simulator} />
+
+        <OpportunityMatrixCard
+          growthSummary={analytics?.growth_summary}
+          executiveDecision={analytics?.executive_decision}
+          clientRisk={analytics?.client_risk}
+          missionControl={analytics?.mission_control}
+        />
 
         {error ? (
           <View style={styles.errorBox}>
