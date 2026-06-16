@@ -3,6 +3,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-na
 import { router } from "expo-router";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
+import PricingPlansCard from "../../components/pricing/PricingPlansCard";
 
 type QuickLinkProps = {
   title: string;
@@ -73,6 +74,8 @@ export default function WorkspaceScreen() {
           onPress={() => router.navigate("/(tabs)/reports")}
         />
       </View>
+
+      <PricingPlansCard />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("Backend Access", locale)}</Text>
