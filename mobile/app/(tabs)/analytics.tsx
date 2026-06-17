@@ -16,6 +16,7 @@ import StatCard from "../../components/dashboard/StatCard";
 import AIInsightsCard from "../../components/analytics/AIInsightsCard";
 import RevenueSimulatorCard from "../../components/analytics/RevenueSimulatorCard";
 import OpportunityMatrixCard from "../../components/analytics/OpportunityMatrixCard";
+import LockedFeatureCard from "../../components/subscription/LockedFeatureCard";
 import DevLoginCard from "../../components/auth/DevLoginCard";
 import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
@@ -243,7 +244,12 @@ export default function AnalyticsScreen() {
 
         {canViewRevenueSimulator ? (
           <RevenueSimulatorCard simulator={analytics?.revenue_simulator} />
-        ) : null}
+        ) : (
+          <LockedFeatureCard
+            title={t("AI Revenue Simulator", locale)}
+            requiredPlan="business"
+          />
+        )}
 
         {canViewOpportunityMatrix ? (
           <OpportunityMatrixCard
@@ -252,7 +258,12 @@ export default function AnalyticsScreen() {
             clientRisk={analytics?.client_risk}
             missionControl={analytics?.mission_control}
           />
-        ) : null}
+        ) : (
+          <LockedFeatureCard
+            title={t("AI Opportunity Matrix", locale)}
+            requiredPlan="business"
+          />
+        )}
 
         {error ? (
           <View style={styles.errorBox}>

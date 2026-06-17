@@ -225,6 +225,9 @@ const dict: Record<string, string> = {
   "Subscription AI Access Full": "Full AI Suite",
   "Subscription AI Access Limited": "Limited AI Suite",
   "Subscription Enabled Features": "Enabled Features",
+  "Locked Feature": "Locked Feature",
+  "Requires Plan": "Requires Plan",
+  "Locked Feature Upgrade Note": "Compare packages in Settings Center to unlock this feature.",
   "Subscription Workspace Limit": "Workspace Limit",
   "Subscription Workspace Limit Single": "Single workspace",
   "Subscription Upgrade Note": "Use pricing packages below to compare upgrade paths before billing is enabled.",
@@ -398,6 +401,10 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "Locked Feature": "Fonctionnalité verrouillée",
+    "Requires Plan": "Forfait requis",
+    "Locked Feature Upgrade Note": "Comparez les forfaits dans le centre des paramètres pour débloquer cette fonctionnalité.",
+
     "Settings Center": "Centre des paramètres et d’abonnement",
     "Settings Center Subtitle": "Gérez le workspace, les forfaits, le support, les outils système et les notes opérateur.",
 
@@ -867,6 +874,10 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "Locked Feature": "Փակ ֆունկցիա",
+    "Requires Plan": "Պահանջվող փաթեթ",
+    "Locked Feature Upgrade Note": "Համեմատեք փաթեթները Կարգավորումների կենտրոնում՝ այս ֆունկցիան բացելու համար։",
+
     "Settings Center": "Կարգավորումների և բաժանորդագրության կենտրոն",
     "Settings Center Subtitle": "Կառավարեք workspace-ը, փաթեթները, աջակցությունը, համակարգի գործիքները և օպերատորի նշումները։",
 
@@ -1272,6 +1283,10 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "Locked Feature": "Закрытая функция",
+    "Requires Plan": "Требуемый пакет",
+    "Locked Feature Upgrade Note": "Сравните пакеты в Центре настроек, чтобы открыть эту функцию.",
+
     "Settings Center": "Центр настроек и подписки",
     "Settings Center Subtitle": "Управляйте workspace, пакетами, поддержкой, системными инструментами и заметками оператора.",
 
