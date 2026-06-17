@@ -8,6 +8,7 @@ import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import AccountOverviewCard from "../../components/settings/AccountOverviewCard";
 import SecurityCard from "../../components/settings/SecurityCard";
 import SubscriptionStatusCard from "../../components/settings/SubscriptionStatusCard";
+import PackageCapabilityMatrix from "../../components/subscription/PackageCapabilityMatrix";
 
 type QuickLinkProps = {
   title: string;
@@ -50,6 +51,8 @@ export default function WorkspaceScreen() {
       <SecurityCard />
 
       <SubscriptionStatusCard />
+
+      <PackageCapabilityMatrix />
 
       <PricingPlansCard />
 
