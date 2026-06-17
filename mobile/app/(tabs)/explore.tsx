@@ -4,7 +4,9 @@ import { router } from "expo-router";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
 import PricingPlansCard from "../../components/pricing/PricingPlansCard";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import AccountOverviewCard from "../../components/settings/AccountOverviewCard";
+import SecurityCard from "../../components/settings/SecurityCard";
 
 type QuickLinkProps = {
   title: string;
@@ -32,8 +34,9 @@ export default function WorkspaceScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} style={styles.container}>
-      <View style={styles.hero}>
+    <RoyalCosmosBackground style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
         <Text style={styles.title}>{t("Settings Center", locale)}</Text>
         <Text style={styles.subtitle}>
@@ -42,6 +45,10 @@ export default function WorkspaceScreen() {
       </View>
 
       <AccountOverviewCard />
+
+      <SecurityCard />
+
+      <PricingPlansCard />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
@@ -78,25 +85,23 @@ export default function WorkspaceScreen() {
         />
       </View>
 
-      <PricingPlansCard />
-
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Backend Access", locale)}</Text>
+        <Text style={styles.sectionTitle}>{t("System Tools", locale)}</Text>
 
         <QuickLink
-          title={t("Open Api Docs", locale)}
-          subtitle={t("Open Api DocsSubtitle", locale)}
+          title={t("Open API Console", locale)}
+          subtitle={t("Open API Console Subtitle", locale)}
           onPress={openDocs}
         />
         <QuickLink
-          title={t("Check Backend Health", locale)}
-          subtitle={t("Check Backend Health Subtitle", locale)}
+          title={t("Check System Health", locale)}
+          subtitle={t("Check System Health Subtitle", locale)}
           onPress={openBackend}
         />
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Operator Notes", locale)}</Text>
+        <Text style={styles.sectionTitle}>{t("Support Notes", locale)}</Text>
         <View style={styles.noteCard}>
           <Text style={styles.noteText}>
             {t("Operator Notes Line One", locale)}
@@ -106,14 +111,14 @@ export default function WorkspaceScreen() {
           </Text>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </RoyalCosmosBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0b0d12",
   },
   content: {
     padding: 20,

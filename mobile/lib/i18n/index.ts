@@ -212,6 +212,12 @@ const dict: Record<string, string> = {
   "Account Status": "Status",
   "Account Status Active": "Active",
   "App Navigation": "App Navigation",
+  "System Tools": "System Tools",
+  "Open API Console": "Open API Console",
+  "Open API Console Subtitle": "Review the secured API documentation and integration endpoints.",
+  "Check System Health": "Check System Health",
+  "Check System Health Subtitle": "Verify the production backend health endpoint.",
+  "Support Notes": "Support Notes",
   "Pricing Packages": "Pricing Packages",
   "Pricing Plan Free": "Free",
   "Pricing Plan Pro": "Pro",
@@ -382,6 +388,21 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "System Tools": "Outils système",
+    "Open API Console": "Ouvrir le centre API",
+    "Open API Console Subtitle": "Consulter la documentation API sécurisée et les endpoints d’intégration.",
+    "Check System Health": "Vérifier l’état du système",
+    "Check System Health Subtitle": "Vérifier l’endpoint de santé du backend production.",
+    "Support Notes": "Notes de support",
+
+    "Security Center": "Centre de sécurité",
+    "Security Session": "Session",
+    "Security Session Active": "Session active",
+    "Change Password": "Modifier le mot de passe",
+    "Sign Out": "Déconnexion",
+    "Signing Out": "Déconnexion...",
+    "Security Placeholder Note": "La gestion des mots de passe et des appareils sera ajoutée lors de la prochaine phase de sécurité.",
+
     "Account Overview": "Aperçu du compte",
     "Account Email": "E-mail",
     "Account Role": "Rôle",
@@ -795,6 +816,21 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "System Tools": "Համակարգի գործիքներ",
+    "Open API Console": "Բացել API կենտրոնը",
+    "Open API Console Subtitle": "Դիտել պաշտպանված API փաստաթղթերը և ինտեգրման endpoint-ները։",
+    "Check System Health": "Ստուգել համակարգի վիճակը",
+    "Check System Health Subtitle": "Ստուգել production backend-ի առողջության endpoint-ը։",
+    "Support Notes": "Աջակցության նշումներ",
+
+    "Security Center": "Անվտանգության կենտրոն",
+    "Security Session": "Սեսիա",
+    "Security Session Active": "Ակտիվ սեսիա",
+    "Change Password": "Փոխել գաղտնաբառը",
+    "Sign Out": "Դուրս գալ",
+    "Signing Out": "Դուրս գալու գործընթաց",
+    "Security Placeholder Note": "Գաղտնաբառի փոփոխությունն ու սարքերի կառավարումը կմիանան հաջորդ անվտանգության փուլում。",
+
     "Account Overview": "Հաշվի ամփոփում",
     "Account Email": "Էլ. հասցե",
     "Account Role": "Դեր",
@@ -1144,6 +1180,21 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "System Tools": "Системные инструменты",
+    "Open API Console": "Открыть API-центр",
+    "Open API Console Subtitle": "Просмотреть защищенную API-документацию и endpoints для интеграций.",
+    "Check System Health": "Проверить состояние системы",
+    "Check System Health Subtitle": "Проверить production endpoint здоровья backend.",
+    "Support Notes": "Заметки поддержки",
+
+    "Security Center": "Центр безопасности",
+    "Security Session": "Сессия",
+    "Security Session Active": "Активная сессия",
+    "Change Password": "Изменить пароль",
+    "Sign Out": "Выйти",
+    "Signing Out": "Выход...",
+    "Security Placeholder Note": "Смена пароля и управление устройствами будут подключены на следующем этапе безопасности.",
+
     "Account Overview": "Обзор аккаунта",
     "Account Email": "Эл. почта",
     "Account Role": "Роль",
