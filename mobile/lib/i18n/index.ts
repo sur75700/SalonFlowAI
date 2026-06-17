@@ -218,6 +218,14 @@ const dict: Record<string, string> = {
   "Check System Health": "Check System Health",
   "Check System Health Subtitle": "Verify the production backend health endpoint.",
   "Support Notes": "Support Notes",
+  "Subscription Center": "Subscription Center",
+  "Subscription Status Active": "Active subscription",
+  "Subscription Billing Placeholder": "Billing and renewal automation will be connected in the billing phase.",
+  "Subscription AI Access": "AI Access",
+  "Subscription AI Access Full": "Full AI Suite",
+  "Subscription Workspace Limit": "Workspace Limit",
+  "Subscription Workspace Limit Single": "Single workspace",
+  "Subscription Upgrade Note": "Use pricing packages below to compare upgrade paths before billing is enabled.",
   "Pricing Packages": "Pricing Packages",
   "Pricing Plan Free": "Free",
   "Pricing Plan Pro": "Pro",
@@ -388,6 +396,15 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "Subscription Center": "Centre d’abonnement",
+    "Subscription Status Active": "Abonnement actif",
+    "Subscription Billing Placeholder": "L’automatisation de la facturation et des renouvellements sera ajoutée lors de la phase billing.",
+    "Subscription AI Access": "Accès IA",
+    "Subscription AI Access Full": "Suite IA complète",
+    "Subscription Workspace Limit": "Limite workspace",
+    "Subscription Workspace Limit Single": "Un workspace",
+    "Subscription Upgrade Note": "Utilisez les forfaits ci-dessous pour comparer les chemins d’upgrade avant l’activation de la facturation.",
+
     "System Tools": "Outils système",
     "Open API Console": "Ouvrir le centre API",
     "Open API Console Subtitle": "Consulter la documentation API sécurisée et les endpoints d’intégration.",
@@ -816,6 +833,15 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "Subscription Center": "Բաժանորդագրության կենտրոն",
+    "Subscription Status Active": "Ակտիվ բաժանորդագրություն",
+    "Subscription Billing Placeholder": "Վճարումների և երկարացման ավտոմատացումը կմիանա billing փուլում։",
+    "Subscription AI Access": "AI հասանելիություն",
+    "Subscription AI Access Full": "Ամբողջական AI փաթեթ",
+    "Subscription Workspace Limit": "Workspace սահմանաչափ",
+    "Subscription Workspace Limit Single": "Մեկ workspace",
+    "Subscription Upgrade Note": "Օգտագործեք ներքևի փաթեթները՝ upgrade ճանապարհները համեմատելու համար մինչև վճարումների միացումը։",
+
     "System Tools": "Համակարգի գործիքներ",
     "Open API Console": "Բացել API կենտրոնը",
     "Open API Console Subtitle": "Դիտել պաշտպանված API փաստաթղթերը և ինտեգրման endpoint-ները։",
@@ -1180,6 +1206,15 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "Subscription Center": "Центр подписки",
+    "Subscription Status Active": "Активная подписка",
+    "Subscription Billing Placeholder": "Автоматизация оплат и продлений будет подключена на этапе billing.",
+    "Subscription AI Access": "Доступ к AI",
+    "Subscription AI Access Full": "Полный AI-пакет",
+    "Subscription Workspace Limit": "Лимит workspace",
+    "Subscription Workspace Limit Single": "Один workspace",
+    "Subscription Upgrade Note": "Используйте пакеты ниже, чтобы сравнить варианты upgrade до подключения оплат.",
+
     "System Tools": "Системные инструменты",
     "Open API Console": "Открыть API-центр",
     "Open API Console Subtitle": "Просмотреть защищенную API-документацию и endpoints для интеграций.",
