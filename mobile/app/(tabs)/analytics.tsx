@@ -31,6 +31,7 @@ import { shortDay } from "../../utils/formatters";
 import { money } from "../../utils/money";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { UI } from "../../lib/theme/tokens";
+import { CURRENT_PLAN, hasFeature } from "../../lib/subscription/features";
 import { getResponsiveLayout } from "../../lib/layout/responsive";
 
 function AnalyticsSkeleton() {
@@ -86,6 +87,10 @@ export default function AnalyticsScreen() {
   const { logout, loggingOut } = useLogout();
   const { summary, analytics, loading, refreshing, error, reload, refresh } =
     useAnalyticsData(token, clearToken);
+
+  const canViewAdvancedInsights = hasFeature(CURRENT_PLAN, "ai_forecast");
+  const canViewRevenueSimulator = hasFeature(CURRENT_PLAN, "revenue_simulator");
+  const canViewOpportunityMatrix = hasFeature(CURRENT_PLAN, "opportunity_matrix");
 
   const lineChartData = useMemo(() => {
     const trend = analytics?.revenueTrend ?? analytics?.revenue_last_7_days ?? [];
@@ -221,27 +226,33 @@ export default function AnalyticsScreen() {
           subtitle={t("Analytics Ready Subtitle", locale)}
         />
 
-        <AIInsightsCard
-          insights={analytics?.insights}
-          forecast={analytics?.forecast}
-          riskSummary={analytics?.risk_summary}
-          growthSummary={analytics?.growth_summary}
-          executiveDecision={analytics?.executive_decision}
-          clientSummary={analytics?.client_summary}
-          clientRisk={analytics?.client_risk}
-          missionControl={analytics?.mission_control}
-          performanceCenter={analytics?.performance_center}
-          benchmarkCenter={analytics?.benchmark_center}
-        />
+        {canViewAdvancedInsights ? (
+          <AIInsightsCard
+            insights={analytics?.insights}
+            forecast={analytics?.forecast}
+            riskSummary={analytics?.risk_summary}
+            growthSummary={analytics?.growth_summary}
+            executiveDecision={analytics?.executive_decision}
+            clientSummary={analytics?.client_summary}
+            clientRisk={analytics?.client_risk}
+            missionControl={analytics?.mission_control}
+            performanceCenter={analytics?.performance_center}
+            benchmarkCenter={analytics?.benchmark_center}
+          />
+        ) : null}
 
-        <RevenueSimulatorCard simulator={analytics?.revenue_simulator} />
+        {canViewRevenueSimulator ? (
+          <RevenueSimulatorCard simulator={analytics?.revenue_simulator} />
+        ) : null}
 
-        <OpportunityMatrixCard
-          growthSummary={analytics?.growth_summary}
-          executiveDecision={analytics?.executive_decision}
-          clientRisk={analytics?.client_risk}
-          missionControl={analytics?.mission_control}
-        />
+        {canViewOpportunityMatrix ? (
+          <OpportunityMatrixCard
+            growthSummary={analytics?.growth_summary}
+            executiveDecision={analytics?.executive_decision}
+            clientRisk={analytics?.client_risk}
+            missionControl={analytics?.mission_control}
+          />
+        ) : null}
 
         {error ? (
           <View style={styles.errorBox}>
