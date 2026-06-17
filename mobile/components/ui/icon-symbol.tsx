@@ -20,6 +20,7 @@ const MAPPING = {
   'scissors': 'content-cut',
   'chart.bar.fill': 'bar-chart',
   'doc.text.fill': 'description',
+  'gearshape.fill': 'auto-awesome',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
