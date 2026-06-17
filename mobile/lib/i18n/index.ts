@@ -204,6 +204,13 @@ const dict: Record<string, string> = {
   "Settings": "Settings",
   "Settings Center": "Settings & Subscription Center",
   "Settings Center Subtitle": "Manage your workspace, subscription packages, support links, backend access, and operator tools.",
+  "Account Overview": "Account Overview",
+  "Account Email": "Email",
+  "Account Role": "Role",
+  "Account Role Owner": "Owner",
+  "Current Plan": "Current Plan",
+  "Account Status": "Status",
+  "Account Status Active": "Active",
   "App Navigation": "App Navigation",
   "Pricing Packages": "Pricing Packages",
   "Pricing Plan Free": "Free",
@@ -375,6 +382,14 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "Account Overview": "Aperçu du compte",
+    "Account Email": "E-mail",
+    "Account Role": "Rôle",
+    "Account Role Owner": "Propriétaire",
+    "Current Plan": "Forfait actuel",
+    "Account Status": "Statut",
+    "Account Status Active": "Actif",
+
     "AI Opportunity Matrix": "Matrice d’opportunités IA",
     "AI Matrix Quick Wins": "Gains rapides",
     "AI Matrix Strategic Bets": "Paris stratégiques",
@@ -780,6 +795,14 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "Account Overview": "Հաշվի ամփոփում",
+    "Account Email": "Էլ. հասցե",
+    "Account Role": "Դեր",
+    "Account Role Owner": "Սեփականատեր",
+    "Current Plan": "Ընթացիկ փաթեթ",
+    "Account Status": "Կարգավիճակ",
+    "Account Status Active": "Ակտիվ",
+
     "AI Opportunity Matrix": "AI հնարավորությունների մատրիցա",
     "AI Matrix Quick Wins": "Արագ հաղթանակներ",
     "AI Matrix Strategic Bets": "Ռազմավարական քայլեր",
@@ -1121,6 +1144,14 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "Account Overview": "Обзор аккаунта",
+    "Account Email": "Эл. почта",
+    "Account Role": "Роль",
+    "Account Role Owner": "Владелец",
+    "Current Plan": "Текущий пакет",
+    "Account Status": "Статус",
+    "Account Status Active": "Активен",
+
     "AI Opportunity Matrix": "AI матрица возможностей",
     "AI Matrix Quick Wins": "Быстрые победы",
     "AI Matrix Strategic Bets": "Стратегические ставки",

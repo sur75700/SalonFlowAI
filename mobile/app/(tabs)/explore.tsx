@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
 import PricingPlansCard from "../../components/pricing/PricingPlansCard";
+import AccountOverviewCard from "../../components/settings/AccountOverviewCard";
 
 type QuickLinkProps = {
   title: string;
@@ -39,6 +40,8 @@ export default function WorkspaceScreen() {
           {t("Settings Center Subtitle", locale)}
         </Text>
       </View>
+
+      <AccountOverviewCard />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
