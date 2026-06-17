@@ -223,6 +223,8 @@ const dict: Record<string, string> = {
   "Subscription Billing Placeholder": "Billing and renewal automation will be connected in the billing phase.",
   "Subscription AI Access": "AI Access",
   "Subscription AI Access Full": "Full AI Suite",
+  "Subscription AI Access Limited": "Limited AI Suite",
+  "Subscription Enabled Features": "Enabled Features",
   "Subscription Workspace Limit": "Workspace Limit",
   "Subscription Workspace Limit Single": "Single workspace",
   "Subscription Upgrade Note": "Use pricing packages below to compare upgrade paths before billing is enabled.",
@@ -396,6 +398,9 @@ const dict: Record<string, string> = {
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {},
   fr: {
+    "Subscription AI Access Limited": "Suite IA limitée",
+    "Subscription Enabled Features": "Fonctionnalités actives",
+
     "Subscription Center": "Centre d’abonnement",
     "Subscription Status Active": "Abonnement actif",
     "Subscription Billing Placeholder": "L’automatisation de la facturation et des renouvellements sera ajoutée lors de la phase billing.",
@@ -833,6 +838,9 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "Subscription AI Access Limited": "Սահմանափակ AI փաթեթ",
+    "Subscription Enabled Features": "Ակտիվ ֆունկցիաներ",
+
     "Subscription Center": "Բաժանորդագրության կենտրոն",
     "Subscription Status Active": "Ակտիվ բաժանորդագրություն",
     "Subscription Billing Placeholder": "Վճարումների և երկարացման ավտոմատացումը կմիանա billing փուլում։",
@@ -1206,6 +1214,9 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "Subscription AI Access Limited": "Ограниченный AI-пакет",
+    "Subscription Enabled Features": "Активные функции",
+
     "Subscription Center": "Центр подписки",
     "Subscription Status Active": "Активная подписка",
     "Subscription Billing Placeholder": "Автоматизация оплат и продлений будет подключена на этапе billing.",

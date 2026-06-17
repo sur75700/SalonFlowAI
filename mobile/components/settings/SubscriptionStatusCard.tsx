@@ -2,10 +2,18 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
+import {
+  CURRENT_PLAN,
+  PLAN_FEATURES,
+  hasFeature,
+} from "../../lib/subscription/features";
 import { UI } from "../../lib/theme/tokens";
 
 export default function SubscriptionStatusCard() {
   const { locale } = useAppPreferences();
+  const enabledFeatures = PLAN_FEATURES[CURRENT_PLAN]?.length ?? 0;
+  const hasRevenueSimulator = hasFeature(CURRENT_PLAN, "revenue_simulator");
+  const hasOpportunityMatrix = hasFeature(CURRENT_PLAN, "opportunity_matrix");
 
   return (
     <View style={styles.card}>
@@ -20,13 +28,17 @@ export default function SubscriptionStatusCard() {
 
       <View style={styles.grid}>
         <View style={styles.cell}>
-          <Text style={styles.value}>{t("Subscription AI Access Full", locale)}</Text>
-          <Text style={styles.label}>{t("Subscription AI Access", locale)}</Text>
+          <Text style={styles.value}>{enabledFeatures}</Text>
+          <Text style={styles.label}>{t("Subscription Enabled Features", locale)}</Text>
         </View>
 
         <View style={styles.cell}>
-          <Text style={styles.value}>{t("Subscription Workspace Limit Single", locale)}</Text>
-          <Text style={styles.label}>{t("Subscription Workspace Limit", locale)}</Text>
+          <Text style={styles.value}>
+            {hasRevenueSimulator && hasOpportunityMatrix
+              ? t("Subscription AI Access Full", locale)
+              : t("Subscription AI Access Limited", locale)}
+          </Text>
+          <Text style={styles.label}>{t("Subscription AI Access", locale)}</Text>
         </View>
       </View>
 
