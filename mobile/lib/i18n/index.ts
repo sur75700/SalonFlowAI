@@ -2289,7 +2289,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Settings Group AI Subtitle": "AI-доступ, аналитика использования и интеллектуальное управление.",
     "Settings Group Operations": "Операции",
     "Settings Group Operations Subtitle": "Состояние системы, история аудита и настройки коммуникаций.",
-    "Settings Group Enterprise": "Ձեռնարկության կառավարում",
+    "Settings Group Enterprise": "Корпоративное управление",
     "Settings Group Enterprise Subtitle": "Роли команды, состояние безопасности и внешние интеграции.",
 
     "Executive Command Dashboard": "Исполнительная панель управления",
