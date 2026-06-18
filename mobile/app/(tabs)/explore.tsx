@@ -27,6 +27,16 @@ type QuickLinkProps = {
   onPress: () => void;
 };
 
+
+function SettingsSectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <View style={styles.groupHeader}>
+      <Text style={styles.groupTitle}>{title}</Text>
+      <Text style={styles.groupSubtitle}>{subtitle}</Text>
+    </View>
+  );
+}
+
 function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
   return (
     <Pressable onPress={onPress} style={styles.linkCard}>
@@ -57,37 +67,62 @@ export default function WorkspaceScreen() {
         </Text>
       </View>
 
+      <SettingsSectionHeader
+        title={t("Settings Group Core", locale)}
+        subtitle={t("Settings Group Core Subtitle", locale)}
+      />
+
       <AccountOverviewCard />
 
       <SecurityCard />
+
+      <WorkspaceBrandCenter />
+
+      <SettingsSectionHeader
+        title={t("Settings Group Subscription", locale)}
+        subtitle={t("Settings Group Subscription Subtitle", locale)}
+      />
 
       <SubscriptionStatusCard />
 
       <PackageCapabilityMatrix />
 
+      <BillingCenter />
+
+      <SubscriptionSyncCenter />
+
+      <PricingPlansCard />
+
+      <SettingsSectionHeader
+        title={t("Settings Group AI", locale)}
+        subtitle={t("Settings Group AI Subtitle", locale)}
+      />
+
       <AIControlCenter />
+
+      <AIUsageAnalyticsCenter />
+
+      <SettingsSectionHeader
+        title={t("Settings Group Operations", locale)}
+        subtitle={t("Settings Group Operations Subtitle", locale)}
+      />
 
       <SystemStatusCenter />
 
       <AuditLogsCenter />
 
-      <BillingCenter />
+      <NotificationPreferencesCenter />
 
-      <SubscriptionSyncCenter />
+      <SettingsSectionHeader
+        title={t("Settings Group Enterprise", locale)}
+        subtitle={t("Settings Group Enterprise Subtitle", locale)}
+      />
 
       <TeamRolesCenter />
 
       <EnterpriseSecurityCenter />
 
-      <AIUsageAnalyticsCenter />
-
-      <NotificationPreferencesCenter />
-
       <IntegrationCenter />
-
-      <WorkspaceBrandCenter />
-
-      <PricingPlansCard />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
@@ -183,6 +218,24 @@ const styles = StyleSheet.create({
     color: "#b7adbf",
     fontSize: 15,
     lineHeight: 23,
+  },
+  groupHeader: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  groupTitle: {
+    color: "#f2d17a",
+    fontSize: 13,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  groupSubtitle: {
+    color: "#b7adbf",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 5,
   },
   section: {
     backgroundColor: "#0f1118",
