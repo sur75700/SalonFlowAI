@@ -15,6 +15,7 @@ type ExecutiveAction = {
   labelKey: string;
 };
 
+
 const EXECUTIVE_ACTIONS: ExecutiveAction[] = [
   { labelKey: "Action Manage Plan" },
   { labelKey: "Action Configure Billing" },
@@ -57,8 +58,27 @@ const EXECUTIVE_METRICS: ExecutiveMetric[] = [
   },
 ];
 
-export default function ExecutiveCommandDashboard() {
+type Props = {
+  onAction?: (section: string) => void;
+};
+
+export default function ExecutiveCommandDashboard({ onAction }: Props) {
   const { locale } = useAppPreferences();
+
+  const ACTION_MAP: Record<string, string> = {
+    "Action Manage Plan": "subscription",
+    "Action Configure Billing": "subscription",
+    "Action Invite Team Member": "enterprise",
+    "Action Configure Security": "enterprise",
+    "Action Connect Integration": "enterprise",
+    "Action Edit Workspace Brand": "core",
+  };
+
+  const handleExecutiveAction = (actionKey: string) => {
+    const section = ACTION_MAP[actionKey];
+    if (!section) return;
+    onAction?.(section);
+  };
 
   return (
     <View style={styles.card}>
@@ -79,7 +99,7 @@ export default function ExecutiveCommandDashboard() {
 
       <View style={styles.actionGrid}>
         {EXECUTIVE_ACTIONS.map((action) => (
-          <Pressable key={action.labelKey} style={styles.actionButton} onPress={() => {}}>
+          <Pressable key={action.labelKey} style={styles.actionButton} onPress={() => handleExecutiveAction(action.labelKey)}>
             <Text style={styles.actionText}>{t(action.labelKey, locale)}</Text>
           </Pressable>
         ))}
