@@ -465,7 +465,7 @@ const dict: Record<string, string> = {
   "Smart Nav Subscription": "Subscription",
   "Smart Nav AI": "AI",
   "Smart Nav Operations": "Operations",
-  "Smart Nav Enterprise": "Корпоративный",
+  "Smart Nav Enterprise": "Enterprise",
   "Pricing Packages": "Pricing Packages",
   "Pricing Plan Free": "Free",
   "Pricing Plan Pro": "Pro",
@@ -1593,7 +1593,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Smart Nav Subscription": "Բաժանորդագրություն",
     "Smart Nav AI": "AI",
     "Smart Nav Operations": "Օպերացիաներ",
-    "Smart Nav Enterprise": "Корпоративный",
+    "Smart Nav Enterprise": "Ձեռնարկություն",
 
     "Settings Group Core": "Հիմնական աշխատանքային տարածք",
     "Settings Group Core Subtitle": "Ինքնության, անվտանգության և աշխատանքային տարածքի բրենդի կառավարում։",
