@@ -19,6 +19,7 @@ import EnterpriseSecurityCenter from "../../components/system/EnterpriseSecurity
 import AIUsageAnalyticsCenter from "../../components/system/AIUsageAnalyticsCenter";
 import NotificationPreferencesCenter from "../../components/system/NotificationPreferencesCenter";
 import IntegrationCenter from "../../components/system/IntegrationCenter";
+import WorkspaceBrandCenter from "../../components/system/WorkspaceBrandCenter";
 
 type QuickLinkProps = {
   title: string;
@@ -83,6 +84,8 @@ export default function WorkspaceScreen() {
       <NotificationPreferencesCenter />
 
       <IntegrationCenter />
+
+      <WorkspaceBrandCenter />
 
       <PricingPlansCard />
 
