@@ -14,6 +14,7 @@ import SystemStatusCenter from "../../components/system/SystemStatusCenter";
 import AuditLogsCenter from "../../components/system/AuditLogsCenter";
 import BillingCenter from "../../components/system/BillingCenter";
 import SubscriptionSyncCenter from "../../components/system/SubscriptionSyncCenter";
+import TeamRolesCenter from "../../components/system/TeamRolesCenter";
 
 type QuickLinkProps = {
   title: string;
@@ -68,6 +69,8 @@ export default function WorkspaceScreen() {
       <BillingCenter />
 
       <SubscriptionSyncCenter />
+
+      <TeamRolesCenter />
 
       <PricingPlansCard />
 
