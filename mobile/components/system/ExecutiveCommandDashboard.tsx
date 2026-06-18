@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Pressable, Text, View } from "react-native";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
@@ -9,6 +9,20 @@ type ExecutiveMetric = {
   valueKey: string;
   statusKey: string;
 };
+
+
+type ExecutiveAction = {
+  labelKey: string;
+};
+
+const EXECUTIVE_ACTIONS: ExecutiveAction[] = [
+  { labelKey: "Action Manage Plan" },
+  { labelKey: "Action Configure Billing" },
+  { labelKey: "Action Invite Team Member" },
+  { labelKey: "Action Configure Security" },
+  { labelKey: "Action Connect Integration" },
+  { labelKey: "Action Edit Workspace Brand" },
+];
 
 const EXECUTIVE_METRICS: ExecutiveMetric[] = [
   {
@@ -59,6 +73,15 @@ export default function ExecutiveCommandDashboard() {
             <Text style={styles.metricValue}>{t(metric.valueKey, locale)}</Text>
             <Text style={styles.metricStatus}>{t(metric.statusKey, locale)}</Text>
           </View>
+        ))}
+      </View>
+
+
+      <View style={styles.actionGrid}>
+        {EXECUTIVE_ACTIONS.map((action) => (
+          <Pressable key={action.labelKey} style={styles.actionButton} onPress={() => {}}>
+            <Text style={styles.actionText}>{t(action.labelKey, locale)}</Text>
+          </Pressable>
         ))}
       </View>
 
@@ -127,6 +150,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
     marginTop: 5,
+  },
+  actionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14,
+  },
+  actionButton: {
+    width: "48%",
+    backgroundColor: "rgba(242,209,122,0.12)",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(242,209,122,0.55)",
+  },
+  actionText: {
+    color: "#f2d17a",
+    fontSize: 11,
+    fontWeight: "900",
+    textAlign: "center",
+    textTransform: "uppercase",
   },
   note: {
     color: "#94a3b8",
