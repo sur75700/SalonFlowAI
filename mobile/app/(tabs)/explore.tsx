@@ -1,3 +1,4 @@
+import SmartNavigationBar from '../../components/system/SmartNavigationBar';
 import React from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -69,6 +70,11 @@ export default function WorkspaceScreen() {
       </View>
 
       <ExecutiveCommandDashboard />
+
+      <SmartNavigationBar onNavigate={(key) => {
+        // Phase 21X stub: scroll mapping later
+        console.log("NAV:", key);
+      }} />
 
       <SettingsSectionHeader
         title={t("Settings Group Core", locale)}

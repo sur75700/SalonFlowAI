@@ -452,6 +452,14 @@ const dict: Record<string, string> = {
   "Action Configure Security": "Configure Security",
   "Action Connect Integration": "Connect Integration",
   "Action Edit Workspace Brand": "Edit Workspace Brand",
+
+  "Nav Core": "Core",
+  "Nav AI": "AI",
+  "Nav Revenue": "Revenue",
+  "Nav Security": "Security",
+  "Nav Operations": "Operations",
+  "Nav Enterprise": "Enterprise",
+
   "Pricing Packages": "Pricing Packages",
   "Pricing Plan Free": "Free",
   "Pricing Plan Pro": "Pro",
@@ -871,7 +879,15 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Action Connect Integration": "Connecter intégration",
     "Action Edit Workspace Brand": "Modifier la marque",
 
-    "Pricing Packages": "Forfaits",
+  
+  "Nav Core": "Core",
+  "Nav AI": "AI",
+  "Nav Revenue": "Revenue",
+  "Nav Security": "Security",
+  "Nav Operations": "Operations",
+  "Nav Enterprise": "Enterprise",
+
+  "Pricing Packages": "Forfaits",
     "Pricing Plan Free": "Gratuit",
     "Pricing Plan Pro": "Pro",
     "Pricing Plan Business": "Business",
@@ -1606,7 +1622,15 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Action Connect Integration": "Միացնել ինտեգրացիա",
     "Action Edit Workspace Brand": "Խմբագրել բրենդը",
 
-    "Pricing Packages": "Փաթեթներ",
+  
+  "Nav Core": "Core",
+  "Nav AI": "AI",
+  "Nav Revenue": "Revenue",
+  "Nav Security": "Security",
+  "Nav Operations": "Operations",
+  "Nav Enterprise": "Enterprise",
+
+  "Pricing Packages": "Փաթեթներ",
     "Pricing Plan Free": "Անվճար",
     "Pricing Plan Pro": "Pro",
     "Pricing Plan Business": "Business",
@@ -2277,7 +2301,15 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Action Connect Integration": "Подключить интеграцию",
     "Action Edit Workspace Brand": "Редактировать бренд",
 
-    "Pricing Packages": "Пакеты",
+  
+  "Nav Core": "Core",
+  "Nav AI": "AI",
+  "Nav Revenue": "Revenue",
+  "Nav Security": "Security",
+  "Nav Operations": "Operations",
+  "Nav Enterprise": "Enterprise",
+
+  "Pricing Packages": "Пакеты",
     "Pricing Plan Free": "Бесплатный",
     "Pricing Plan Pro": "Pro",
     "Pricing Plan Business": "Business",
