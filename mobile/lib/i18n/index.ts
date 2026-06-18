@@ -460,6 +460,12 @@ const dict: Record<string, string> = {
   "Nav Operations": "Operations",
   "Nav Enterprise": "Enterprise",
 
+  "Smart Navigation": "Quick Jump",
+  "Smart Nav Core": "Core",
+  "Smart Nav Subscription": "Subscription",
+  "Smart Nav AI": "AI",
+  "Smart Nav Operations": "Operations",
+  "Smart Nav Enterprise": "Enterprise",
   "Pricing Packages": "Pricing Packages",
   "Pricing Plan Free": "Free",
   "Pricing Plan Pro": "Pro",

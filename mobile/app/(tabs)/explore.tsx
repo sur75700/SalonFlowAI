@@ -1,5 +1,4 @@
-import SmartNavigationBar from '../../components/system/SmartNavigationBar';
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -22,6 +21,7 @@ import NotificationPreferencesCenter from "../../components/system/NotificationP
 import IntegrationCenter from "../../components/system/IntegrationCenter";
 import WorkspaceBrandCenter from "../../components/system/WorkspaceBrandCenter";
 import ExecutiveCommandDashboard from "../../components/system/ExecutiveCommandDashboard";
+import SmartNavigationBar, { SettingsSectionKey } from "../../components/system/SmartNavigationBar";
 
 type QuickLinkProps = {
   title: string;
@@ -58,9 +58,38 @@ export default function WorkspaceScreen() {
     Linking.openURL("https://salonflowai-backend.onrender.com/healthz");
   };
 
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [sectionOffsets, setSectionOffsets] = useState<
+    Partial<Record<SettingsSectionKey, number>>
+  >({});
+
+  const registerSection =
+    (key: SettingsSectionKey) =>
+    (event: { nativeEvent: { layout: { y: number } } }) => {
+      const y = event.nativeEvent.layout.y;
+      setSectionOffsets((current) => {
+        if (current[key] === y) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [key]: y,
+        };
+      });
+    };
+
+  const scrollToSection = (key: SettingsSectionKey) => {
+    const targetY = sectionOffsets[key] ?? 0;
+    scrollViewRef.current?.scrollTo({
+      y: Math.max(targetY - 10, 0),
+      animated: true,
+    });
+  };
+
   return (
     <RoyalCosmosBackground style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.content}>
         <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
         <Text style={styles.title}>{t("Settings Center", locale)}</Text>
@@ -72,66 +101,75 @@ export default function WorkspaceScreen() {
       <ExecutiveCommandDashboard />
 
       <SmartNavigationBar onNavigate={(key) => {
-        // Phase 21X stub: scroll mapping later
-        console.log("NAV:", key);
+        scrollToSection(key);
       }} />
 
-      <SettingsSectionHeader
-        title={t("Settings Group Core", locale)}
-        subtitle={t("Settings Group Core Subtitle", locale)}
-      />
+      <View onLayout={registerSection("core")}>
+        <SettingsSectionHeader
+          title={t("Settings Group Core", locale)}
+          subtitle={t("Settings Group Core Subtitle", locale)}
+        />
 
-      <AccountOverviewCard />
+        <AccountOverviewCard />
 
-      <SecurityCard />
+        <SecurityCard />
 
-      <WorkspaceBrandCenter />
+        <WorkspaceBrandCenter />
+      </View>
 
-      <SettingsSectionHeader
-        title={t("Settings Group Subscription", locale)}
-        subtitle={t("Settings Group Subscription Subtitle", locale)}
-      />
+      <View onLayout={registerSection("subscription")}>
+        <SettingsSectionHeader
+          title={t("Settings Group Subscription", locale)}
+          subtitle={t("Settings Group Subscription Subtitle", locale)}
+        />
 
-      <SubscriptionStatusCard />
+        <SubscriptionStatusCard />
 
-      <PackageCapabilityMatrix />
+        <PackageCapabilityMatrix />
 
-      <BillingCenter />
+        <BillingCenter />
 
-      <SubscriptionSyncCenter />
+        <SubscriptionSyncCenter />
 
-      <PricingPlansCard />
+        <PricingPlansCard />
+      </View>
 
-      <SettingsSectionHeader
-        title={t("Settings Group AI", locale)}
-        subtitle={t("Settings Group AI Subtitle", locale)}
-      />
+      <View onLayout={registerSection("ai")}>
+        <SettingsSectionHeader
+          title={t("Settings Group AI", locale)}
+          subtitle={t("Settings Group AI Subtitle", locale)}
+        />
 
-      <AIControlCenter />
+        <AIControlCenter />
 
-      <AIUsageAnalyticsCenter />
+        <AIUsageAnalyticsCenter />
+      </View>
 
-      <SettingsSectionHeader
-        title={t("Settings Group Operations", locale)}
-        subtitle={t("Settings Group Operations Subtitle", locale)}
-      />
+      <View onLayout={registerSection("operations")}>
+        <SettingsSectionHeader
+          title={t("Settings Group Operations", locale)}
+          subtitle={t("Settings Group Operations Subtitle", locale)}
+        />
 
-      <SystemStatusCenter />
+        <SystemStatusCenter />
 
-      <AuditLogsCenter />
+        <AuditLogsCenter />
 
-      <NotificationPreferencesCenter />
+        <NotificationPreferencesCenter />
+      </View>
 
-      <SettingsSectionHeader
-        title={t("Settings Group Enterprise", locale)}
-        subtitle={t("Settings Group Enterprise Subtitle", locale)}
-      />
+      <View onLayout={registerSection("enterprise")}>
+        <SettingsSectionHeader
+          title={t("Settings Group Enterprise", locale)}
+          subtitle={t("Settings Group Enterprise Subtitle", locale)}
+        />
 
-      <TeamRolesCenter />
+        <TeamRolesCenter />
 
-      <EnterpriseSecurityCenter />
+        <EnterpriseSecurityCenter />
 
-      <IntegrationCenter />
+        <IntegrationCenter />
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
