@@ -99,7 +99,7 @@ export default function WorkspaceScreen() {
         </Text>
       </View>
 
-      <ExecutiveCommandDashboard />
+      <ExecutiveCommandDashboard onAction={(section) => scrollToSection(section as any)} />
 
       <SmartNavigationBar onNavigate={(key) => {
         scrollToSection(key);
