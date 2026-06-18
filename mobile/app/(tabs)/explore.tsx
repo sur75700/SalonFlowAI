@@ -11,6 +11,7 @@ import SubscriptionStatusCard from "../../components/settings/SubscriptionStatus
 import PackageCapabilityMatrix from "../../components/subscription/PackageCapabilityMatrix";
 import AIControlCenter from "../../components/subscription/AIControlCenter";
 import SystemStatusCenter from "../../components/system/SystemStatusCenter";
+import AuditLogsCenter from "../../components/system/AuditLogsCenter";
 
 type QuickLinkProps = {
   title: string;
@@ -59,6 +60,8 @@ export default function WorkspaceScreen() {
       <AIControlCenter />
 
       <SystemStatusCenter />
+
+      <AuditLogsCenter />
 
       <PricingPlansCard />
 
