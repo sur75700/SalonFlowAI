@@ -20,6 +20,7 @@ import AIUsageAnalyticsCenter from "../../components/system/AIUsageAnalyticsCent
 import NotificationPreferencesCenter from "../../components/system/NotificationPreferencesCenter";
 import IntegrationCenter from "../../components/system/IntegrationCenter";
 import WorkspaceBrandCenter from "../../components/system/WorkspaceBrandCenter";
+import ExecutiveCommandDashboard from "../../components/system/ExecutiveCommandDashboard";
 
 type QuickLinkProps = {
   title: string;
@@ -66,6 +67,8 @@ export default function WorkspaceScreen() {
           {t("Settings Center Subtitle", locale)}
         </Text>
       </View>
+
+      <ExecutiveCommandDashboard />
 
       <SettingsSectionHeader
         title={t("Settings Group Core", locale)}
