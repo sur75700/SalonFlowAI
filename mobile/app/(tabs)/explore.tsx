@@ -12,6 +12,7 @@ import PackageCapabilityMatrix from "../../components/subscription/PackageCapabi
 import AIControlCenter from "../../components/subscription/AIControlCenter";
 import SystemStatusCenter from "../../components/system/SystemStatusCenter";
 import AuditLogsCenter from "../../components/system/AuditLogsCenter";
+import BillingCenter from "../../components/system/BillingCenter";
 
 type QuickLinkProps = {
   title: string;
@@ -62,6 +63,8 @@ export default function WorkspaceScreen() {
       <SystemStatusCenter />
 
       <AuditLogsCenter />
+
+      <BillingCenter />
 
       <PricingPlansCard />
 
