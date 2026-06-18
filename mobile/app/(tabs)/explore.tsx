@@ -22,6 +22,7 @@ import IntegrationCenter from "../../components/system/IntegrationCenter";
 import WorkspaceBrandCenter from "../../components/system/WorkspaceBrandCenter";
 import ExecutiveCommandDashboard from "../../components/system/ExecutiveCommandDashboard";
 import SmartNavigationBar, { SettingsSectionKey } from "../../components/system/SmartNavigationBar";
+import AccordionSection from "../../components/system/AccordionSection";
 
 type QuickLinkProps = {
   title: string;
@@ -105,70 +106,71 @@ export default function WorkspaceScreen() {
       }} />
 
       <View onLayout={registerSection("core")}>
-        <SettingsSectionHeader
+        <AccordionSection
           title={t("Settings Group Core", locale)}
           subtitle={t("Settings Group Core Subtitle", locale)}
-        />
+          defaultExpanded
+        >
+          <AccountOverviewCard />
 
-        <AccountOverviewCard />
+          <SecurityCard />
 
-        <SecurityCard />
-
-        <WorkspaceBrandCenter />
+          <WorkspaceBrandCenter />
+        </AccordionSection>
       </View>
 
       <View onLayout={registerSection("subscription")}>
-        <SettingsSectionHeader
+        <AccordionSection
           title={t("Settings Group Subscription", locale)}
           subtitle={t("Settings Group Subscription Subtitle", locale)}
-        />
+        >
+          <SubscriptionStatusCard />
 
-        <SubscriptionStatusCard />
+          <PackageCapabilityMatrix />
 
-        <PackageCapabilityMatrix />
+          <BillingCenter />
 
-        <BillingCenter />
+          <SubscriptionSyncCenter />
 
-        <SubscriptionSyncCenter />
-
-        <PricingPlansCard />
+          <PricingPlansCard />
+        </AccordionSection>
       </View>
 
       <View onLayout={registerSection("ai")}>
-        <SettingsSectionHeader
+        <AccordionSection
           title={t("Settings Group AI", locale)}
           subtitle={t("Settings Group AI Subtitle", locale)}
-        />
+        >
+          <AIControlCenter />
 
-        <AIControlCenter />
-
-        <AIUsageAnalyticsCenter />
+          <AIUsageAnalyticsCenter />
+        </AccordionSection>
       </View>
 
       <View onLayout={registerSection("operations")}>
-        <SettingsSectionHeader
+        <AccordionSection
           title={t("Settings Group Operations", locale)}
           subtitle={t("Settings Group Operations Subtitle", locale)}
-        />
+        >
+          <SystemStatusCenter />
 
-        <SystemStatusCenter />
+          <AuditLogsCenter />
 
-        <AuditLogsCenter />
-
-        <NotificationPreferencesCenter />
+          <NotificationPreferencesCenter />
+        </AccordionSection>
       </View>
 
       <View onLayout={registerSection("enterprise")}>
-        <SettingsSectionHeader
+        <AccordionSection
           title={t("Settings Group Enterprise", locale)}
           subtitle={t("Settings Group Enterprise Subtitle", locale)}
-        />
+        >
+          <TeamRolesCenter />
 
-        <TeamRolesCenter />
+          <EnterpriseSecurityCenter />
 
-        <EnterpriseSecurityCenter />
-
-        <IntegrationCenter />
+          <IntegrationCenter />
+        </AccordionSection>
       </View>
 
       <View style={styles.section}>
