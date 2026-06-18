@@ -1606,7 +1606,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Settings Group Enterprise": "Enterprise կառավարում",
     "Settings Group Enterprise Subtitle": "Թիմի դերեր, անվտանգության վիճակ և արտաքին ինտեգրացիաներ։",
 
-    "Executive Command Dashboard": "Գործադիր command dashboard",
+    "Executive Command Dashboard": "Գործադիր կառավարման վահանակ",
     "Executive Command Dashboard Subtitle": "Դիտեք workspace-ի ամբողջական command վիճակը՝ մինչև մանրամասն control center-ներ մտնելը։",
     "Executive Workspace Health": "Workspace health",
     "Executive Workspace Health Value": "96%",
@@ -2292,7 +2292,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Settings Group Enterprise": "Enterprise կառավարում",
     "Settings Group Enterprise Subtitle": "Роли команды, состояние безопасности и внешние интеграции.",
 
-    "Executive Command Dashboard": "Исполнительная command dashboard",
+    "Executive Command Dashboard": "Исполнительная панель управления",
     "Executive Command Dashboard Subtitle": "Просмотрите полное command-состояние workspace перед переходом в детальные control centers.",
     "Executive Workspace Health": "Здоровье workspace",
     "Executive Workspace Health Value": "96%",
