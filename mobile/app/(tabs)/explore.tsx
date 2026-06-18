@@ -10,6 +10,7 @@ import SecurityCard from "../../components/settings/SecurityCard";
 import SubscriptionStatusCard from "../../components/settings/SubscriptionStatusCard";
 import PackageCapabilityMatrix from "../../components/subscription/PackageCapabilityMatrix";
 import AIControlCenter from "../../components/subscription/AIControlCenter";
+import SystemStatusCenter from "../../components/system/SystemStatusCenter";
 
 type QuickLinkProps = {
   title: string;
@@ -56,6 +57,8 @@ export default function WorkspaceScreen() {
       <PackageCapabilityMatrix />
 
       <AIControlCenter />
+
+      <SystemStatusCenter />
 
       <PricingPlansCard />
 
