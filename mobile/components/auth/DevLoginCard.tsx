@@ -122,31 +122,34 @@ export default function DevLoginCard({
   return (
     <AuthScreenShell title={title} subtitle={subtitle}>
 
-      <Text style={styles.modeSwitchActiveHint}>
-        {mode === "signup" ? t.auth.createAccount : t.auth.signIn}
-      </Text>
-
       <View style={styles.modeSwitch}>
-        <ActionButton
-          title={t.auth.signIn}
+        <Text
           onPress={() => {
             setMode("signin");
             setError("");
           }}
-          tone={mode === "signin" ? "success" : "default"}
-          compact
-        />
-        <ActionButton
-          title={t.auth.createAccount}
+          style={[
+            styles.modeButton,
+            mode === "signin" ? styles.modeButtonActive : styles.modeButtonIdle,
+          ]}
+        >
+          {t.auth.signIn}
+        </Text>
+
+        <Text
           onPress={() => {
             setMode("signup");
             setEmail("");
             setPassword("");
             setError("");
           }}
-          tone={mode === "signup" ? "success" : "default"}
-          compact
-        />
+          style={[
+            styles.modeButton,
+            mode === "signup" ? styles.modeButtonActive : styles.modeButtonIdle,
+          ]}
+        >
+          {t.auth.createAccount}
+        </Text>
       </View>
 
       <View style={styles.badge}>
@@ -249,20 +252,32 @@ export default function DevLoginCard({
 
 const styles = StyleSheet.create({
 
-  modeSwitchActiveHint: {
-    color: "#f2d17a",
-    fontSize: UI.font.tiny,
-    fontWeight: "900",
-    letterSpacing: 0.8,
-    marginBottom: UI.spacing.sm,
-    textTransform: "uppercase",
-  },
-
   modeSwitch: {
     flexDirection: "row",
     gap: 10,
     flexWrap: "wrap",
     marginBottom: UI.spacing.md,
+  },
+  modeButton: {
+    borderRadius: UI.radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: UI.spacing.md,
+    paddingVertical: UI.spacing.sm,
+    fontSize: UI.font.tiny,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    overflow: "hidden",
+    textTransform: "uppercase",
+  },
+  modeButtonActive: {
+    backgroundColor: "rgba(242,209,122,0.16)",
+    borderColor: "#f2d17a",
+    color: "#f2d17a",
+  },
+  modeButtonIdle: {
+    backgroundColor: "#11131a",
+    borderColor: "#31384a",
+    color: "#c9c2cf",
   },
   badge: {
     alignSelf: "flex-start",
