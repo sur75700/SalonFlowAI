@@ -20,6 +20,10 @@ class RegisterRequest(BaseModel):
     password: str
     full_name: str
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 
 @router.post("/register")
 async def register(payload: RegisterRequest):
@@ -68,6 +72,53 @@ async def register(payload: RegisterRequest):
             "email_verified": False,
         },
     }
+
+
+
+@router.post("/change-password")
+async def change_password(
+    payload: ChangePasswordRequest,
+    auth: dict = Depends(require_auth),
+):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    admin_id = auth.get("admin_id")
+    if not admin_id or not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = await db.admin_users.find_one({"_id": ObjectId(admin_id)})
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    current_password = payload.current_password.strip()
+    new_password = payload.new_password.strip()
+
+    password_hash = user.get("password_hash")
+    if not password_hash or not verify_password(current_password, password_hash):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+
+    if verify_password(new_password, password_hash):
+        raise HTTPException(status_code=400, detail="New password must be different")
+
+    now = datetime.now(UTC).isoformat()
+
+    await db.admin_users.update_one(
+        {"_id": ObjectId(admin_id)},
+        {
+            "$set": {
+                "password_hash": hash_password(new_password),
+                "updated_at": now,
+                "password_changed_at": now,
+            }
+        },
+    )
+
+    return {"ok": True, "message": "Password changed successfully"}
 
 
 @router.get("/me")
