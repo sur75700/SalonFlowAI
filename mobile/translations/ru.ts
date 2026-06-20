@@ -25,6 +25,8 @@ const ru = {
     passwordMismatch: "Пароли не совпадают",
     accountCreated: "Аккаунт успешно создан",
     createAccountFailed: "Не удалось создать аккаунт",
+    accountAlreadyExists: "Аккаунт уже существует",
+    invalidEmail: "Введите корректный e-mail адрес",
     createWorkspaceTitle: "Создайте workspace SalonFlowAI",
     sessionRecoveryTitle: "Восстановление сессии",
     createWorkspaceSubtitle: "Создайте аккаунт owner и сразу войдите в свой workspace.",

@@ -25,6 +25,8 @@ const hy = {
     passwordMismatch: "Գաղտնաբառերը չեն համընկնում",
     accountCreated: "Հաշիվը հաջողությամբ ստեղծվեց",
     createAccountFailed: "Հաշիվ ստեղծելը չհաջողվեց",
+    accountAlreadyExists: "Այս հաշիվն արդեն գոյություն ունի",
+    invalidEmail: "Խնդրում ենք մուտքագրել վավեր էլ. հասցե",
     createWorkspaceTitle: "Ստեղծեք ձեր SalonFlowAI workspace-ը",
     sessionRecoveryTitle: "Սեսիայի վերականգնում",
     createWorkspaceSubtitle: "Ստեղծեք owner հաշիվ և անմիջապես մտեք ձեր workspace։",

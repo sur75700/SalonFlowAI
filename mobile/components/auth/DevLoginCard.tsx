@@ -38,6 +38,20 @@ export default function DevLoginCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const getLocalizedAuthError = (err: any, fallback: string) => {
+    const message = getErrorMessage(err, fallback).toLowerCase();
+
+    if (message.includes("account already exists")) {
+      return t.auth.accountAlreadyExists;
+    }
+
+    if (message.includes("valid email") || message.includes("email address")) {
+      return t.auth.invalidEmail;
+    }
+
+    return getErrorMessage(err, fallback);
+  };
+
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
       const message = "Email and password are required";
@@ -101,7 +115,7 @@ export default function DevLoginCard({
       setToken(token);
       showToast(t.auth.accountCreated, "success");
     } catch (err: any) {
-      const message = getErrorMessage(err, t.auth.createAccountFailed);
+      const message = getLocalizedAuthError(err, t.auth.createAccountFailed);
       setError(message);
       showToast(message, "error");
     } finally {

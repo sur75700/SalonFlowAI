@@ -25,6 +25,8 @@ const fr = {
     passwordMismatch: "Les mots de passe ne correspondent pas",
     accountCreated: "Compte créé avec succès",
     createAccountFailed: "Échec de la création du compte",
+    accountAlreadyExists: "Ce compte existe déjà",
+    invalidEmail: "Veuillez saisir une adresse e-mail valide",
     createWorkspaceTitle: "Créez votre workspace SalonFlowAI",
     sessionRecoveryTitle: "Récupération de session",
     createWorkspaceSubtitle: "Créez un compte owner et entrez instantanément dans votre workspace.",

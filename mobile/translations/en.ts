@@ -25,6 +25,8 @@ const en = {
     passwordMismatch: "Passwords do not match",
     accountCreated: "Account created successfully",
     createAccountFailed: "Failed to create account",
+    accountAlreadyExists: "Account already exists",
+    invalidEmail: "Please enter a valid email address",
     createWorkspaceTitle: "Create your SalonFlowAI workspace",
     sessionRecoveryTitle: "Session Recovery",
     createWorkspaceSubtitle: "Create an owner account and enter your workspace instantly.",
