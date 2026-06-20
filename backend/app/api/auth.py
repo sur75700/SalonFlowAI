@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 
-from app.core.security import create_access_token, verify_password
+from app.core.security import create_access_token, hash_password, verify_password
 from app.db.mongo import get_database
 
 router = APIRouter()
@@ -12,6 +12,60 @@ router = APIRouter()
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+
+
+@router.post("/register")
+async def register(payload: RegisterRequest):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    email = payload.email.lower().strip()
+    full_name = payload.full_name.strip()
+    password = payload.password.strip()
+
+    if len(full_name) < 2:
+        raise HTTPException(status_code=400, detail="Full name is required")
+
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    existing = await db.admin_users.find_one({"email": email})
+    if existing is not None:
+        raise HTTPException(status_code=409, detail="Account already exists")
+
+    now = datetime.now(UTC).isoformat()
+
+    doc = {
+        "email": email,
+        "full_name": full_name,
+        "password_hash": hash_password(password),
+        "role": "owner",
+        "email_verified": False,
+        "created_at": now,
+        "updated_at": now,
+        "last_login_at": now,
+    }
+
+    result = await db.admin_users.insert_one(doc)
+    token = create_access_token(str(result.inserted_id))
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "admin": {
+            "id": str(result.inserted_id),
+            "email": email,
+            "full_name": full_name,
+            "role": "owner",
+            "email_verified": False,
+        },
+    }
 
 
 @router.post("/login")
