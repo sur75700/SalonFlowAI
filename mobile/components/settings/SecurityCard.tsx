@@ -9,7 +9,7 @@ import { UI } from "../../lib/theme/tokens";
 
 export default function SecurityCard() {
   const { locale } = useAppPreferences();
-  const { sessionEmail } = useSession();
+  const { sessionEmail, sessionUser } = useSession();
   const { logout, loggingOut } = useLogout();
 
   return (
@@ -24,7 +24,7 @@ export default function SecurityCard() {
 
       <View style={styles.row}>
         <Text style={styles.label}>{t("Account Email", locale)}</Text>
-        <Text style={styles.value}>{sessionEmail || "—"}</Text>
+        <Text style={styles.value}>{sessionUser?.email || sessionEmail || "—"}</Text>
       </View>
 
       <View style={styles.actions}>

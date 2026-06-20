@@ -25,6 +25,25 @@ export function authHeaders(token?: string) {
     : {};
 }
 
+
+export type CurrentUser = {
+  id: string;
+  email?: string;
+  full_name?: string;
+  role?: string;
+  email_verified?: boolean;
+  last_login_at?: string;
+  created_at?: string;
+};
+
+export async function fetchCurrentUser(token: string): Promise<CurrentUser> {
+  const response = await api.get("/auth/me", {
+    headers: authHeaders(token),
+  });
+
+  return response.data;
+}
+
 export function isAuthError(err: any): boolean {
   const status = err?.response?.status;
   return status === 401 || status === 403;

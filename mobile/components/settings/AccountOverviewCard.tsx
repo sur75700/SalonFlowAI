@@ -7,7 +7,7 @@ import { UI } from "../../lib/theme/tokens";
 
 export default function AccountOverviewCard() {
   const { locale } = useAppPreferences();
-  const { sessionEmail } = useSession();
+  const { sessionEmail, sessionUser } = useSession();
 
   return (
     <View style={styles.card}>
@@ -21,7 +21,7 @@ export default function AccountOverviewCard() {
 
       <View style={styles.row}>
         <Text style={styles.label}>{t("Account Role", locale)}</Text>
-        <Text style={styles.value}>{t("Account Role Owner", locale)}</Text>
+        <Text style={styles.value}>{sessionUser?.role || t("Account Role Owner", locale)}</Text>
       </View>
 
       <View style={styles.row}>
@@ -31,7 +31,9 @@ export default function AccountOverviewCard() {
 
       <View style={styles.row}>
         <Text style={styles.label}>{t("Account Status", locale)}</Text>
-        <Text style={styles.active}>{t("Account Status Active", locale)}</Text>
+        <Text style={styles.active}>
+          {sessionUser?.email_verified === false ? "Email pending verification" : t("Account Status Active", locale)}
+        </Text>
       </View>
     </View>
   );

@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   clearStoredToken,
+  fetchCurrentUser,
   readStoredToken,
   writeStoredToken,
+  type CurrentUser,
 } from "../lib/api";
 import { getTokenEmail } from "../lib/jwt";
 
@@ -40,6 +42,8 @@ function notifySessionChanged(nextToken: string) {
 
 export function useSession() {
   const [token, setTokenState] = useState("");
+  const [sessionUser, setSessionUser] = useState<CurrentUser | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [booting, setBooting] = useState(true);
 
   useEffect(() => {
@@ -73,23 +77,63 @@ export function useSession() {
     };
   }, []);
 
+
+  useEffect(() => {
+    let active = true;
+
+    const loadProfile = async () => {
+      if (!token) {
+        setSessionUser(null);
+        return;
+      }
+
+      try {
+        setProfileLoading(true);
+        const profile = await fetchCurrentUser(token);
+        if (active) {
+          setSessionUser(profile);
+        }
+      } catch {
+        if (active) {
+          setSessionUser(null);
+        }
+      } finally {
+        if (active) {
+          setProfileLoading(false);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
   const setToken = (nextToken: string) => {
     writeStoredToken(nextToken);
     notifySessionChanged(nextToken);
   };
 
   const clearToken = () => {
+    setSessionUser(null);
     clearStoredToken();
     notifySessionChanged("");
   };
 
-  const sessionEmail = useMemo(() => getTokenEmail(token), [token]);
+  const sessionEmail = useMemo(
+    () => sessionUser?.email || getTokenEmail(token),
+    [sessionUser?.email, token]
+  );
 
   return {
     token,
     setToken,
     clearToken,
     booting,
+    profileLoading,
     sessionEmail,
+    sessionUser,
   };
 }
