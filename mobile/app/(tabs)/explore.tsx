@@ -54,6 +54,7 @@ function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
 
 export default function WorkspaceScreen() {
   const { locale } = useAppPreferences();
+  const [foundationExpanded, setFoundationExpanded] = useState(false);
   const openDocs = () => {
     Linking.openURL("https://salonflowai-backend.onrender.com/docs");
   };
@@ -236,14 +237,25 @@ export default function WorkspaceScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("Support Notes", locale)}</Text>
-        <View style={styles.noteCard}>
-          <Text style={styles.noteText}>
-            {t("Operator Notes Line One", locale)}
+        <Pressable
+          style={styles.foundationCard}
+          onPress={() => setFoundationExpanded((current) => !current)}
+        >
+          <Text style={styles.foundationKicker}>
+            {foundationExpanded ? "▼" : "▶"} {t("Ghoststage Foundation Kicker", locale)}
           </Text>
-          <Text style={styles.noteText}>
-            {t("Operator NotesLineTwo", locale)}
+          <Text style={styles.foundationLead}>
+            {t("Ghoststage Foundation Lead", locale)}
           </Text>
-        </View>
+
+          {foundationExpanded ? (
+            <View style={styles.foundationDetails}>
+              <Text style={styles.foundationText}>{t("Operator Notes Line One", locale)}</Text>
+              <Text style={styles.foundationText}>{t("Operator NotesLineTwo", locale)}</Text>
+              <Text style={styles.foundationSignature}>{t("Ghoststage Foundation Signature", locale)}</Text>
+            </View>
+          ) : null}
+        </Pressable>
       </View>
       </ScrollView>
     </RoyalCosmosBackground>
@@ -330,6 +342,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  foundationCard: {
+    backgroundColor: "rgba(15,23,42,0.86)",
+    borderWidth: 1,
+    borderColor: "rgba(242,209,122,0.45)",
+    borderRadius: 18,
+    padding: 16,
+    gap: 8,
+  },
+  foundationKicker: {
+    color: "#f2d17a",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  foundationLead: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+  foundationDetails: {
+    marginTop: 8,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(242,209,122,0.22)",
+    paddingTop: 12,
+  },
+  foundationText: {
+    color: "#d7d2de",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  foundationSignature: {
+    color: "#f2d17a",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    marginTop: 4,
+  },
+
   noteCard: {
     backgroundColor: "#11131a",
     borderWidth: 1,

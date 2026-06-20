@@ -195,7 +195,9 @@ const dict: Record<string, string> = {
   "Open API Console Subtitle": "Review the secured API documentation and integration endpoints.",
   "Check System Health": "Check System Health",
   "Check System Health Subtitle": "Verify the production backend health endpoint.",
-  "Support Notes": "🛡 GHOSTSTAGE Foundation",
+    "Support Notes": "🛡 GHOSTSTAGE Foundation",
+  "Ghoststage Foundation Kicker": "Product foundation",
+  "Ghoststage Foundation Lead": "Tap to reveal the principles behind SalonFlowAI.",
   "Subscription Center": "Subscription Center",
   "Subscription Status Active": "Active subscription",
   "Subscription Billing Placeholder": "Billing and renewal automation will be connected in the billing phase.",
@@ -937,6 +939,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check System Health": "Vérifier l’état du système",
     "Check System Health Subtitle": "Vérifier l’endpoint de santé du backend production.",
     "Support Notes": "🛡 Fondation GHOSTSTAGE",
+    "Ghoststage Foundation Kicker": "Fondation produit",
+    "Ghoststage Foundation Lead": "Touchez pour découvrir les principes derrière SalonFlowAI.",
 
     "Security Center": "Centre de sécurité",
     "Security Session": "Session",
@@ -1334,7 +1338,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check Backend Health Subtitle": "Ouvrir l’endpoint production /healthz.",
     "Operator Notes": "Notes opérateur",
     "Operator Notes Line One": "Fondé sur l’intégrité du workspace, la sécurité opérationnelle et le contrôle IA centré sur l’humain.",
-    "Operator NotesLineTwo": "Conçu pour les salons professionnels, les équipes en croissance et les opérations enterprise. Engineered by GHOSTSTAGE.",
+    "Operator NotesLineTwo": "Conçu pour les salons professionnels, les équipes en croissance et les opérations enterprise.",
+    "Ghoststage Foundation Signature": "Engineered by GHOSTSTAGE.",
 
     "Session Unavailable Subtitle": "Connectez-vous pour accéder à cet espace.",
     "Admin credentials loaded": "Identifiants admin chargés",
@@ -1687,6 +1692,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check System Health": "Ստուգել համակարգի վիճակը",
     "Check System Health Subtitle": "Ստուգել production backend-ի առողջության endpoint-ը։",
     "Support Notes": "🛡 GHOSTSTAGE հիմք",
+    "Ghoststage Foundation Kicker": "Արտադրանքի հիմք",
+    "Ghoststage Foundation Lead": "Սեղմեք՝ բացահայտելու SalonFlowAI-ի հիմքում դրված սկզբունքները։",
 
     "Security Center": "Անվտանգության կենտրոն",
     "Security Session": "Սեսիա",
@@ -2040,7 +2047,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check Backend Health Subtitle": "Բացել production /healthz ստուգման endpoint-ը։",
     "Operator Notes": "Օպերատորի նշումներ",
     "Operator Notes Line One": "Հիմնված է workspace-ի ամբողջականության, գործառնական անվտանգության և մարդակենտրոն AI վերահսկման սկզբունքների վրա։",
-    "Operator NotesLineTwo": "Կառուցված է պրոֆեսիոնալ սրահների, աճող թիմերի և enterprise մակարդակի աշխատանքի համար։ Engineered by GHOSTSTAGE.",
+    "Operator NotesLineTwo": "Կառուցված է պրոֆեսիոնալ սրահների, աճող թիմերի և enterprise մակարդակի աշխատանքի համար։",
+    "Ghoststage Foundation Signature": "Engineered by GHOSTSTAGE.",
 
   },
   ru: {
@@ -2373,6 +2381,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check System Health": "Проверить состояние системы",
     "Check System Health Subtitle": "Проверить production endpoint здоровья backend.",
     "Support Notes": "🛡 Основа GHOSTSTAGE",
+    "Ghoststage Foundation Kicker": "Основа продукта",
+    "Ghoststage Foundation Lead": "Нажмите, чтобы раскрыть принципы, на которых построен SalonFlowAI.",
 
     "Security Center": "Центр безопасности",
     "Security Session": "Сессия",
@@ -2741,7 +2751,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check Backend Health Subtitle": "Открыть production endpoint /healthz.",
     "Operator Notes": "Заметки оператора",
     "Operator Notes Line One": "Построено на принципах целостности workspace, операционной безопасности и человеко-центричного AI-контроля.",
-    "Operator NotesLineTwo": "Создано для профессиональных салонов, растущих команд и enterprise-операций. Engineered by GHOSTSTAGE.",
+    "Operator NotesLineTwo": "Создано для профессиональных салонов, растущих команд и enterprise-операций.",
+    "Ghoststage Foundation Signature": "Engineered by GHOSTSTAGE.",
 
   },
 };
