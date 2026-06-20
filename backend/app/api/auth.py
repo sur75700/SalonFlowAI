@@ -1,8 +1,10 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
+from bson import ObjectId
 
+from app.api.deps import require_auth
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.mongo import get_database
 
@@ -65,6 +67,31 @@ async def register(payload: RegisterRequest):
             "role": "owner",
             "email_verified": False,
         },
+    }
+
+
+@router.get("/me")
+async def get_current_user(auth: dict = Depends(require_auth)):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    admin_id = auth.get("admin_id")
+    if not admin_id or not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = await db.admin_users.find_one({"_id": ObjectId(admin_id)})
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "id": str(user["_id"]),
+        "email": user.get("email"),
+        "full_name": user.get("full_name"),
+        "role": user.get("role", "owner"),
+        "email_verified": bool(user.get("email_verified", False)),
+        "last_login_at": user.get("last_login_at"),
+        "created_at": user.get("created_at"),
     }
 
 
