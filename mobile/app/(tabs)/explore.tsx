@@ -24,6 +24,8 @@ import ExecutiveCommandDashboard from "../../components/system/ExecutiveCommandD
 import SmartNavigationBar, { SettingsSectionKey } from "../../components/system/SmartNavigationBar";
 import AccordionSection from "../../components/system/AccordionSection";
 
+const EXECUTIVE_MODE_ENABLED = false;
+
 type QuickLinkProps = {
   title: string;
   subtitle: string;
@@ -99,11 +101,15 @@ export default function WorkspaceScreen() {
         </Text>
       </View>
 
-      <ExecutiveCommandDashboard onAction={(section) => scrollToSection(section as any)} />
+      {EXECUTIVE_MODE_ENABLED ? (
+        <ExecutiveCommandDashboard onAction={(section) => scrollToSection(section as any)} />
+      ) : null}
 
-      <SmartNavigationBar onNavigate={(key) => {
-        scrollToSection(key);
-      }} />
+      {EXECUTIVE_MODE_ENABLED ? (
+        <SmartNavigationBar onNavigate={(key) => {
+          scrollToSection(key);
+        }} />
+      ) : null}
 
       <View onLayout={registerSection("core")}>
         <AccordionSection
