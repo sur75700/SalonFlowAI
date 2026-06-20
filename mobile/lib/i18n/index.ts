@@ -195,7 +195,7 @@ const dict: Record<string, string> = {
   "Open API Console Subtitle": "Review the secured API documentation and integration endpoints.",
   "Check System Health": "Check System Health",
   "Check System Health Subtitle": "Verify the production backend health endpoint.",
-    "Support Notes": "🛡 GHOSTSTAGE Foundation",
+  "Support Notes": "🛡 GHOSTSTAGE Foundation",
   "Ghoststage Foundation Kicker": "Product foundation",
   "Ghoststage Foundation Lead": "Built for modern salons that demand reliability, automation, intelligence, and operational excellence.",
   "Operator Notes Line One": "🛡 Security-first architecture, workspace isolation, role-based access, and protected operational boundaries.",

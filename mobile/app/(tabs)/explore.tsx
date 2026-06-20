@@ -34,15 +34,6 @@ type QuickLinkProps = {
 };
 
 
-function SettingsSectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <View style={styles.groupHeader}>
-      <Text style={styles.groupTitle}>{title}</Text>
-      <Text style={styles.groupSubtitle}>{subtitle}</Text>
-    </View>
-  );
-}
-
 function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
   return (
     <Pressable onPress={onPress} style={styles.linkCard}>
