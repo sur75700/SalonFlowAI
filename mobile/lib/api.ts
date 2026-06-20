@@ -25,7 +25,6 @@ export function authHeaders(token?: string) {
     : {};
 }
 
-
 export type CurrentUser = {
   id: string;
   email?: string;
@@ -40,6 +39,25 @@ export async function fetchCurrentUser(token: string): Promise<CurrentUser> {
   const response = await api.get("/auth/me", {
     headers: authHeaders(token),
   });
+
+  return response.data;
+}
+
+export async function changePassword(
+  token: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<{ ok: boolean; message: string }> {
+  const response = await api.post(
+    "/auth/change-password",
+    {
+      current_password: currentPassword,
+      new_password: newPassword,
+    },
+    {
+      headers: authHeaders(token),
+    }
+  );
 
   return response.data;
 }
