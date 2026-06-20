@@ -14,6 +14,7 @@ const ru = {
     restoreSessionLoading: "Восстановление сессии...",
     loadAdminAccess: "Открыть админ-доступ",
     signIn: "Войти",
+    signInFailed: "Не удалось войти",
     createAccount: "Создать аккаунт",
     fullName: "Полное имя",
     confirmPassword: "Подтвердить пароль",

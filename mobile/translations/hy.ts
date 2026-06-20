@@ -14,6 +14,7 @@ const hy = {
     restoreSessionLoading: "Սեսիան վերականգնվում է...",
     loadAdminAccess: "Բացել ադմին մուտքը",
     signIn: "Մուտք գործել",
+    signInFailed: "Մուտք գործելը չհաջողվեց",
     createAccount: "Ստեղծել հաշիվ",
     fullName: "Ամբողջական անուն",
     confirmPassword: "Հաստատել գաղտնաբառը",

@@ -58,7 +58,7 @@ export default function DevLoginCard({
       setToken(token);
       showToast("Admin session restored", "success");
     } catch (err: any) {
-      const message = getErrorMessage(err, "Failed to sign in");
+      const message = getErrorMessage(err, t.auth.signInFailed);
       setError(message);
       showToast(message, "error");
     } finally {
@@ -121,6 +121,10 @@ export default function DevLoginCard({
 
   return (
     <AuthScreenShell title={title} subtitle={subtitle}>
+
+      <Text style={styles.modeSwitchActiveHint}>
+        {mode === "signup" ? t.auth.createAccount : t.auth.signIn}
+      </Text>
 
       <View style={styles.modeSwitch}>
         <ActionButton
@@ -191,7 +195,7 @@ export default function DevLoginCard({
 
       {mode === "signup" ? (
         <>
-          <Text style={styles.label}>Confirm password</Text>
+          <Text style={styles.label}>{t.auth.confirmPassword}</Text>
           <TextInput
             style={styles.input}
             placeholder={t.auth.confirmPassword}
@@ -244,6 +248,15 @@ export default function DevLoginCard({
 }
 
 const styles = StyleSheet.create({
+
+  modeSwitchActiveHint: {
+    color: "#f2d17a",
+    fontSize: UI.font.tiny,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    marginBottom: UI.spacing.sm,
+    textTransform: "uppercase",
+  },
 
   modeSwitch: {
     flexDirection: "row",

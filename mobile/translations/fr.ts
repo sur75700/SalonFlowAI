@@ -14,6 +14,7 @@ const fr = {
     restoreSessionLoading: "Restauration de la session...",
     loadAdminAccess: "Ouvrir l'accès admin",
     signIn: "Connexion",
+    signInFailed: "Échec de la connexion",
     createAccount: "Créer un compte",
     fullName: "Nom complet",
     confirmPassword: "Confirmer le mot de passe",
