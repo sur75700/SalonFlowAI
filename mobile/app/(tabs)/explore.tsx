@@ -25,6 +25,7 @@ import SmartNavigationBar, { SettingsSectionKey } from "../../components/system/
 import AccordionSection from "../../components/system/AccordionSection";
 
 const EXECUTIVE_MODE_ENABLED = false;
+const INTERNAL_TOOLS_ENABLED = false;
 
 type QuickLinkProps = {
   title: string;
@@ -179,55 +180,59 @@ export default function WorkspaceScreen() {
         </AccordionSection>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
+      {INTERNAL_TOOLS_ENABLED ? (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
 
-        <QuickLink
-          title={t("Open Dashboard", locale)}
-          subtitle={t("Open DashboardSubtitle", locale)}
-          onPress={() => router.navigate("/(tabs)")}
-        />
-        <QuickLink
-          title={t("Open Bookings", locale)}
-          subtitle={t("Open Bookings Subtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/appointments")}
-        />
-        <QuickLink
-          title={t("Open Clients", locale)}
-          subtitle={t("Open ClientsSubtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/clients")}
-        />
-        <QuickLink
-          title={t("Open Service Catalog", locale)}
-          subtitle={t("Open Service Catalog Subtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/services")}
-        />
-        <QuickLink
-          title={t("Open Insights", locale)}
-          subtitle={t("Open Insights Subtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/analytics")}
-        />
-        <QuickLink
-          title={t("Open Pdf Reports", locale)}
-          subtitle={t("Open Pdf ReportsSubtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/reports")}
-        />
-      </View>
+            <QuickLink
+              title={t("Open Dashboard", locale)}
+              subtitle={t("Open DashboardSubtitle", locale)}
+              onPress={() => router.navigate("/(tabs)")}
+            />
+            <QuickLink
+              title={t("Open Bookings", locale)}
+              subtitle={t("Open Bookings Subtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/appointments")}
+            />
+            <QuickLink
+              title={t("Open Clients", locale)}
+              subtitle={t("Open ClientsSubtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/clients")}
+            />
+            <QuickLink
+              title={t("Open Service Catalog", locale)}
+              subtitle={t("Open Service Catalog Subtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/services")}
+            />
+            <QuickLink
+              title={t("Open Insights", locale)}
+              subtitle={t("Open Insights Subtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/analytics")}
+            />
+            <QuickLink
+              title={t("Open Pdf Reports", locale)}
+              subtitle={t("Open Pdf ReportsSubtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/reports")}
+            />
+          </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("System Tools", locale)}</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("System Tools", locale)}</Text>
 
-        <QuickLink
-          title={t("Open API Console", locale)}
-          subtitle={t("Open API Console Subtitle", locale)}
-          onPress={openDocs}
-        />
-        <QuickLink
-          title={t("Check System Health", locale)}
-          subtitle={t("Check System Health Subtitle", locale)}
-          onPress={openBackend}
-        />
-      </View>
+            <QuickLink
+              title={t("Open API Console", locale)}
+              subtitle={t("Open API Console Subtitle", locale)}
+              onPress={openDocs}
+            />
+            <QuickLink
+              title={t("Check System Health", locale)}
+              subtitle={t("Check System Health Subtitle", locale)}
+              onPress={openBackend}
+            />
+          </View>
+        </>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("Support Notes", locale)}</Text>
