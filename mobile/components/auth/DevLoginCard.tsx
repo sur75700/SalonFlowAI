@@ -14,7 +14,7 @@ import AuthScreenShell from "./AuthScreenShell";
 import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
-import { saveTokenFromCredentials } from "../../lib/api";
+import { registerAccount, saveTokenFromCredentials } from "../../lib/api";
 import { useAppLanguage } from "../../contexts/LanguageContext";
 
 type DevLoginCardProps = {
@@ -30,8 +30,11 @@ export default function DevLoginCard({
   const { setToken } = useSession();
   const { showToast } = useToast();
 
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState<string>(DEFAULTS.adminEmail);
   const [password, setPassword] = useState<string>(DEFAULTS.adminPassword);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -63,15 +66,85 @@ export default function DevLoginCard({
     }
   };
 
+  const handleCreateAccount = async () => {
+    if (!fullName.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      const message = t.auth.allAccountFieldsRequired;
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
+
+    if (password.trim().length < 8) {
+      const message = t.auth.passwordMinLength;
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
+
+    if (password.trim() !== confirmPassword.trim()) {
+      const message = t.auth.passwordMismatch;
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = await registerAccount(
+        fullName.trim(),
+        email.trim(),
+        password.trim()
+      );
+
+      setToken(token);
+      showToast(t.auth.accountCreated, "success");
+    } catch (err: any) {
+      const message = getErrorMessage(err, t.auth.createAccountFailed);
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const useDemoAccount = () => {
+    setMode("signin");
+    setFullName("");
     setEmail(DEFAULTS.adminEmail);
     setPassword(DEFAULTS.adminPassword);
+    setConfirmPassword("");
     setError("");
     showToast("Admin credentials loaded", "info");
   };
 
   return (
     <AuthScreenShell title={title} subtitle={subtitle}>
+
+      <View style={styles.modeSwitch}>
+        <ActionButton
+          title={t.auth.signIn}
+          onPress={() => {
+            setMode("signin");
+            setError("");
+          }}
+          tone={mode === "signin" ? "success" : "default"}
+          compact
+        />
+        <ActionButton
+          title={t.auth.createAccount}
+          onPress={() => {
+            setMode("signup");
+            setEmail("");
+            setPassword("");
+            setError("");
+          }}
+          tone={mode === "signup" ? "success" : "default"}
+          compact
+        />
+      </View>
+
       <View style={styles.badge}>
         <Text style={styles.badgeText}>{t.auth.adminRecoveryBadge}</Text>
       </View>
@@ -80,6 +153,19 @@ export default function DevLoginCard({
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
+      ) : null}
+
+      {mode === "signup" ? (
+        <>
+          <Text style={styles.label}>{t.auth.fullName}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t.auth.fullName}
+            placeholderTextColor="#938b9d"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+        </>
       ) : null}
 
       <Text style={styles.label}>{t.auth.email}</Text>
@@ -103,21 +189,48 @@ export default function DevLoginCard({
         secureTextEntry
       />
 
+      {mode === "signup" ? (
+        <>
+          <Text style={styles.label}>Confirm password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t.auth.confirmPassword}
+            placeholderTextColor="#938b9d"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+          />
+        </>
+      ) : null}
+
       <View style={styles.actions}>
         <ActionButton
-          title={loading ? t.auth.restoreSessionLoading : t.auth.restoreSession}
-          onPress={handleSignIn}
+          title={
+            loading
+              ? mode === "signup"
+                ? t.auth.creatingAccount
+                : t.auth.restoreSessionLoading
+              : mode === "signup"
+                ? t.auth.createAccount
+                : t.auth.restoreSession
+          }
+          onPress={mode === "signup" ? handleCreateAccount : handleSignIn}
           disabled={loading}
           tone="success"
         />
-        <ActionButton title={t.auth.loadAdminAccess} onPress={useDemoAccount} />
+        {mode === "signin" ? (
+          <ActionButton title={t.auth.loadAdminAccess} onPress={useDemoAccount} />
+        ) : null}
       </View>
 
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Session Recovery</Text>
+        <Text style={styles.infoTitle}>
+          {mode === "signup" ? t.auth.createWorkspaceTitle : t.auth.sessionRecoveryTitle}
+        </Text>
         <Text style={styles.infoText}>
-          If your access token expires, SalonFlow AI returns you here so you can
-          restore admin access without losing momentum.
+          {mode === "signup"
+            ? t.auth.createWorkspaceSubtitle
+            : t.auth.sessionRecoverySubtitle}
         </Text>
       </View>
 
@@ -131,6 +244,13 @@ export default function DevLoginCard({
 }
 
 const styles = StyleSheet.create({
+
+  modeSwitch: {
+    flexDirection: "row",
+    gap: 10,
+    flexWrap: "wrap",
+    marginBottom: UI.spacing.md,
+  },
   badge: {
     alignSelf: "flex-start",
     backgroundColor: "#1b1f2a",
