@@ -195,7 +195,7 @@ const dict: Record<string, string> = {
   "Open API Console Subtitle": "Review the secured API documentation and integration endpoints.",
   "Check System Health": "Check System Health",
   "Check System Health Subtitle": "Verify the production backend health endpoint.",
-  "Support Notes": "🛡 GHOSTSTAGE Security Layer",
+  "Support Notes": "🛡 GHOSTSTAGE Foundation",
   "Subscription Center": "Subscription Center",
   "Subscription Status Active": "Active subscription",
   "Subscription Billing Placeholder": "Billing and renewal automation will be connected in the billing phase.",
@@ -936,7 +936,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Open API Console Subtitle": "Consulter la documentation API sécurisée et les endpoints d’intégration.",
     "Check System Health": "Vérifier l’état du système",
     "Check System Health Subtitle": "Vérifier l’endpoint de santé du backend production.",
-    "Support Notes": "🛡 Couche de sécurité GHOSTSTAGE",
+    "Support Notes": "🛡 Fondation GHOSTSTAGE",
 
     "Security Center": "Centre de sécurité",
     "Security Session": "Session",
@@ -1333,8 +1333,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check Backend Health": "Vérifier la santé du backend",
     "Check Backend Health Subtitle": "Ouvrir l’endpoint production /healthz.",
     "Operator Notes": "Notes opérateur",
-    "Operator Notes Line One": "L’intégrité du workspace, les opérations sécurisées et la surveillance assistée par IA sont actives.",
-    "Operator NotesLineTwo": "Environnement production protégé par GHOSTSTAGE.",
+    "Operator Notes Line One": "Fondé sur l’intégrité du workspace, la sécurité opérationnelle et le contrôle IA centré sur l’humain.",
+    "Operator NotesLineTwo": "Conçu pour les salons professionnels, les équipes en croissance et les opérations enterprise. Engineered by GHOSTSTAGE.",
 
     "Session Unavailable Subtitle": "Connectez-vous pour accéder à cet espace.",
     "Admin credentials loaded": "Identifiants admin chargés",
@@ -1686,7 +1686,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Open API Console Subtitle": "Դիտել պաշտպանված API փաստաթղթերը և ինտեգրման endpoint-ները։",
     "Check System Health": "Ստուգել համակարգի վիճակը",
     "Check System Health Subtitle": "Ստուգել production backend-ի առողջության endpoint-ը։",
-    "Support Notes": "🛡 GHOSTSTAGE անվտանգության շերտ",
+    "Support Notes": "🛡 GHOSTSTAGE հիմք",
 
     "Security Center": "Անվտանգության կենտրոն",
     "Security Session": "Սեսիա",
@@ -2039,8 +2039,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check Backend Health": "Ստուգել backend-ի առողջությունը",
     "Check Backend Health Subtitle": "Բացել production /healthz ստուգման endpoint-ը։",
     "Operator Notes": "Օպերատորի նշումներ",
-    "Operator Notes Line One": "Workspace-ի ամբողջականությունը, անվտանգ աշխատանքային հոսքերը և AI աջակցությամբ մշտադիտարկումը ակտիվ են։",
-    "Operator NotesLineTwo": "Production մակարդակի միջավայրը պաշտպանված է GHOSTSTAGE-ի կողմից։",
+    "Operator Notes Line One": "Հիմնված է workspace-ի ամբողջականության, գործառնական անվտանգության և մարդակենտրոն AI վերահսկման սկզբունքների վրա։",
+    "Operator NotesLineTwo": "Կառուցված է պրոֆեսիոնալ սրահների, աճող թիմերի և enterprise մակարդակի աշխատանքի համար։ Engineered by GHOSTSTAGE.",
 
   },
   ru: {
@@ -2372,7 +2372,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Open API Console Subtitle": "Просмотреть защищенную API-документацию и endpoints для интеграций.",
     "Check System Health": "Проверить состояние системы",
     "Check System Health Subtitle": "Проверить production endpoint здоровья backend.",
-    "Support Notes": "🛡 Слой безопасности GHOSTSTAGE",
+    "Support Notes": "🛡 Основа GHOSTSTAGE",
 
     "Security Center": "Центр безопасности",
     "Security Session": "Сессия",
@@ -2740,8 +2740,8 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Check Backend Health": "Проверить здоровье backend",
     "Check Backend Health Subtitle": "Открыть production endpoint /healthz.",
     "Operator Notes": "Заметки оператора",
-    "Operator Notes Line One": "Целостность workspace, безопасные операции и мониторинг с поддержкой AI активны.",
-    "Operator NotesLineTwo": "Production-среда защищена GHOSTSTAGE.",
+    "Operator Notes Line One": "Построено на принципах целостности workspace, операционной безопасности и человеко-центричного AI-контроля.",
+    "Operator NotesLineTwo": "Создано для профессиональных салонов, растущих команд и enterprise-операций. Engineered by GHOSTSTAGE.",
 
   },
 };
