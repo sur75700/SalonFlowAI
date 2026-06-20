@@ -18,6 +18,7 @@ const ru = {
     createAccount: "Создать аккаунт",
     fullName: "Полное имя",
     confirmPassword: "Подтвердить пароль",
+    enterPassword: "Введите пароль",
     creatingAccount: "Создание...",
     allAccountFieldsRequired: "Все поля аккаунта обязательны",
     passwordMinLength: "Пароль должен содержать минимум 8 символов",

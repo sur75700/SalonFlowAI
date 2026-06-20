@@ -18,6 +18,7 @@ const fr = {
     createAccount: "Créer un compte",
     fullName: "Nom complet",
     confirmPassword: "Confirmer le mot de passe",
+    enterPassword: "Saisir le mot de passe",
     creatingAccount: "Création...",
     allAccountFieldsRequired: "Tous les champs du compte sont requis",
     passwordMinLength: "Le mot de passe doit contenir au moins 8 caractères",

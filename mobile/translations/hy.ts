@@ -18,6 +18,7 @@ const hy = {
     createAccount: "Ստեղծել հաշիվ",
     fullName: "Ամբողջական անուն",
     confirmPassword: "Հաստատել գաղտնաբառը",
+    enterPassword: "Մուտքագրեք գաղտնաբառը",
     creatingAccount: "Ստեղծվում է...",
     allAccountFieldsRequired: "Հաշվի բոլոր դաշտերը պարտադիր են",
     passwordMinLength: "Գաղտնաբառը պետք է ունենա առնվազն 8 նիշ",

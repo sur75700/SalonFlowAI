@@ -139,8 +139,10 @@ export default function DevLoginCard({
         <Text
           onPress={() => {
             setMode("signup");
+            setFullName("");
             setEmail("");
             setPassword("");
+            setConfirmPassword("");
             setError("");
           }}
           style={[
@@ -189,7 +191,7 @@ export default function DevLoginCard({
       <Text style={styles.label}>{t.auth.password}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter password"
+        placeholder={t.auth.enterPassword}
         placeholderTextColor="#938b9d"
         value={password}
         onChangeText={(text) => setPassword(text)}

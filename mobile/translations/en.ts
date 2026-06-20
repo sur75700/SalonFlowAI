@@ -18,6 +18,7 @@ const en = {
     createAccount: "Create Account",
     fullName: "Full name",
     confirmPassword: "Confirm password",
+    enterPassword: "Enter password",
     creatingAccount: "Creating...",
     allAccountFieldsRequired: "All account fields are required",
     passwordMinLength: "Password must be at least 8 characters",
