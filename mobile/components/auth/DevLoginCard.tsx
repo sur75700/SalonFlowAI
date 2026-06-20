@@ -41,11 +41,17 @@ export default function DevLoginCard({
   const getLocalizedAuthError = (err: any, fallback: string) => {
     const message = getErrorMessage(err, fallback).toLowerCase();
 
-    if (message.includes("account already exists")) {
+    if (message.includes("account already exists") || message.includes("already exists")) {
       return t.auth.accountAlreadyExists;
     }
 
-    if (message.includes("valid email") || message.includes("email address")) {
+    if (
+      message.includes("valid email") ||
+      message.includes("email address") ||
+      message.includes("@-sign") ||
+      message.includes("two periods") ||
+      message.includes("body.email")
+    ) {
       return t.auth.invalidEmail;
     }
 
@@ -54,7 +60,7 @@ export default function DevLoginCard({
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) {
-      const message = "Email and password are required";
+      const message = t.auth.emailPasswordRequired;
       setError(message);
       showToast(message, "error");
       return;
@@ -70,7 +76,7 @@ export default function DevLoginCard({
       );
 
       setToken(token);
-      showToast("Admin session restored", "success");
+      showToast(t.auth.adminSessionRestored, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.signInFailed);
       setError(message);
@@ -130,7 +136,7 @@ export default function DevLoginCard({
     setPassword(DEFAULTS.adminPassword);
     setConfirmPassword("");
     setError("");
-    showToast("Admin credentials loaded", "info");
+    showToast(t.auth.adminCredentialsLoaded, "info");
   };
 
   return (
