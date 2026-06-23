@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     frontend_localhost_origin: str = "http://127.0.0.1:8081"
     frontend_lan_origin: str = "http://192.168.10.17:8081"
 
+    resend_api_key: str = ""
+    resend_from_email: str = "SalonFlow AI <onboarding@resend.dev>"
+    resend_enabled: bool = False
+    public_app_url: str = "http://localhost:8081"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
