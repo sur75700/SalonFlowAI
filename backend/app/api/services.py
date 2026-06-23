@@ -9,14 +9,12 @@ from app.db.mongo import get_database
 
 router = APIRouter()
 
-
 class ServiceCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     duration_minutes: int = Field(gt=0, le=1440)
     price: float = Field(ge=0)
     currency: str = Field(default="AMD", min_length=3, max_length=8)
     is_active: bool = True
-
 
 class ServiceUpdate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
@@ -25,22 +23,25 @@ class ServiceUpdate(BaseModel):
     currency: str = Field(default="AMD", min_length=3, max_length=8)
     is_active: bool = True
 
-
 class ServiceStatusUpdate(BaseModel):
     is_active: bool
 
-
 @router.post("/", status_code=201)
-async def create_service(payload: ServiceCreate, _: dict = Depends(require_auth)):
+async def create_service(payload: ServiceCreate, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
-    existing = await db.services.find_one({"name": payload.name})
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    existing = await db.services.find_one({"name": payload.name, "owner_id": owner_id})
     if existing is not None:
         raise HTTPException(status_code=409, detail="Service already exists")
 
     doc = {
+        "owner_id": owner_id,
         "name": payload.name,
         "duration_minutes": payload.duration_minutes,
         "price": payload.price,
@@ -61,14 +62,17 @@ async def create_service(payload: ServiceCreate, _: dict = Depends(require_auth)
         "created_at": doc["created_at"],
     }
 
-
 @router.get("/")
-async def list_services(active_only: bool = Query(default=False), _: dict = Depends(require_auth)):
+async def list_services(active_only: bool = Query(default=False), auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
-    query = {}
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    query = {"owner_id": owner_id}
     if active_only:
         query["is_active"] = True
 
@@ -91,9 +95,8 @@ async def list_services(active_only: bool = Query(default=False), _: dict = Depe
 
     return {"items": items, "count": len(items)}
 
-
 @router.put("/{service_id}")
-async def update_service(service_id: str, payload: ServiceUpdate, _: dict = Depends(require_auth)):
+async def update_service(service_id: str, payload: ServiceUpdate, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
@@ -101,8 +104,12 @@ async def update_service(service_id: str, payload: ServiceUpdate, _: dict = Depe
     if not ObjectId.is_valid(service_id):
         raise HTTPException(status_code=400, detail="Invalid service_id")
 
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     result = await db.services.update_one(
-        {"_id": ObjectId(service_id)},
+        {"_id": ObjectId(service_id), "owner_id": owner_id},
         {
             "$set": {
                 "name": payload.name,
@@ -118,7 +125,7 @@ async def update_service(service_id: str, payload: ServiceUpdate, _: dict = Depe
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    doc = await db.services.find_one({"_id": ObjectId(service_id)})
+    doc = await db.services.find_one({"_id": ObjectId(service_id), "owner_id": owner_id})
 
     return {
         "id": str(doc["_id"]),
@@ -131,9 +138,8 @@ async def update_service(service_id: str, payload: ServiceUpdate, _: dict = Depe
         "updated_at": doc.get("updated_at"),
     }
 
-
 @router.patch("/{service_id}/status")
-async def update_service_status(service_id: str, payload: ServiceStatusUpdate, _: dict = Depends(require_auth)):
+async def update_service_status(service_id: str, payload: ServiceStatusUpdate, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
@@ -141,15 +147,19 @@ async def update_service_status(service_id: str, payload: ServiceStatusUpdate, _
     if not ObjectId.is_valid(service_id):
         raise HTTPException(status_code=400, detail="Invalid service_id")
 
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     result = await db.services.update_one(
-        {"_id": ObjectId(service_id)},
+        {"_id": ObjectId(service_id), "owner_id": owner_id},
         {"$set": {"is_active": payload.is_active, "updated_at": datetime.now(UTC).isoformat()}},
     )
 
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    doc = await db.services.find_one({"_id": ObjectId(service_id)})
+    doc = await db.services.find_one({"_id": ObjectId(service_id), "owner_id": owner_id})
 
     return {
         "id": str(doc["_id"]),
@@ -162,9 +172,8 @@ async def update_service_status(service_id: str, payload: ServiceStatusUpdate, _
         "updated_at": doc.get("updated_at"),
     }
 
-
 @router.delete("/{service_id}")
-async def delete_service(service_id: str, _: dict = Depends(require_auth)):
+async def delete_service(service_id: str, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
@@ -172,13 +181,17 @@ async def delete_service(service_id: str, _: dict = Depends(require_auth)):
     if not ObjectId.is_valid(service_id):
         raise HTTPException(status_code=400, detail="Invalid service_id")
 
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     service_obj_id = ObjectId(service_id)
 
-    linked_appointments = await db.appointments.count_documents({"service_id": service_obj_id})
+    linked_appointments = await db.appointments.count_documents({"service_id": service_obj_id, "owner_id": owner_id})
     if linked_appointments > 0:
         raise HTTPException(status_code=409, detail="Cannot delete service with linked appointments")
 
-    result = await db.services.delete_one({"_id": service_obj_id})
+    result = await db.services.delete_one({"_id": service_obj_id, "owner_id": owner_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Service not found")
 
