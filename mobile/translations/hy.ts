@@ -39,6 +39,13 @@ const hy = {
     sessionRecoverySubtitle: "Եթե access token-ը ավարտվի, SalonFlow AI-ը ձեզ կվերադարձնի այստեղ՝ ադմին մուտքը առանց ընթացքը կորցնելու վերականգնելու համար։",
     email: "Էլ. հասցե",
     password: "Գաղտնաբառ",
+    forgotPassword: "Մոռացե՞լ եք գաղտնաբառը",
+    emailRequired: "Էլ. հասցեն պարտադիր է",
+    sendResetLink: "Ուղարկել վերականգնման հղումը",
+    sendingResetLink: "Հղումն ուղարկվում է...",
+    passwordResetEmailSent: "Եթե հաշիվը գոյություն ունի, վերականգնման նամակը ուղարկվել է։",
+    passwordResetRequestFailed: "Գաղտնաբառի վերականգնման հարցումը չհաջողվեց",
+    backToSignIn: "Վերադառնալ մուտքին",
     adminRecoveryBadge: "ԱԴՄԻՆ ՎԵՐԱԿԱՆԳՆՈՒՄ",
     helperTitle: "Ադմին վերականգնում",
     helperText:

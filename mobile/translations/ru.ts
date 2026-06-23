@@ -39,6 +39,13 @@ const ru = {
     sessionRecoverySubtitle: "Если access token истечет, SalonFlow AI вернет вас сюда, чтобы восстановить админ-доступ без потери темпа.",
     email: "Email",
     password: "Пароль",
+    forgotPassword: "Забыли пароль?",
+    emailRequired: "Email обязателен",
+    sendResetLink: "Отправить ссылку",
+    sendingResetLink: "Отправка ссылки...",
+    passwordResetEmailSent: "Если аккаунт существует, письмо для сброса пароля отправлено.",
+    passwordResetRequestFailed: "Не удалось запросить сброс пароля",
+    backToSignIn: "Вернуться ко входу",
     adminRecoveryBadge: "ВОССТАНОВЛЕНИЕ АДМИНА",
     helperTitle: "Восстановление админа",
     helperText:

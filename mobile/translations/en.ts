@@ -39,6 +39,13 @@ const en = {
     sessionRecoverySubtitle: "If your access token expires, SalonFlow AI returns you here so you can restore admin access without losing momentum.",
     email: "Email",
     password: "Password",
+    forgotPassword: "Forgot password?",
+    emailRequired: "Email is required",
+    sendResetLink: "Send Reset Link",
+    sendingResetLink: "Sending reset link...",
+    passwordResetEmailSent: "If the account exists, a reset email has been sent.",
+    passwordResetRequestFailed: "Failed to request password reset",
+    backToSignIn: "Back to Sign In",
     adminRecoveryBadge: "ADMIN RECOVERY",
     helperTitle: "Admin Recovery",
     helperText:

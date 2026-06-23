@@ -31,6 +31,15 @@ class ResendVerificationRequest(BaseModel):
     email: EmailStr
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
 async def create_email_verification_token(db, admin_id: str, email: str) -> str:
     now = datetime.now(UTC)
     token = secrets.token_urlsafe(32)
@@ -58,6 +67,10 @@ def build_verification_link(token: str) -> str:
     return f"{settings.public_app_url.rstrip('/')}/verify-email?token={token}"
 
 
+def build_password_reset_link(token: str) -> str:
+    return f"{settings.public_app_url.rstrip('/')}/reset-password?token={token}"
+
+
 async def send_verification_email(email: str, token: str) -> dict:
     link = build_verification_link(token)
     html = f"""
@@ -75,6 +88,49 @@ async def send_verification_email(email: str, token: str) -> dict:
     </div>
     """
     return await send_email(email, "Verify your SalonFlow AI email", html)
+
+
+
+async def create_password_reset_token(db, admin_id: str, email: str) -> str:
+    now = datetime.now(UTC)
+    token = secrets.token_urlsafe(32)
+
+    await db.password_reset_tokens.update_many(
+        {"admin_id": admin_id, "used_at": None},
+        {"$set": {"used_at": now.isoformat(), "superseded_at": now.isoformat()}},
+    )
+
+    await db.password_reset_tokens.insert_one(
+        {
+            "admin_id": admin_id,
+            "email": email,
+            "token": token,
+            "created_at": now.isoformat(),
+            "expires_at": (now + timedelta(hours=1)).isoformat(),
+            "used_at": None,
+        }
+    )
+
+    return token
+
+
+async def send_password_reset_email(email: str, token: str) -> dict:
+    link = build_password_reset_link(token)
+    html = f"""
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+      <h2>Reset your SalonFlow AI password</h2>
+      <p>We received a request to reset your SalonFlow AI password.</p>
+      <p>
+        <a href="{link}" style="display:inline-block;background:#111827;color:#ffffff;padding:12px 18px;border-radius:10px;text-decoration:none">
+          Reset Password
+        </a>
+      </p>
+      <p>If the button does not work, copy and paste this link:</p>
+      <p>{link}</p>
+      <p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>
+    </div>
+    """
+    return await send_email(email, "Reset your SalonFlow AI password", html)
 
 
 @router.post("/register")
@@ -263,6 +319,87 @@ async def resend_verification(payload: ResendVerificationRequest):
         "message": "Verification email sent",
         "email_result": result,
     }
+
+
+@router.post("/forgot-password")
+async def forgot_password(payload: ForgotPasswordRequest):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    email = payload.email.lower().strip()
+    user = await db.admin_users.find_one({"email": email})
+
+    if user is None:
+        return {"ok": True, "message": "If the account exists, a password reset email has been sent"}
+
+    token = await create_password_reset_token(db, str(user["_id"]), email)
+    result = await send_password_reset_email(email, token)
+
+    return {
+        "ok": True,
+        "message": "Password reset email sent",
+        "email_result": result,
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(payload: ResetPasswordRequest):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    now = datetime.now(UTC)
+    token = payload.token.strip()
+    new_password = payload.new_password.strip()
+
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+
+    token_doc = await db.password_reset_tokens.find_one(
+        {
+            "token": token,
+            "used_at": None,
+        }
+    )
+
+    if token_doc is None:
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
+
+    expires_at_raw = token_doc.get("expires_at")
+    try:
+        expires_at = datetime.fromisoformat(expires_at_raw).astimezone(UTC)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
+
+    if expires_at < now:
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
+
+    admin_id = token_doc.get("admin_id")
+    if not admin_id or not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
+
+    user = await db.admin_users.find_one({"_id": ObjectId(admin_id)})
+    if user is None:
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset token")
+
+    await db.admin_users.update_one(
+        {"_id": ObjectId(admin_id)},
+        {
+            "$set": {
+                "password_hash": hash_password(new_password),
+                "updated_at": now.isoformat(),
+                "password_changed_at": now.isoformat(),
+            }
+        },
+    )
+
+    await db.password_reset_tokens.update_one(
+        {"_id": token_doc["_id"]},
+        {"$set": {"used_at": now.isoformat()}},
+    )
+
+    return {"ok": True, "message": "Password reset successfully"}
 
 
 @router.get("/verify-email")

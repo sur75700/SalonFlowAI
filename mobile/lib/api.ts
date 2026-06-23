@@ -74,6 +74,29 @@ export async function registerAccount(
   });
 }
 
+
+export async function requestPasswordReset(
+  email: string
+): Promise<{ ok: boolean; message: string }> {
+  const response = await api.post("/auth/forgot-password", {
+    email,
+  });
+
+  return response.data;
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<{ ok: boolean; message: string }> {
+  const response = await api.post("/auth/reset-password", {
+    token,
+    new_password: newPassword,
+  });
+
+  return response.data;
+}
+
 export function isAuthError(err: any): boolean {
   const status = err?.response?.status;
   return status === 401 || status === 403;

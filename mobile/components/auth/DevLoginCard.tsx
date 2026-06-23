@@ -14,7 +14,7 @@ import AuthScreenShell from "./AuthScreenShell";
 import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
-import { registerAccount, saveTokenFromCredentials } from "../../lib/api";
+import { registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
 import { useAppLanguage } from "../../contexts/LanguageContext";
 
 type DevLoginCardProps = {
@@ -30,7 +30,7 @@ export default function DevLoginCard({
   const { setToken } = useSession();
   const { showToast } = useToast();
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState<string>(DEFAULTS.adminEmail);
   const [password, setPassword] = useState<string>(DEFAULTS.adminPassword);
@@ -84,6 +84,31 @@ export default function DevLoginCard({
       showToast(t.auth.adminSessionRestored, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.signInFailed);
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      const message = t.auth.emailRequired;
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      await requestPasswordReset(email.trim());
+
+      showToast(t.auth.passwordResetEmailSent, "success");
+      setMode("signin");
+    } catch (err: any) {
+      const message = getErrorMessage(err, t.auth.passwordResetRequestFailed);
       setError(message);
       showToast(message, "error");
     } finally {
@@ -215,15 +240,33 @@ export default function DevLoginCard({
         keyboardType="email-address"
       />
 
-      <Text style={styles.label}>{t.auth.password}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder={t.auth.enterPassword}
-        placeholderTextColor="#938b9d"
-        value={password}
-        onChangeText={(text) => setPassword(text)}
-        secureTextEntry
-      />
+      {mode !== "forgot" ? (
+        <>
+          <Text style={styles.label}>{t.auth.password}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t.auth.enterPassword}
+            placeholderTextColor="#938b9d"
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+            secureTextEntry
+          />
+        </>
+      ) : null}
+
+      {mode === "signin" ? (
+        <Text
+          onPress={() => {
+            setMode("forgot");
+            setPassword("");
+            setConfirmPassword("");
+            setError("");
+          }}
+          style={styles.forgotLink}
+        >
+          {t.auth.forgotPassword}
+        </Text>
+      ) : null}
 
       {mode === "signup" ? (
         <>
@@ -245,17 +288,36 @@ export default function DevLoginCard({
             loading
               ? mode === "signup"
                 ? t.auth.creatingAccount
-                : t.auth.restoreSessionLoading
+                : mode === "forgot"
+                  ? t.auth.sendingResetLink
+                  : t.auth.restoreSessionLoading
               : mode === "signup"
                 ? t.auth.createAccount
-                : t.auth.restoreSession
+                : mode === "forgot"
+                  ? t.auth.sendResetLink
+                  : t.auth.restoreSession
           }
-          onPress={mode === "signup" ? handleCreateAccount : handleSignIn}
+          onPress={
+            mode === "signup"
+              ? handleCreateAccount
+              : mode === "forgot"
+                ? handleForgotPassword
+                : handleSignIn
+          }
           disabled={loading}
           tone="success"
         />
         {mode === "signin" ? (
           <ActionButton title={t.auth.loadAdminAccess} onPress={useDemoAccount} />
+        ) : null}
+        {mode === "forgot" ? (
+          <ActionButton
+            title={t.auth.backToSignIn}
+            onPress={() => {
+              setMode("signin");
+              setError("");
+            }}
+          />
         ) : null}
       </View>
 
@@ -384,5 +446,12 @@ const styles = StyleSheet.create({
   loaderWrap: {
     marginTop: 14,
     alignItems: "center",
+  },
+  forgotLink: {
+    color: "#d6b46a",
+    fontSize: 13,
+    fontWeight: "800",
+    marginBottom: 12,
+    textAlign: "right",
   },
 });
