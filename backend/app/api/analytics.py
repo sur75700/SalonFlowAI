@@ -4,6 +4,7 @@ from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import require_auth
+from bson import ObjectId
 from app.db.mongo import get_database
 
 router = APIRouter()
@@ -19,12 +20,17 @@ def parse_dt(value: str | None):
 
 
 @router.get("/dashboard")
-async def analytics_dashboard(_: dict = Depends(require_auth)):
+async def analytics_dashboard(auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
-    appointments = await db.appointments.find().to_list(length=5000)
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    owner_query = {"owner_id": owner_id}
+    appointments = await db.appointments.find(owner_query).to_list(length=5000)
 
     total_revenue = 0.0
     completed_revenue = 0.0
@@ -881,14 +887,20 @@ def build_business_insights(
 
 
 @router.get("/insights")
-async def analytics_insights(_: dict = Depends(require_auth)):
-    dashboard = await analytics_dashboard(_)
+async def analytics_insights(auth: dict = Depends(require_auth)):
+    dashboard = await analytics_dashboard(auth)
     db = get_database()
     clients = []
     appointments = []
+
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    owner_query = {"owner_id": owner_id}
     if db is not None:
-        clients = await db.clients.find().to_list(length=5000)
-        appointments = await db.appointments.find().to_list(length=5000)
+        clients = await db.clients.find(owner_query).to_list(length=5000)
+        appointments = await db.appointments.find(owner_query).to_list(length=5000)
 
     totals = dashboard.get("totals", {})
     revenue_last_7_days = dashboard.get("revenue_last_7_days") or []
