@@ -24,6 +24,8 @@ const en = {
     passwordMinLength: "Password must be at least 8 characters",
     passwordMismatch: "Passwords do not match",
     accountCreated: "Account created successfully",
+    verifyEmailBeforeSignIn: "Check your email and verify your account before signing in.",
+    emailNotVerified: "Please verify your email before signing in.",
     createAccountFailed: "Failed to create account",
     accountAlreadyExists: "Account already exists",
     invalidEmail: "Please enter a valid email address",

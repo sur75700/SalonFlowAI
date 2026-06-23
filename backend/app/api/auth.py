@@ -216,6 +216,9 @@ async def login(payload: LoginRequest):
     if not password_hash or not verify_password(payload.password, password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    if not bool(user.get("email_verified", False)):
+        raise HTTPException(status_code=403, detail="EMAIL_NOT_VERIFIED")
+
     token = create_access_token(str(user["_id"]))
 
     await db.admin_users.update_one(

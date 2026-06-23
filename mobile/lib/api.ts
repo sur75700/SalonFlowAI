@@ -66,22 +66,12 @@ export async function registerAccount(
   fullName: string,
   email: string,
   password: string
-): Promise<string> {
-  const response = await api.post("/auth/register", {
+): Promise<void> {
+  await api.post("/auth/register", {
     full_name: fullName,
     email,
     password,
   });
-
-  const token = response?.data?.access_token;
-
-  if (!token) {
-    throw new Error("No access token returned");
-  }
-
-  getBrowserStorage()?.setItem(STORAGE_KEYS.token, token);
-
-  return token;
 }
 
 export function isAuthError(err: any): boolean {

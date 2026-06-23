@@ -24,6 +24,8 @@ const ru = {
     passwordMinLength: "Пароль должен содержать минимум 8 символов",
     passwordMismatch: "Пароли не совпадают",
     accountCreated: "Аккаунт успешно создан",
+    verifyEmailBeforeSignIn: "Проверьте почту и подтвердите аккаунт перед входом.",
+    emailNotVerified: "Подтвердите e-mail перед входом.",
     createAccountFailed: "Не удалось создать аккаунт",
     accountAlreadyExists: "Аккаунт уже существует",
     invalidEmail: "Введите корректный e-mail адрес",

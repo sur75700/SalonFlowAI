@@ -24,6 +24,8 @@ const hy = {
     passwordMinLength: "Գաղտնաբառը պետք է ունենա առնվազն 8 նիշ",
     passwordMismatch: "Գաղտնաբառերը չեն համընկնում",
     accountCreated: "Հաշիվը հաջողությամբ ստեղծվեց",
+    verifyEmailBeforeSignIn: "Ստուգեք ձեր էլ. փոստը և հաստատեք հաշիվը՝ նախքան մուտք գործելը։",
+    emailNotVerified: "Խնդրում ենք հաստատել ձեր էլ. փոստը՝ նախքան մուտք գործելը։",
     createAccountFailed: "Հաշիվ ստեղծելը չհաջողվեց",
     accountAlreadyExists: "Այս հաշիվն արդեն գոյություն ունի",
     invalidEmail: "Խնդրում ենք մուտքագրել վավեր էլ. հասցե",

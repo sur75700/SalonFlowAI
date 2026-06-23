@@ -24,6 +24,8 @@ const fr = {
     passwordMinLength: "Le mot de passe doit contenir au moins 8 caractères",
     passwordMismatch: "Les mots de passe ne correspondent pas",
     accountCreated: "Compte créé avec succès",
+    verifyEmailBeforeSignIn: "Vérifiez votre e-mail avant de vous connecter.",
+    emailNotVerified: "Veuillez vérifier votre e-mail avant de vous connecter.",
     createAccountFailed: "Échec de la création du compte",
     accountAlreadyExists: "Ce compte existe déjà",
     invalidEmail: "Veuillez saisir une adresse e-mail valide",

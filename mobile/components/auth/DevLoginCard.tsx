@@ -41,6 +41,11 @@ export default function DevLoginCard({
   const getLocalizedAuthError = (err: any, fallback: string) => {
     const message = getErrorMessage(err, fallback).toLowerCase();
 
+    if (message.includes("email_not_verified")) {
+      return t.auth.emailNotVerified;
+    }
+
+
     if (message.includes("account already exists") || message.includes("already exists")) {
       return t.auth.accountAlreadyExists;
     }
@@ -112,14 +117,16 @@ export default function DevLoginCard({
       setLoading(true);
       setError("");
 
-      const token = await registerAccount(
+      await registerAccount(
         fullName.trim(),
         email.trim(),
         password.trim()
       );
 
-      setToken(token);
-      showToast(t.auth.accountCreated, "success");
+      setMode("signin");
+      setPassword("");
+      setConfirmPassword("");
+      showToast(t.auth.verifyEmailBeforeSignIn, "success");
     } catch (err: any) {
       const message = getLocalizedAuthError(err, t.auth.createAccountFailed);
       setError(message);
