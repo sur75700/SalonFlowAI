@@ -6,8 +6,8 @@ export const STORAGE_KEYS = {
 
 export const DEFAULTS = {
   currency: "AMD",
-  adminEmail: "dev@salonflow.ai",
-  adminPassword: "dev123456",
+  adminEmail: "admin@salonflowai.com",
+  adminPassword: "",
 } as const;
 
 export const UI = {
