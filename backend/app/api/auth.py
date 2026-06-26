@@ -46,6 +46,11 @@ class GoogleLoginRequest(BaseModel):
     id_token: str
 
 
+class AppleLoginRequest(BaseModel):
+    identity_token: str
+    full_name: str | None = None
+
+
 async def create_email_verification_token(db, admin_id: str, email: str) -> str:
     now = datetime.now(UTC)
     token = secrets.token_urlsafe(32)
@@ -367,6 +372,19 @@ async def login(payload: LoginRequest):
         },
     }
 
+
+
+
+
+@router.post("/apple")
+async def apple_login(payload: AppleLoginRequest):
+    if not payload.identity_token.strip():
+        raise HTTPException(status_code=400, detail="Apple identity token is required")
+
+    # Apple token verification needs Apple Developer configuration:
+    # Team ID, Service ID / Bundle ID, Key ID, and private key.
+    # This endpoint is intentionally guarded until production Apple config is available.
+    raise HTTPException(status_code=501, detail="Apple Sign-In is not configured yet")
 
 
 @router.post("/google")

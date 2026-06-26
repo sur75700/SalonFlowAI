@@ -98,6 +98,26 @@ export async function resetPassword(
 }
 
 
+export async function appleLogin(
+  identityToken: string,
+  fullName?: string | null
+): Promise<string> {
+  const response = await api.post("/auth/apple", {
+    identity_token: identityToken,
+    full_name: fullName || null,
+  });
+
+  const token = response?.data?.access_token;
+
+  if (!token) {
+    throw new Error("No access token returned");
+  }
+
+  getBrowserStorage()?.setItem(STORAGE_KEYS.token, token);
+
+  return token;
+}
+
 export async function googleLogin(
   idToken: string
 ): Promise<string> {

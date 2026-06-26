@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { UI } from "../../lib/theme/tokens";
 import {
   ActivityIndicator,
@@ -17,7 +18,7 @@ import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
 import { getGoogleClientIds } from "../../lib/env";
-import { googleLogin, registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
+import { appleLogin, googleLogin, registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
 import { useAppLanguage } from "../../contexts/LanguageContext";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -140,6 +141,52 @@ export default function DevLoginCard({
       showToast(t.auth.googleSignInSuccess, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.googleSignInFailed);
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const available = await AppleAuthentication.isAvailableAsync();
+
+      if (!available) {
+        const message = t.auth.appleAuthNotAvailable;
+        setError(message);
+        showToast(message, "error");
+        return;
+      }
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        throw new Error("Apple did not return an identity token");
+      }
+
+      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
+        .filter(Boolean)
+        .join(" ");
+
+      const token = await appleLogin(credential.identityToken, fullName);
+
+      setToken(token);
+      showToast(t.auth.appleSignInSuccess, "success");
+    } catch (err: any) {
+      if (err?.code === "ERR_REQUEST_CANCELED") {
+        return;
+      }
+
+      const message = getErrorMessage(err, t.auth.appleSignInFailed);
       setError(message);
       showToast(message, "error");
     } finally {
@@ -367,6 +414,13 @@ export default function DevLoginCard({
           <ActionButton
             title={t.auth.continueWithGoogle}
             onPress={handleGoogleSignIn}
+            disabled={loading}
+          />
+        ) : null}
+        {mode === "signin" ? (
+          <ActionButton
+            title={t.auth.continueWithApple}
+            onPress={handleAppleSignIn}
             disabled={loading}
           />
         ) : null}
