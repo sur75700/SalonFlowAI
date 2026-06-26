@@ -4,6 +4,8 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from bson import ObjectId
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 
 from app.api.deps import require_auth
 from app.core.security import create_access_token, hash_password, verify_password
@@ -38,6 +40,10 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str
 
 
 async def create_email_verification_token(db, admin_id: str, email: str) -> str:
@@ -131,6 +137,71 @@ async def send_password_reset_email(email: str, token: str) -> dict:
     </div>
     """
     return await send_email(email, "Reset your SalonFlow AI password", html)
+
+
+
+
+def build_auth_response(user: dict) -> dict:
+    token = create_access_token(str(user["_id"]))
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "admin": {
+            "id": str(user["_id"]),
+            "email": user.get("email"),
+            "full_name": user.get("full_name"),
+        },
+    }
+
+
+async def find_or_create_google_user(db, google_payload: dict) -> dict:
+    now = datetime.now(UTC).isoformat()
+    email = str(google_payload.get("email", "")).lower().strip()
+    google_sub = str(google_payload.get("sub", "")).strip()
+    full_name = str(google_payload.get("name") or email.split("@")[0]).strip()
+
+    if not email or not google_sub:
+        raise HTTPException(status_code=400, detail="Invalid Google identity")
+
+    user = await db.admin_users.find_one({"email": email})
+
+    if user is not None:
+        await db.admin_users.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "google_id": google_sub,
+                    "auth_provider": user.get("auth_provider", "google"),
+                    "email_verified": True,
+                    "email_verified_at": user.get("email_verified_at") or now,
+                    "last_login_at": now,
+                    "updated_at": now,
+                }
+            },
+        )
+        updated = await db.admin_users.find_one({"_id": user["_id"]})
+        return updated or user
+
+    doc = {
+        "email": email,
+        "full_name": full_name,
+        "role": "owner",
+        "auth_provider": "google",
+        "google_id": google_sub,
+        "email_verified": True,
+        "email_verified_at": now,
+        "created_at": now,
+        "updated_at": now,
+        "last_login_at": now,
+    }
+
+    result = await db.admin_users.insert_one(doc)
+    created = await db.admin_users.find_one({"_id": result.inserted_id})
+    if created is None:
+        raise HTTPException(status_code=500, detail="Failed to create Google user")
+
+    return created
 
 
 @router.post("/register")
@@ -295,6 +366,37 @@ async def login(payload: LoginRequest):
             "full_name": user.get("full_name"),
         },
     }
+
+
+
+@router.post("/google")
+async def google_login(payload: GoogleLoginRequest):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    client_ids = settings.google_oauth_client_ids
+    if not client_ids:
+        raise HTTPException(status_code=500, detail="Google OAuth is not configured")
+
+    try:
+        google_payload = google_id_token.verify_oauth2_token(
+            payload.id_token,
+            google_requests.Request(),
+            audience=None,
+        )
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    if google_payload.get("aud") not in client_ids:
+        raise HTTPException(status_code=401, detail="Invalid Google audience")
+
+    if not bool(google_payload.get("email_verified", False)):
+        raise HTTPException(status_code=403, detail="GOOGLE_EMAIL_NOT_VERIFIED")
+
+    user = await find_or_create_google_user(db, google_payload)
+    return build_auth_response(user)
+
 
 @router.post("/resend-verification")
 async def resend_verification(payload: ResendVerificationRequest):

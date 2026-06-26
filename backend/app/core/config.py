@@ -21,12 +21,21 @@ class Settings(BaseSettings):
     resend_from_email: str = "SalonFlow AI <onboarding@resend.dev>"
     resend_enabled: bool = False
     public_app_url: str = "http://localhost:8081"
+    google_client_ids: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @property
+    def google_oauth_client_ids(self) -> list[str]:
+        return [
+            value.strip()
+            for value in self.google_client_ids.split(",")
+            if value.strip()
+        ]
 
     @property
     def cors_origins(self) -> list[str]:
