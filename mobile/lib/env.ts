@@ -13,6 +13,9 @@ declare const process: {
 type ExtraConfig = {
   apiBaseUrlWeb?: string;
   apiBaseUrlNative?: string;
+  googleWebClientId?: string;
+  googleAndroidClientId?: string;
+  googleIosClientId?: string;
 };
 
 function getExtra(): ExtraConfig {
@@ -51,12 +54,27 @@ export function getApiBaseUrl(): string {
 
 
 export function getGoogleClientIds() {
-  const env = typeof process === "undefined" ? {} : process.env || {};
+  const extra = getExtra();
+
+  const webClientId =
+    process.env?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ||
+    extra.googleWebClientId?.trim() ||
+    "";
+
+  const androidClientId =
+    process.env?.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim() ||
+    extra.googleAndroidClientId?.trim() ||
+    "";
+
+  const iosClientId =
+    process.env?.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() ||
+    extra.googleIosClientId?.trim() ||
+    "";
 
   return {
-    webClientId: env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() || "",
-    androidClientId: env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim() || "",
-    iosClientId: env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() || "",
+    webClientId,
+    androidClientId,
+    iosClientId,
   };
 }
 

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
 import { UI } from "../../lib/theme/tokens";
 import {
   ActivityIndicator,
@@ -14,9 +16,11 @@ import AuthScreenShell from "./AuthScreenShell";
 import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
-import { isGoogleAuthConfigured } from "../../lib/env";
+import { getGoogleClientIds } from "../../lib/env";
 import { googleLogin, registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
 import { useAppLanguage } from "../../contexts/LanguageContext";
+
+WebBrowser.maybeCompleteAuthSession();
 
 type DevLoginCardProps = {
   title?: string;
@@ -38,6 +42,14 @@ export default function DevLoginCard({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const googleClientIds = getGoogleClientIds();
+  const [googleRequest, , promptGoogleSignIn] = Google.useIdTokenAuthRequest({
+    webClientId: googleClientIds.webClientId,
+    androidClientId: googleClientIds.androidClientId,
+    iosClientId: googleClientIds.iosClientId || undefined,
+  });
+
 
   const getLocalizedAuthError = (err: any, fallback: string) => {
     const message = getErrorMessage(err, fallback).toLowerCase();
@@ -93,21 +105,38 @@ export default function DevLoginCard({
   };
 
   const handleGoogleSignIn = async () => {
-    if (!isGoogleAuthConfigured()) {
-      const message = t.auth.googleAuthNotConfigured;
-      setError(message);
-      showToast(message, "error");
-      return;
-    }
-
     try {
       setLoading(true);
       setError("");
 
-      // Native Google OAuth request will be wired after Google Cloud client IDs are created.
-      // Backend foundation already accepts a verified Google ID token through /auth/google.
-      await googleLogin("");
+      const { webClientId, androidClientId } = googleClientIds;
 
+      if (!webClientId && !androidClientId) {
+        const message = t.auth.googleAuthNotConfigured;
+        setError(message);
+        showToast(message, "error");
+        return;
+      }
+
+      if (!googleRequest) {
+        throw new Error("Google sign-in is not ready yet");
+      }
+
+      const result = await promptGoogleSignIn();
+
+      if (result.type !== "success") {
+        throw new Error("Google sign-in was cancelled");
+      }
+
+      const idToken = result.params?.id_token;
+
+      if (!idToken) {
+        throw new Error("Google did not return an ID token");
+      }
+
+      const token = await googleLogin(idToken);
+
+      setToken(token);
       showToast(t.auth.googleSignInSuccess, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.googleSignInFailed);
