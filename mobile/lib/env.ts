@@ -4,6 +4,9 @@ import { Platform } from "react-native";
 declare const process: {
   env?: {
     EXPO_PUBLIC_API_URL?: string;
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?: string;
+    EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?: string;
+    EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?: string;
   };
 };
 
@@ -44,4 +47,20 @@ export function getApiBaseUrl(): string {
   }
 
   return nativeDefault;
+}
+
+
+export function getGoogleClientIds() {
+  const env = typeof process === "undefined" ? {} : process.env || {};
+
+  return {
+    webClientId: env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() || "",
+    androidClientId: env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim() || "",
+    iosClientId: env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() || "",
+  };
+}
+
+export function isGoogleAuthConfigured(): boolean {
+  const ids = getGoogleClientIds();
+  return Boolean(ids.webClientId || ids.androidClientId || ids.iosClientId);
 }

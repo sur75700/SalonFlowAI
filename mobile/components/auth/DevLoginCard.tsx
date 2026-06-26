@@ -14,7 +14,8 @@ import AuthScreenShell from "./AuthScreenShell";
 import { useSession } from "../../hooks/useSession";
 import { DEFAULTS } from "../../lib/appConfig";
 import { getErrorMessage } from "../../lib/errors";
-import { registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
+import { isGoogleAuthConfigured } from "../../lib/env";
+import { googleLogin, registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
 import { useAppLanguage } from "../../contexts/LanguageContext";
 
 type DevLoginCardProps = {
@@ -84,6 +85,32 @@ export default function DevLoginCard({
       showToast(t.auth.adminSessionRestored, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.signInFailed);
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!isGoogleAuthConfigured()) {
+      const message = t.auth.googleAuthNotConfigured;
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      // Native Google OAuth request will be wired after Google Cloud client IDs are created.
+      // Backend foundation already accepts a verified Google ID token through /auth/google.
+      await googleLogin("");
+
+      showToast(t.auth.googleSignInSuccess, "success");
+    } catch (err: any) {
+      const message = getErrorMessage(err, t.auth.googleSignInFailed);
       setError(message);
       showToast(message, "error");
     } finally {
@@ -307,6 +334,13 @@ export default function DevLoginCard({
           disabled={loading}
           tone="success"
         />
+        {mode === "signin" ? (
+          <ActionButton
+            title={t.auth.continueWithGoogle}
+            onPress={handleGoogleSignIn}
+            disabled={loading}
+          />
+        ) : null}
         {mode === "signin" ? (
           <ActionButton title={t.auth.loadAdminAccess} onPress={useDemoAccount} />
         ) : null}

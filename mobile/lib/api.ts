@@ -97,6 +97,25 @@ export async function resetPassword(
   return response.data;
 }
 
+
+export async function googleLogin(
+  idToken: string
+): Promise<string> {
+  const response = await api.post("/auth/google", {
+    id_token: idToken,
+  });
+
+  const token = response?.data?.access_token;
+
+  if (!token) {
+    throw new Error("No access token returned");
+  }
+
+  getBrowserStorage()?.setItem(STORAGE_KEYS.token, token);
+
+  return token;
+}
+
 export function isAuthError(err: any): boolean {
   const status = err?.response?.status;
   return status === 401 || status === 403;
