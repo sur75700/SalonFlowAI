@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 from app.core.config import settings  # noqa: E402
 
 
-def build_event(event_type: str, admin_id: str, plan: str) -> dict:
+def build_event(event_type: str, admin_id: str, plan: str, event_id: str = "") -> dict:
     if event_type == "checkout.session.completed":
         data_object = {
             "id": "cs_test_ghost_simulator",
@@ -37,7 +37,7 @@ def build_event(event_type: str, admin_id: str, plan: str) -> dict:
         data_object = {"id": "evt_data_ghost_simulator", "object": "invoice"}
 
     return {
-        "id": f"evt_ghost_{int(time.time())}",
+        "id": event_id or f"evt_ghost_{int(time.time())}",
         "object": "event",
         "type": event_type,
         "data": {"object": data_object},
@@ -49,6 +49,7 @@ def main() -> int:
     parser.add_argument("--event", default="checkout.session.completed")
     parser.add_argument("--admin-id", default="ghost-billing-test-admin")
     parser.add_argument("--plan", default="business")
+    parser.add_argument("--event-id", default="", help="Reuse an existing Stripe event id")
     parser.add_argument("--url", default="http://127.0.0.1:8000/billing/webhook")
     args = parser.parse_args()
 
@@ -57,7 +58,7 @@ def main() -> int:
         print("STRIPE_WEBHOOK_SECRET is missing in backend/.env", file=sys.stderr)
         return 2
 
-    payload = json.dumps(build_event(args.event, args.admin_id, args.plan), separators=(",", ":"))
+    payload = json.dumps(build_event(args.event, args.admin_id, args.plan, args.event_id), separators=(",", ":"))
     timestamp = int(time.time())
     signature = stripe.WebhookSignature._compute_signature(f"{timestamp}.{payload}", secret)
     header = f"t={timestamp},v1={signature}"
