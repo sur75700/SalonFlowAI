@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 
-import { fetchBillingStatus, readStoredToken, type BillingStatus } from "../lib/api";
+import { fetchBillingStatus, readStoredToken, setBillingPlan, type BillingStatus } from "../lib/api";
 import type { PricingPlanCode } from "../lib/pricing/plans";
 
 type BillingContextValue = {
@@ -15,6 +15,7 @@ type BillingContextValue = {
   billingLoading: boolean;
   currentPlan: PricingPlanCode;
   refreshBilling: (tokenOverride?: string) => Promise<void>;
+  updateBillingPlan: (plan: PricingPlanCode, tokenOverride?: string) => Promise<void>;
   clearBilling: () => void;
 };
 
@@ -47,6 +48,27 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     }
   }, [clearBilling]);
 
+
+  const updateBillingPlan = useCallback(async (
+    plan: PricingPlanCode,
+    tokenOverride?: string
+  ) => {
+    const token = tokenOverride || readStoredToken();
+
+    if (!token) {
+      clearBilling();
+      return;
+    }
+
+    try {
+      setBillingLoading(true);
+      const status = await setBillingPlan(token, plan);
+      setBillingStatus(status);
+    } finally {
+      setBillingLoading(false);
+    }
+  }, [clearBilling]);
+
   useEffect(() => {
     refreshBilling();
   }, [refreshBilling]);
@@ -61,9 +83,10 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       billingLoading,
       currentPlan,
       refreshBilling,
+      updateBillingPlan,
       clearBilling,
     }),
-    [billingLoading, billingStatus, clearBilling, currentPlan, refreshBilling]
+    [billingLoading, billingStatus, clearBilling, currentPlan, refreshBilling, updateBillingPlan]
   );
 
   return (

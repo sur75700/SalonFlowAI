@@ -54,6 +54,21 @@ export async function fetchBillingStatus(token: string): Promise<BillingStatus> 
   return response.data;
 }
 
+export async function setBillingPlan(
+  token: string,
+  plan: BillingStatus["plan"]
+): Promise<BillingStatus> {
+  const response = await api.post(
+    "/billing/admin/set-plan",
+    { plan },
+    {
+      headers: authHeaders(token),
+    }
+  );
+
+  return response.data;
+}
+
 export async function fetchCurrentUser(token: string): Promise<CurrentUser> {
   const response = await api.get("/auth/me", {
     headers: authHeaders(token),
