@@ -20,6 +20,7 @@ import { getErrorMessage } from "../../lib/errors";
 import { getGoogleClientIds } from "../../lib/env";
 import { appleLogin, googleLogin, registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
 import { useAppLanguage } from "../../contexts/LanguageContext";
+import { useBilling } from "../../contexts/BillingContext";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -35,6 +36,7 @@ export default function DevLoginCard({
   const { t } = useAppLanguage();
   const { setToken } = useSession();
   const { showToast } = useToast();
+  const { refreshBilling } = useBilling();
 
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [fullName, setFullName] = useState("");
@@ -95,6 +97,7 @@ export default function DevLoginCard({
       );
 
       setToken(token);
+      await refreshBilling(token);
       showToast(t.auth.adminSessionRestored, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.signInFailed);
@@ -138,6 +141,7 @@ export default function DevLoginCard({
       const token = await googleLogin(idToken);
 
       setToken(token);
+      await refreshBilling(token);
       showToast(t.auth.googleSignInSuccess, "success");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.googleSignInFailed);
@@ -180,6 +184,7 @@ export default function DevLoginCard({
       const token = await appleLogin(credential.identityToken, fullName);
 
       setToken(token);
+      await refreshBilling(token);
       showToast(t.auth.appleSignInSuccess, "success");
     } catch (err: any) {
       if (err?.code === "ERR_REQUEST_CANCELED") {

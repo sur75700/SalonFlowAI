@@ -2,18 +2,23 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
-import {
-  CURRENT_PLAN,
-  PLAN_FEATURES,
-  hasFeature,
-} from "../../lib/subscription/features";
+import { useBilling } from "../../contexts/BillingContext";
+import { PLAN_FEATURES, hasFeature } from "../../lib/subscription/features";
 import { UI } from "../../lib/theme/tokens";
 
 export default function SubscriptionStatusCard() {
   const { locale } = useAppPreferences();
-  const enabledFeatures = PLAN_FEATURES[CURRENT_PLAN]?.length ?? 0;
-  const hasRevenueSimulator = hasFeature(CURRENT_PLAN, "revenue_simulator");
-  const hasOpportunityMatrix = hasFeature(CURRENT_PLAN, "opportunity_matrix");
+  const { currentPlan, billingStatus, billingLoading } = useBilling();
+  const enabledFeatures = billingStatus?.features?.length ?? PLAN_FEATURES[currentPlan]?.length ?? 0;
+  const hasRevenueSimulator = hasFeature(currentPlan, "revenue_simulator");
+  const hasOpportunityMatrix = hasFeature(currentPlan, "opportunity_matrix");
+
+  const planTitleKey = `Pricing Plan ${currentPlan.charAt(0).toUpperCase()}${currentPlan.slice(1)}`;
+  const statusLabel = billingLoading
+    ? t("Loading", locale)
+    : billingStatus?.status === "active"
+      ? t("Subscription Status Active", locale)
+      : billingStatus?.status || t("Subscription Status Active", locale);
 
   return (
     <View style={styles.card}>
@@ -21,8 +26,8 @@ export default function SubscriptionStatusCard() {
       <Text style={styles.title}>📦 {t("Subscription Center", locale)}</Text>
 
       <View style={styles.statusBox}>
-        <Text style={styles.plan}>{t("Pricing Plan Business", locale)}</Text>
-        <Text style={styles.status}>{t("Subscription Status Active", locale)}</Text>
+        <Text style={styles.plan}>{t(planTitleKey, locale)}</Text>
+        <Text style={styles.status}>{statusLabel}</Text>
         <Text style={styles.meta}>{t("Subscription Billing Placeholder", locale)}</Text>
       </View>
 

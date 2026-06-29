@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
 import { PRICING_PLANS } from "../../lib/pricing/plans";
-import { CURRENT_PLAN, FeatureCode, hasFeature } from "../../lib/subscription/features";
+import { FeatureCode, hasFeature } from "../../lib/subscription/features";
+import { useBilling } from "../../contexts/BillingContext";
 import { UI } from "../../lib/theme/tokens";
 
 const FEATURE_ROWS: { code: FeatureCode; labelKey: string }[] = [
@@ -23,6 +24,7 @@ const FEATURE_ROWS: { code: FeatureCode; labelKey: string }[] = [
 ];
 
 export default function PackageCapabilityMatrix() {
+  const { currentPlan } = useBilling();
   const { locale } = useAppPreferences();
 
   return (
@@ -42,7 +44,7 @@ export default function PackageCapabilityMatrix() {
             key={plan.code}
             style={[
               styles.headerCell,
-              plan.code === CURRENT_PLAN ? styles.currentPlanText : null,
+              plan.code === currentPlan ? styles.currentPlanText : null,
             ]}
           >
             {t(plan.nameKey, locale)}
@@ -55,7 +57,7 @@ export default function PackageCapabilityMatrix() {
           <Text style={styles.featureName}>{t(feature.labelKey, locale)}</Text>
           {PRICING_PLANS.map((plan) => {
             const enabled = hasFeature(plan.code, feature.code);
-            const isCurrentPlan = plan.code === CURRENT_PLAN;
+            const isCurrentPlan = plan.code === currentPlan;
 
             return (
               <View

@@ -25,6 +25,17 @@ export function authHeaders(token?: string) {
     : {};
 }
 
+export type BillingStatus = {
+  plan: "free" | "pro" | "business" | "enterprise";
+  status: string;
+  provider: string;
+  features: string[];
+  expires_at?: string | null;
+  source?: string;
+  billing_ready: boolean;
+  updated_at?: string;
+};
+
 export type CurrentUser = {
   id: string;
   email?: string;
@@ -34,6 +45,14 @@ export type CurrentUser = {
   last_login_at?: string;
   created_at?: string;
 };
+
+export async function fetchBillingStatus(token: string): Promise<BillingStatus> {
+  const response = await api.get("/billing/status", {
+    headers: authHeaders(token),
+  });
+
+  return response.data;
+}
 
 export async function fetchCurrentUser(token: string): Promise<CurrentUser> {
   const response = await api.get("/auth/me", {

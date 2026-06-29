@@ -2,7 +2,8 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
-import { CURRENT_PLAN, FeatureCode, hasFeature } from "../../lib/subscription/features";
+import { FeatureCode, hasFeature } from "../../lib/subscription/features";
+import { useBilling } from "../../contexts/BillingContext";
 import { UI } from "../../lib/theme/tokens";
 
 const AI_MODULES: { code: FeatureCode; titleKey: string; descriptionKey: string; requiredPlan: string }[] = [
@@ -19,10 +20,11 @@ const AI_MODULES: { code: FeatureCode; titleKey: string; descriptionKey: string;
 ];
 
 export default function AIControlCenter() {
+  const { currentPlan } = useBilling();
   const { locale } = useAppPreferences();
 
   const activeModules = AI_MODULES.filter((module) =>
-    hasFeature(CURRENT_PLAN, module.code)
+    hasFeature(currentPlan, module.code)
   ).length;
 
   return (
@@ -40,7 +42,7 @@ export default function AIControlCenter() {
 
       <View style={styles.moduleGrid}>
         {AI_MODULES.map((module) => {
-          const enabled = hasFeature(CURRENT_PLAN, module.code);
+          const enabled = hasFeature(currentPlan, module.code);
 
           return (
             <View

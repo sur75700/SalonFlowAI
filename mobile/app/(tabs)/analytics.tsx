@@ -32,7 +32,8 @@ import { shortDay } from "../../utils/formatters";
 import { money } from "../../utils/money";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { UI } from "../../lib/theme/tokens";
-import { CURRENT_PLAN, hasFeature } from "../../lib/subscription/features";
+import { hasFeature } from "../../lib/subscription/features";
+import { useBilling } from "../../contexts/BillingContext";
 import { getResponsiveLayout } from "../../lib/layout/responsive";
 
 function AnalyticsSkeleton() {
@@ -73,6 +74,7 @@ function normalizeAnalyticsCurrency(value: string | null | undefined): AppCurren
 }
 
 export default function AnalyticsScreen() {
+  const { currentPlan } = useBilling();
   const { width } = useWindowDimensions();
   const layout = getResponsiveLayout(width);
   const responsiveContentStyle = [
@@ -89,9 +91,9 @@ export default function AnalyticsScreen() {
   const { summary, analytics, loading, refreshing, error, reload, refresh } =
     useAnalyticsData(token, clearToken);
 
-  const canViewAdvancedInsights = hasFeature(CURRENT_PLAN, "ai_forecast");
-  const canViewRevenueSimulator = hasFeature(CURRENT_PLAN, "revenue_simulator");
-  const canViewOpportunityMatrix = hasFeature(CURRENT_PLAN, "opportunity_matrix");
+  const canViewAdvancedInsights = hasFeature(currentPlan, "ai_forecast");
+  const canViewRevenueSimulator = hasFeature(currentPlan, "revenue_simulator");
+  const canViewOpportunityMatrix = hasFeature(currentPlan, "opportunity_matrix");
 
   const lineChartData = useMemo(() => {
     const trend = analytics?.revenueTrend ?? analytics?.revenue_last_7_days ?? [];
