@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 
 from app.api.deps import require_auth
 from app.db.mongo import get_database
-from app.services.billing import create_checkout_session, get_billing_plans, get_subscription_status, set_subscription_plan
+from app.services.billing import create_checkout_session, get_billing_plans, get_subscription_status, handle_stripe_webhook, set_subscription_plan
 
 router = APIRouter()
 
@@ -60,6 +60,22 @@ async def billing_create_checkout_session(
             success_url=payload.success_url,
             cancel_url=payload.cancel_url,
         )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+
+@router.post("/webhook")
+async def billing_stripe_webhook(
+    request: Request,
+    stripe_signature: str | None = Header(default=None, alias="Stripe-Signature"),
+):
+    payload = await request.body()
+
+    try:
+        return handle_stripe_webhook(payload, stripe_signature)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from None
     except ValueError as exc:

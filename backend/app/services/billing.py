@@ -229,3 +229,46 @@ def create_checkout_session(admin_id: str, plan: str, success_url: str, cancel_u
         "checkout_url": session.url,
         "plan": plan,
     }
+
+
+
+def dispatch_stripe_event(event: dict) -> dict:
+    event_type = event.get("type", "unknown")
+
+    supported_events = {
+        "checkout.session.completed",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+        "invoice.payment_succeeded",
+        "invoice.payment_failed",
+    }
+
+    return {
+        "received": True,
+        "event": event_type,
+        "handled": event_type in supported_events,
+        "sync_pending": True,
+    }
+
+
+def handle_stripe_webhook(payload: bytes, signature: str | None) -> dict:
+    if not settings.stripe_webhook_secret.strip():
+        raise RuntimeError("Stripe webhook is not configured")
+
+    if not signature:
+        raise ValueError("Missing Stripe signature")
+
+    stripe.api_key = settings.stripe_secret_key
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload=payload,
+            sig_header=signature,
+            secret=settings.stripe_webhook_secret,
+        )
+    except ValueError:
+        raise ValueError("Invalid Stripe payload") from None
+    except stripe.SignatureVerificationError:
+        raise ValueError("Invalid Stripe signature") from None
+
+    return dispatch_stripe_event(event)
