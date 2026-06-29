@@ -72,10 +72,14 @@ async def billing_stripe_webhook(
     request: Request,
     stripe_signature: str | None = Header(default=None, alias="Stripe-Signature"),
 ):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
     payload = await request.body()
 
     try:
-        return handle_stripe_webhook(payload, stripe_signature)
+        return await handle_stripe_webhook(db, payload, stripe_signature)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from None
     except ValueError as exc:

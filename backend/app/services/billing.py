@@ -232,8 +232,104 @@ def create_checkout_session(admin_id: str, plan: str, success_url: str, cancel_u
 
 
 
-def dispatch_stripe_event(event: dict) -> dict:
+def normalize_stripe_plan(raw_plan: str | None) -> str:
+    plan = (raw_plan or "").strip()
+
+    if plan in VALID_PLAN_CODES:
+        return plan
+
+    return "business"
+
+
+async def sync_checkout_session_completed(db, session: dict) -> dict:
+    admin_id = session.get("client_reference_id") or session.get("metadata", {}).get("admin_id")
+    plan = normalize_stripe_plan(session.get("metadata", {}).get("plan"))
+
+    if not admin_id:
+        return {"synced": False, "reason": "missing_admin_id"}
+
+    now = datetime.now(UTC)
+
+    await db.subscriptions.update_one(
+        {"admin_id": admin_id},
+        {
+            "$set": {
+                "admin_id": admin_id,
+                "plan": plan,
+                "status": "active",
+                "provider": "stripe",
+                "customer_id": session.get("customer"),
+                "subscription_id": session.get("subscription"),
+                "updated_at": now,
+                "source": "stripe_checkout_completed",
+            },
+            "$setOnInsert": {
+                "created_at": now,
+                "expires_at": None,
+            },
+        },
+        upsert=True,
+    )
+
+    return {"synced": True, "admin_id": admin_id, "plan": plan}
+
+
+async def sync_stripe_subscription_event(db, subscription: dict, event_type: str) -> dict:
+    subscription_id = subscription.get("id")
+    customer_id = subscription.get("customer")
+    status = subscription.get("status", "inactive")
+    metadata = subscription.get("metadata", {}) or {}
+    admin_id = metadata.get("admin_id")
+    plan = normalize_stripe_plan(metadata.get("plan"))
+
+    if not admin_id and subscription_id:
+        existing = await db.subscriptions.find_one({"subscription_id": subscription_id})
+        if existing:
+            admin_id = existing.get("admin_id")
+            plan = existing.get("plan", plan)
+
+    if not admin_id:
+        return {"synced": False, "reason": "missing_admin_id"}
+
+    now = datetime.now(UTC)
+    source = "stripe_subscription_deleted" if event_type == "customer.subscription.deleted" else "stripe_subscription_updated"
+
+    await db.subscriptions.update_one(
+        {"admin_id": admin_id},
+        {
+            "$set": {
+                "plan": plan,
+                "status": status,
+                "provider": "stripe",
+                "customer_id": customer_id,
+                "subscription_id": subscription_id,
+                "updated_at": now,
+                "source": source,
+            },
+            "$setOnInsert": {
+                "admin_id": admin_id,
+                "created_at": now,
+                "expires_at": None,
+            },
+        },
+        upsert=True,
+    )
+
+    return {"synced": True, "admin_id": admin_id, "plan": plan, "status": status}
+
+
+async def dispatch_stripe_event(db, event: dict) -> dict:
     event_type = event.get("type", "unknown")
+    data_object = event.get("data", {}).get("object", {})
+
+    sync_result = {"synced": False, "reason": "event_not_syncable"}
+
+    if event_type == "checkout.session.completed":
+        sync_result = await sync_checkout_session_completed(db, data_object)
+    elif event_type in {"customer.subscription.updated", "customer.subscription.deleted"}:
+        sync_result = await sync_stripe_subscription_event(db, data_object, event_type)
+    elif event_type in {"invoice.payment_succeeded", "invoice.payment_failed"}:
+        sync_result = {"synced": False, "reason": "invoice_sync_pending"}
 
     supported_events = {
         "checkout.session.completed",
@@ -247,11 +343,11 @@ def dispatch_stripe_event(event: dict) -> dict:
         "received": True,
         "event": event_type,
         "handled": event_type in supported_events,
-        "sync_pending": True,
+        "sync": sync_result,
     }
 
 
-def handle_stripe_webhook(payload: bytes, signature: str | None) -> dict:
+async def handle_stripe_webhook(db, payload: bytes, signature: str | None) -> dict:
     if not settings.stripe_webhook_secret.strip():
         raise RuntimeError("Stripe webhook is not configured")
 
@@ -271,4 +367,4 @@ def handle_stripe_webhook(payload: bytes, signature: str | None) -> dict:
     except stripe.SignatureVerificationError:
         raise ValueError("Invalid Stripe signature") from None
 
-    return dispatch_stripe_event(event)
+    return await dispatch_stripe_event(db, event)
