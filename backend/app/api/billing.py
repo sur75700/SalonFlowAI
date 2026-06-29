@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from app.api.deps import require_auth
 from app.db.mongo import get_database
-from app.services.billing import create_checkout_session, get_billing_plans, get_subscription_status, handle_stripe_webhook, set_subscription_plan
+from app.services.billing import create_checkout_session, create_customer_portal_session, get_billing_plans, get_subscription_status, handle_stripe_webhook, set_subscription_plan
 
 router = APIRouter()
 
@@ -16,6 +16,10 @@ class CreateCheckoutSessionRequest(BaseModel):
     plan: str
     success_url: str
     cancel_url: str
+
+
+class CustomerPortalRequest(BaseModel):
+    return_url: str
 
 
 @router.get("/plans")
@@ -65,6 +69,27 @@ async def billing_create_checkout_session(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
+
+
+@router.post("/customer-portal")
+async def billing_customer_portal(
+    payload: CustomerPortalRequest,
+    auth=Depends(require_auth),
+):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    try:
+        return await create_customer_portal_session(
+            db=db,
+            admin_id=auth["admin_id"],
+            return_url=payload.return_url,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
 
 
 @router.post("/webhook")

@@ -232,6 +232,30 @@ def create_checkout_session(admin_id: str, plan: str, success_url: str, cancel_u
 
 
 
+
+async def create_customer_portal_session(db, admin_id: str, return_url: str) -> dict:
+    if not settings.stripe_ready:
+        raise RuntimeError("Stripe billing is not configured")
+
+    subscription = await db.subscriptions.find_one({"admin_id": admin_id})
+    customer_id = (subscription or {}).get("customer_id")
+
+    if not customer_id:
+        raise ValueError("Stripe customer was not found for this account")
+
+    stripe.api_key = settings.stripe_secret_key
+
+    portal_session = stripe.billing_portal.Session.create(
+        customer=customer_id,
+        return_url=return_url,
+    )
+
+    return {
+        "portal_url": portal_session.url,
+        "customer_id": customer_id,
+    }
+
+
 def normalize_stripe_plan(raw_plan: str | None) -> str:
     plan = (raw_plan or "").strip()
 
