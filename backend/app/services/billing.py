@@ -59,6 +59,9 @@ PLAN_FEATURES = {
     ],
 }
 
+VALID_PLAN_CODES = set(PLAN_FEATURES.keys())
+
+
 PRICING_PLANS = [
     {
         "code": "free",
@@ -150,3 +153,27 @@ async def get_subscription_status(db, admin_id: str) -> dict:
         "billing_ready": False,
         "updated_at": datetime.now(UTC).isoformat(),
     }
+
+
+async def set_subscription_plan(db, admin_id: str, plan: str) -> dict:
+    if plan not in VALID_PLAN_CODES:
+        raise ValueError("Invalid subscription plan")
+
+    now = datetime.now(UTC)
+    await ensure_subscription(db, admin_id)
+
+    await db.subscriptions.update_one(
+        {"admin_id": admin_id},
+        {
+            "$set": {
+                "plan": plan,
+                "status": "active",
+                "provider": "internal",
+                "updated_at": now,
+                "source": "internal_admin_update",
+            }
+        },
+    )
+
+    updated = await db.subscriptions.find_one({"admin_id": admin_id})
+    return updated or {}
