@@ -342,9 +342,51 @@ async def sync_stripe_subscription_event(db, subscription: dict, event_type: str
     return {"synced": True, "admin_id": admin_id, "plan": plan, "status": status}
 
 
+async def is_stripe_event_processed(db, event_id: str) -> bool:
+    if not event_id:
+        return False
+
+    existing = await db.processed_stripe_events.find_one({"event_id": event_id})
+    return existing is not None
+
+
+async def mark_stripe_event_processed(db, event: dict, sync_result: dict) -> None:
+    event_id = event.get("id")
+    event_type = event.get("type", "unknown")
+
+    if not event_id:
+        return
+
+    now = datetime.now(UTC)
+
+    await db.processed_stripe_events.update_one(
+        {"event_id": event_id},
+        {
+            "$setOnInsert": {
+                "event_id": event_id,
+                "event_type": event_type,
+                "processed_at": now,
+                "sync": sync_result,
+                "source": "stripe_webhook",
+            }
+        },
+        upsert=True,
+    )
+
+
 async def dispatch_stripe_event(db, event: dict) -> dict:
+    event_id = event.get("id", "")
     event_type = event.get("type", "unknown")
     data_object = event.get("data", {}).get("object", {})
+
+    if await is_stripe_event_processed(db, event_id):
+        return {
+            "received": True,
+            "event": event_type,
+            "handled": True,
+            "duplicate": True,
+            "sync": {"synced": False, "reason": "duplicate_event"},
+        }
 
     sync_result = {"synced": False, "reason": "event_not_syncable"}
 
@@ -363,10 +405,13 @@ async def dispatch_stripe_event(db, event: dict) -> dict:
         "invoice.payment_failed",
     }
 
+    await mark_stripe_event_processed(db, event, sync_result)
+
     return {
         "received": True,
         "event": event_type,
         "handled": event_type in supported_events,
+        "duplicate": False,
         "sync": sync_result,
     }
 
