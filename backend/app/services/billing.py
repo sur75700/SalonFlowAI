@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
 
+from app.core.config import settings
+
 PLAN_FEATURES = {
     "free": [
         "dashboard",
@@ -62,6 +64,10 @@ PLAN_FEATURES = {
 VALID_PLAN_CODES = set(PLAN_FEATURES.keys())
 
 
+def is_billing_ready() -> bool:
+    return settings.stripe_ready
+
+
 PRICING_PLANS = [
     {
         "code": "free",
@@ -104,7 +110,7 @@ def get_billing_plans() -> dict:
             for plan in PRICING_PLANS
         ],
         "provider": "internal",
-        "billing_ready": False,
+        "billing_ready": is_billing_ready(),
     }
 
 
@@ -150,7 +156,7 @@ async def get_subscription_status(db, admin_id: str) -> dict:
         "features": PLAN_FEATURES.get(plan, PLAN_FEATURES["free"]),
         "expires_at": expires_at,
         "source": source,
-        "billing_ready": False,
+        "billing_ready": is_billing_ready(),
         "updated_at": datetime.now(UTC).isoformat(),
     }
 

@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     public_app_url: str = "http://localhost:8081"
     google_client_ids: str = ""
 
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_pro: str = ""
+    stripe_price_business: str = ""
+    stripe_price_enterprise: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -36,6 +42,22 @@ class Settings(BaseSettings):
             for value in self.google_client_ids.split(",")
             if value.strip()
         ]
+
+    @property
+    def stripe_price_map(self) -> dict[str, str]:
+        return {
+            "pro": self.stripe_price_pro.strip(),
+            "business": self.stripe_price_business.strip(),
+            "enterprise": self.stripe_price_enterprise.strip(),
+        }
+
+    @property
+    def stripe_ready(self) -> bool:
+        return bool(
+            self.stripe_secret_key.strip()
+            and self.stripe_price_pro.strip()
+            and self.stripe_price_business.strip()
+        )
 
     @property
     def cors_origins(self) -> list[str]:

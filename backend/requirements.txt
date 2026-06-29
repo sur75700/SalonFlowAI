@@ -14,3 +14,4 @@ reportlab
 bcrypt==4.0.1
 google-auth
 requests
+stripe
