@@ -367,4 +367,4 @@ async def handle_stripe_webhook(db, payload: bytes, signature: str | None) -> di
     except stripe.SignatureVerificationError:
         raise ValueError("Invalid Stripe signature") from None
 
-    return await dispatch_stripe_event(db, event)
+    return await dispatch_stripe_event(db, event._to_dict_recursive())
