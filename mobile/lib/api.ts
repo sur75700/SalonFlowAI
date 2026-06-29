@@ -46,6 +46,17 @@ export type CurrentUser = {
   created_at?: string;
 };
 
+export type CheckoutSessionResponse = {
+  session_id: string;
+  checkout_url: string;
+  plan: BillingStatus["plan"];
+};
+
+export type CustomerPortalResponse = {
+  portal_url: string;
+  customer_id: string;
+};
+
 export async function fetchBillingStatus(token: string): Promise<BillingStatus> {
   const response = await api.get("/billing/status", {
     headers: authHeaders(token),
@@ -61,6 +72,44 @@ export async function setBillingPlan(
   const response = await api.post(
     "/billing/admin/set-plan",
     { plan },
+    {
+      headers: authHeaders(token),
+    }
+  );
+
+  return response.data;
+}
+
+export async function createCheckoutSession(
+  token: string,
+  plan: BillingStatus["plan"],
+  successUrl: string,
+  cancelUrl: string
+): Promise<CheckoutSessionResponse> {
+  const response = await api.post(
+    "/billing/create-checkout-session",
+    {
+      plan,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    },
+    {
+      headers: authHeaders(token),
+    }
+  );
+
+  return response.data;
+}
+
+export async function createCustomerPortalSession(
+  token: string,
+  returnUrl: string
+): Promise<CustomerPortalResponse> {
+  const response = await api.post(
+    "/billing/customer-portal",
+    {
+      return_url: returnUrl,
+    },
     {
       headers: authHeaders(token),
     }

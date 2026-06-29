@@ -1,14 +1,16 @@
 import { useState } from "react";
+import * as WebBrowser from "expo-web-browser";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useBilling } from "../../contexts/BillingContext";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
-import { readStoredToken } from "../../lib/api";
+import { createCheckoutSession, createCustomerPortalSession, readStoredToken } from "../../lib/api";
 import { t } from "../../lib/i18n";
 import type { PricingPlanCode } from "../../lib/pricing/plans";
 import { UI } from "../../lib/theme/tokens";
 
 const PLAN_OPTIONS: PricingPlanCode[] = ["free", "pro", "business", "enterprise"];
+const PUBLIC_BILLING_RETURN_URL = "http://localhost:8081";
 
 function formatPlanName(plan: PricingPlanCode): string {
   return plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -37,22 +39,74 @@ export default function BillingCenter() {
     setActionSuccess("Billing status refreshed");
   };
 
+  const getActiveToken = () => {
+    const token = readStoredToken();
+
+    if (!token) {
+      setActionError("Active session token is required");
+      return "";
+    }
+
+    return token;
+  };
+
   const handlePlanChange = async (plan: PricingPlanCode) => {
     setActionError("");
     setActionSuccess("");
 
     try {
-      const token = readStoredToken();
+      const token = getActiveToken();
 
-      if (!token) {
-        setActionError("Active session token is required");
-        return;
-      }
+      if (!token) return;
 
       await updateBillingPlan(plan, token);
       setActionSuccess(`Plan changed to ${formatPlanName(plan)}`);
     } catch {
       setActionError("Failed to update billing plan");
+    }
+  };
+
+  const handleCheckout = async (plan: PricingPlanCode) => {
+    setActionError("");
+    setActionSuccess("");
+
+    try {
+      const token = getActiveToken();
+
+      if (!token) return;
+
+      const session = await createCheckoutSession(
+        token,
+        plan,
+        `${PUBLIC_BILLING_RETURN_URL}/billing/success`,
+        `${PUBLIC_BILLING_RETURN_URL}/billing/cancel`
+      );
+
+      await WebBrowser.openBrowserAsync(session.checkout_url);
+      setActionSuccess(`Checkout opened for ${formatPlanName(plan)}`);
+    } catch {
+      setActionError("Checkout is not available yet");
+    }
+  };
+
+  const handleCustomerPortal = async () => {
+    setActionError("");
+    setActionSuccess("");
+
+    try {
+      const token = getActiveToken();
+
+      if (!token) return;
+
+      const portal = await createCustomerPortalSession(
+        token,
+        `${PUBLIC_BILLING_RETURN_URL}/settings`
+      );
+
+      await WebBrowser.openBrowserAsync(portal.portal_url);
+      setActionSuccess("Customer portal opened");
+    } catch {
+      setActionError("Customer portal is not available yet");
     }
   };
 
@@ -91,6 +145,34 @@ export default function BillingCenter() {
             {billingStatus?.billing_ready ? "Ready" : "Foundation mode"}
           </Text>
         </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Stripe billing actions</Text>
+
+      <View style={styles.actionGrid}>
+        <Pressable
+          onPress={() => handleCheckout("pro")}
+          disabled={billingLoading}
+          style={[styles.actionButton, billingLoading ? styles.disabledButton : null]}
+        >
+          <Text style={styles.actionButtonText}>Upgrade with Stripe · Pro</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => handleCheckout("business")}
+          disabled={billingLoading}
+          style={[styles.actionButton, billingLoading ? styles.disabledButton : null]}
+        >
+          <Text style={styles.actionButtonText}>Upgrade with Stripe · Business</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleCustomerPortal}
+          disabled={billingLoading}
+          style={[styles.secondaryActionButton, billingLoading ? styles.disabledButton : null]}
+        >
+          <Text style={styles.secondaryActionButtonText}>Manage Subscription</Text>
+        </Pressable>
       </View>
 
       <Text style={styles.sectionTitle}>Internal plan switch</Text>
@@ -214,6 +296,34 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 16,
     marginBottom: 10,
+  },
+  actionGrid: {
+    gap: 8,
+    marginBottom: 4,
+  },
+  actionButton: {
+    borderRadius: 14,
+    backgroundColor: "#f2d17a",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  actionButtonText: {
+    color: "#111827",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  secondaryActionButton: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#f2d17a",
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "rgba(242,209,122,0.10)",
+  },
+  secondaryActionButtonText: {
+    color: "#f2d17a",
+    fontSize: 13,
+    fontWeight: "900",
   },
   planGrid: {
     flexDirection: "row",
