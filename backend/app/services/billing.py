@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
 
+import stripe
+
 from app.core.config import settings
 
 PLAN_FEATURES = {
@@ -183,3 +185,47 @@ async def set_subscription_plan(db, admin_id: str, plan: str) -> dict:
 
     updated = await db.subscriptions.find_one({"admin_id": admin_id})
     return updated or {}
+
+
+
+def get_stripe_price_id(plan: str) -> str:
+    if plan not in settings.stripe_price_map:
+        raise ValueError("Invalid subscription plan")
+
+    price_id = settings.stripe_price_map.get(plan, "").strip()
+
+    if not price_id:
+        raise ValueError("Stripe price is not configured for this plan")
+
+    return price_id
+
+
+def create_checkout_session(admin_id: str, plan: str, success_url: str, cancel_url: str) -> dict:
+    if not settings.stripe_ready:
+        raise RuntimeError("Stripe billing is not configured")
+
+    price_id = get_stripe_price_id(plan)
+    stripe.api_key = settings.stripe_secret_key
+
+    session = stripe.checkout.Session.create(
+        mode="subscription",
+        line_items=[
+            {
+                "price": price_id,
+                "quantity": 1,
+            }
+        ],
+        success_url=success_url,
+        cancel_url=cancel_url,
+        client_reference_id=admin_id,
+        metadata={
+            "admin_id": admin_id,
+            "plan": plan,
+        },
+    )
+
+    return {
+        "session_id": session.id,
+        "checkout_url": session.url,
+        "plan": plan,
+    }
