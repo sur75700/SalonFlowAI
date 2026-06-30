@@ -58,3 +58,4 @@ dump/
 
 # local audit logs
 royal_audit/
+backups/
