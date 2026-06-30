@@ -1069,11 +1069,23 @@ async def analytics_insights(auth: dict = Depends(require_auth)):
         "revenue_simulator": revenue_simulator,
         "ai_engine_version": ai_reasoning["ai_engine_version"],
         "ai_mode": ai_reasoning["ai_mode"],
+        "ai_contract": {
+            "version": "25C.1",
+            "mode": "strict",
+            "null_safety": "enabled",
+            "mobile_safe": True,
+            "backward_compatible": True,
+        },
         "ai_data_quality": {
             "score": ai_reasoning["data_quality_score"],
+            "level": (
+                "high" if ai_reasoning["data_quality_score"] >= 75
+                else "medium" if ai_reasoning["data_quality_score"] >= 50
+                else "low"
+            ),
         },
         "ai_reasoning": ai_reasoning,
         "confidence_breakdown": ai_reasoning["confidence_breakdown"],
         "next_best_action": ai_reasoning["next_best_action"],
-        "insights": insights,
+        "insights": insights or [],
     }
