@@ -736,6 +736,83 @@ def build_mission_control(
     return sorted(missions, key=lambda item: item["priority"])[:3]
 
 
+
+def build_ai_reasoning_layer(
+    *,
+    forecast: dict,
+    risk_summary: dict,
+    growth_summary: dict,
+    executive_decision: dict,
+    client_summary: dict,
+    client_risk: dict,
+    mission_control: list[dict],
+):
+    total_clients = int(client_summary.get("total_clients") or 0)
+    completed_forecast = float(forecast.get("revenue_7_days") or 0)
+    risk_score = int(risk_summary.get("highest_risk_score") or 0)
+    growth_score = int(growth_summary.get("growth_score") or 0)
+    decision_score = int(executive_decision.get("decision_score") or 0)
+    forecast_confidence = int(forecast.get("confidence") or 0)
+    retention_score = int(client_summary.get("retention_score") or 0)
+    client_risk_score = int(client_risk.get("risk_score") or 0)
+
+    data_quality_score = 25
+    if total_clients > 0:
+        data_quality_score += 20
+    if completed_forecast > 0:
+        data_quality_score += 25
+    if mission_control:
+        data_quality_score += 15
+    if retention_score > 0:
+        data_quality_score += 15
+    data_quality_score = min(100, data_quality_score)
+
+    confidence_breakdown = {
+        "forecast_confidence": forecast_confidence,
+        "growth_signal": growth_score,
+        "risk_pressure": risk_score,
+        "client_retention": retention_score,
+        "client_risk": client_risk_score,
+        "data_quality": data_quality_score,
+    }
+
+    primary_mission = mission_control[0] if mission_control else {}
+    next_best_action = {
+        "code": primary_mission.get("action") or executive_decision.get("primary_action") or "create_first_booking",
+        "label": primary_mission.get("action_label") or "Create First Booking",
+        "expected_result": primary_mission.get("expected_result") or "Unlock business intelligence.",
+        "execution_window_days": primary_mission.get("execution_window_days") or 7,
+        "roi_score": primary_mission.get("roi_score") or 70,
+    }
+
+    reasoning_points = []
+
+    if data_quality_score < 50:
+        reasoning_points.append("AI confidence is limited because the workspace has low operational data.")
+    else:
+        reasoning_points.append("AI has enough operational signals to generate business guidance.")
+
+    if risk_score >= 70:
+        reasoning_points.append("Risk pressure is high, so defensive actions should be prioritized.")
+    elif growth_score >= 70:
+        reasoning_points.append("Growth signal is strong, so expansion actions should be prioritized.")
+    else:
+        reasoning_points.append("The business is in stabilization mode and should focus on consistent execution.")
+
+    if total_clients == 0:
+        reasoning_points.append("Client intelligence will improve after clients and bookings are added.")
+
+    return {
+        "ai_engine_version": "25B.1",
+        "ai_mode": "stable",
+        "data_quality_score": data_quality_score,
+        "decision_score": decision_score,
+        "confidence_breakdown": confidence_breakdown,
+        "decision_explanation": " ".join(reasoning_points),
+        "next_best_action": next_best_action,
+    }
+
+
 def build_business_insights(
     *,
     completed_revenue: float,
@@ -967,6 +1044,15 @@ async def analytics_insights(auth: dict = Depends(require_auth)):
         avg_booking_value=float(totals.get("avg_completed_booking_value") or 0),
         forecast=forecast,
     )
+    ai_reasoning = build_ai_reasoning_layer(
+        forecast=forecast,
+        risk_summary=risk_summary,
+        growth_summary=growth_summary,
+        executive_decision=executive_decision,
+        client_summary=client_summary,
+        client_risk=client_risk,
+        mission_control=mission_control,
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -981,5 +1067,13 @@ async def analytics_insights(auth: dict = Depends(require_auth)):
         "performance_center": performance_center,
         "benchmark_center": benchmark_center,
         "revenue_simulator": revenue_simulator,
+        "ai_engine_version": ai_reasoning["ai_engine_version"],
+        "ai_mode": ai_reasoning["ai_mode"],
+        "ai_data_quality": {
+            "score": ai_reasoning["data_quality_score"],
+        },
+        "ai_reasoning": ai_reasoning,
+        "confidence_breakdown": ai_reasoning["confidence_breakdown"],
+        "next_best_action": ai_reasoning["next_best_action"],
         "insights": insights,
     }
