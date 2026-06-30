@@ -737,6 +737,82 @@ def build_mission_control(
 
 
 
+def build_decision_priority_engine(
+    *,
+    executive_decision: dict,
+    mission_control: list[dict],
+    confidence_breakdown: dict,
+):
+    ranked_actions = []
+
+    for index, mission in enumerate(mission_control or []):
+        impact = float(mission.get("impact") or 0)
+        roi_score = int(mission.get("roi_score") or 0)
+        confidence = int(mission.get("confidence") or 0)
+
+        urgency = str(mission.get("urgency") or "medium").lower()
+        urgency_score = 90 if urgency == "high" else 70 if urgency == "medium" else 50
+
+        priority_score = max(
+            0,
+            min(
+                100,
+                round(
+                    roi_score * 0.35 +
+                    confidence * 0.3 +
+                    urgency_score * 0.25 +
+                    min(100, impact / 1000) * 0.1 -
+                    index * 3
+                ),
+            ),
+        )
+
+        ranked_actions.append({
+            "rank": index + 1,
+            "code": mission.get("code") or mission.get("action") or "unknown_action",
+            "action": mission.get("action") or "create_first_booking",
+            "label": mission.get("action_label") or mission.get("title") or "Recommended Action",
+            "priority_score": priority_score,
+            "roi_priority": roi_score,
+            "urgency_score": urgency_score,
+            "confidence_score": confidence,
+            "expected_impact": round(impact, 2),
+            "execution_window_days": mission.get("execution_window_days") or 7,
+            "rationale": (
+                f"Ranked from ROI {roi_score}, confidence {confidence}, "
+                f"urgency {urgency_score}, and expected impact {round(impact, 2)}."
+            ),
+        })
+
+    ranked_actions = sorted(ranked_actions, key=lambda item: item["priority_score"], reverse=True)
+
+    top_action = ranked_actions[0] if ranked_actions else {
+        "rank": 1,
+        "code": "create_first_booking",
+        "action": executive_decision.get("primary_action") or "create_first_booking",
+        "label": "Create First Booking",
+        "priority_score": int(executive_decision.get("decision_score") or 43),
+        "roi_priority": 70,
+        "urgency_score": 70,
+        "confidence_score": int(confidence_breakdown.get("forecast_confidence") or 68),
+        "expected_impact": float(executive_decision.get("expected_impact") or 0),
+        "execution_window_days": 7,
+        "rationale": "Fallback action selected because mission control has no active actions.",
+    }
+
+    decision_rationale = (
+        f"Top action is {top_action['label']} with priority score "
+        f"{top_action['priority_score']} based on ROI, urgency, confidence, and impact."
+    )
+
+    return {
+        "version": "25D.1",
+        "top_action": top_action,
+        "ranked_actions": ranked_actions or [top_action],
+        "decision_rationale": decision_rationale,
+    }
+
+
 def build_ai_reasoning_layer(
     *,
     forecast: dict,
@@ -1053,6 +1129,11 @@ async def analytics_insights(auth: dict = Depends(require_auth)):
         client_risk=client_risk,
         mission_control=mission_control,
     )
+    decision_priority = build_decision_priority_engine(
+        executive_decision=executive_decision,
+        mission_control=mission_control,
+        confidence_breakdown=ai_reasoning["confidence_breakdown"],
+    )
 
     return {
         "currency": dashboard.get("currency", "AMD"),
@@ -1087,5 +1168,6 @@ async def analytics_insights(auth: dict = Depends(require_auth)):
         "ai_reasoning": ai_reasoning,
         "confidence_breakdown": ai_reasoning["confidence_breakdown"],
         "next_best_action": ai_reasoning["next_best_action"],
+        "decision_priority": decision_priority,
         "insights": insights or [],
     }
