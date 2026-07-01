@@ -117,11 +117,32 @@ export default function OverviewScreen() {
         }
       >
         <View style={styles.hero}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeText}>ROYAL COMMAND CENTER</Text>
+            </View>
+            <View style={styles.heroLivePill}>
+              <Text style={styles.heroLiveDot}>●</Text>
+              <Text style={styles.heroLiveText}>LIVE</Text>
+            </View>
+          </View>
+
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Dashboard", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">
+            {t("Dashboard", locale)}
+          </Text>
           <Text style={styles.heroText}>
             {t("Dashboard Hero Subtitle", locale)}
           </Text>
+
+          <View style={styles.heroSignalRow}>
+            <Text style={styles.heroSignalText}>{summary?.total_appointments ?? 0} {t("Total Bookings", locale)}</Text>
+            <Text style={styles.heroSignalDivider}>•</Text>
+            <Text style={styles.heroSignalText}>{summary?.completed_appointments ?? 0} {t("Completed", locale)}</Text>
+            <Text style={styles.heroSignalDivider}>•</Text>
+            <Text style={styles.heroSignalText}>{summary?.today_appointments ?? 0} {t("Today", locale)}</Text>
+          </View>
+
           <LanguageSwitcher />
         </View>
 
@@ -295,13 +316,74 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: UI.spacing.bottom },
   hero: {
     boxShadow: UI.depth.hero,
-    elevation: 12,
-    backgroundColor: "rgba(10, 11, 16, 0.96)",
+    elevation: 18,
+    backgroundColor: "rgba(10, 11, 16, 0.88)",
     borderRadius: UI.radius.hero,
     padding: UI.spacing.xl,
     marginBottom: UI.spacing.lg,
     borderWidth: 1,
-    borderColor: "#27212c",
+    borderColor: "rgba(242, 209, 122, 0.34)",
+    overflow: "hidden",
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
+  },
+  heroBadge: {
+    borderRadius: UI.radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: "rgba(242, 209, 122, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(242, 209, 122, 0.28)",
+  },
+  heroBadgeText: {
+    color: "#f5d27a",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+  },
+  heroLivePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: UI.radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: "rgba(34, 197, 94, 0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(34, 197, 94, 0.28)",
+  },
+  heroLiveDot: {
+    color: "#22c55e",
+    fontSize: 10,
+  },
+  heroLiveText: {
+    color: "#bbf7d0",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  heroSignalRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 10,
+  },
+  heroSignalText: {
+    color: "#e8ddff",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  heroSignalDivider: {
+    color: "rgba(245, 210, 122, 0.62)",
+    fontSize: 12,
+    fontWeight: "900",
   },
   heroOverline: {
     color: "#f2d17a",
