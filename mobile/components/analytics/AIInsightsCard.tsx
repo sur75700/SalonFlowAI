@@ -263,10 +263,10 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
 
       {(aiReasoning || nextBestAction || decisionPriority) ? (
         <View style={styles.decisionPanel}>
-          <Text style={styles.decisionTitle}>🧠 {t("AI Reasoning Engine", locale)}</Text>
+          <Text style={styles.reasoningTitle}>🧠 {t("AI Reasoning Engine", locale)}</Text>
 
           {aiReasoning?.decision_explanation ? (
-            <Text style={styles.decisionHeadline}>{aiReasoning.decision_explanation}</Text>
+            <Text style={styles.reasoningText}>{aiReasoning.decision_explanation}</Text>
           ) : null}
 
           {decisionPriority?.top_action ? (
