@@ -164,6 +164,67 @@ export type AnalyticsRevenueSimulator = {
   best_scenario?: AnalyticsRevenueSimulatorScenario;
 };
 
+export type AnalyticsAIContract = {
+  version: string;
+  mode: string;
+  null_safety: string;
+  mobile_safe: boolean;
+  backward_compatible: boolean;
+};
+
+export type AnalyticsAIDataQuality = {
+  score: number;
+  level: string;
+};
+
+export type AnalyticsConfidenceBreakdown = {
+  forecast_confidence: number;
+  growth_signal: number;
+  risk_pressure: number;
+  client_retention: number;
+  client_risk: number;
+  data_quality: number;
+};
+
+export type AnalyticsNextBestAction = {
+  code: string;
+  label: string;
+  expected_result: string;
+  execution_window_days: number;
+  roi_score: number;
+};
+
+export type AnalyticsAIReasoning = {
+  ai_engine_version: string;
+  ai_mode: string;
+  data_quality_score: number;
+  decision_score: number;
+  confidence_breakdown: AnalyticsConfidenceBreakdown;
+  decision_explanation: string;
+  next_best_action: AnalyticsNextBestAction;
+};
+
+export type AnalyticsDecisionPriorityAction = {
+  rank: number;
+  code: string;
+  action: string;
+  label: string;
+  priority_score: number;
+  roi_priority: number;
+  urgency_score: number;
+  confidence_score: number;
+  expected_impact: number;
+  execution_window_days: number;
+  rationale: string;
+};
+
+export type AnalyticsDecisionPriority = {
+  version: string;
+  top_action: AnalyticsDecisionPriorityAction;
+  ranked_actions: AnalyticsDecisionPriorityAction[];
+  decision_rationale: string;
+};
+
 export type AnalyticsData = {
   // Live analytics API aliases
   total_revenue?: number;
@@ -198,6 +259,14 @@ export type AnalyticsData = {
     operational_efficiency: number;
   };
   revenue_simulator?: AnalyticsRevenueSimulator;
+  ai_engine_version?: string;
+  ai_mode?: string;
+  ai_contract?: AnalyticsAIContract;
+  ai_data_quality?: AnalyticsAIDataQuality;
+  ai_reasoning?: AnalyticsAIReasoning;
+  confidence_breakdown?: AnalyticsConfidenceBreakdown;
+  next_best_action?: AnalyticsNextBestAction;
+  decision_priority?: AnalyticsDecisionPriority;
   benchmark_center?: {
     benchmark_score: number;
     salon_tier: string;
