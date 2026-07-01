@@ -782,6 +782,19 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
 }
 
 const styles = StyleSheet.create({
+  reasoningTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#F8FAFC",
+    marginBottom: 10,
+    letterSpacing: 0.2,
+  },
+  reasoningText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: "rgba(255,255,255,0.72)",
+    marginBottom: 14,
+  },
   card: {
     backgroundColor: "#10131f",
     borderRadius: UI.radius.hero,
