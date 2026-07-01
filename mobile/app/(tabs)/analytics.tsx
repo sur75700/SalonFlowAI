@@ -241,6 +241,10 @@ export default function AnalyticsScreen() {
             missionControl={analytics?.mission_control}
             performanceCenter={analytics?.performance_center}
             benchmarkCenter={analytics?.benchmark_center}
+            aiReasoning={analytics?.ai_reasoning}
+            nextBestAction={analytics?.next_best_action}
+            decisionPriority={analytics?.decision_priority}
+            confidenceBreakdown={analytics?.confidence_breakdown}
           />
         ) : null}
 

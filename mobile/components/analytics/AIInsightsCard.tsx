@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { UI } from "../../lib/theme/tokens";
 import { t } from "../../lib/i18n";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
-import type { AnalyticsInsight } from "../../types/models";
+import type { AnalyticsAIReasoning, AnalyticsConfidenceBreakdown, AnalyticsDecisionPriority, AnalyticsInsight, AnalyticsNextBestAction } from "../../types/models";
 
 type Props = {
   insights?: AnalyticsInsight[];
@@ -81,6 +81,10 @@ type Props = {
     service_score: number;
     operations_score: number;
   };
+  aiReasoning?: AnalyticsAIReasoning;
+  nextBestAction?: AnalyticsNextBestAction;
+  decisionPriority?: AnalyticsDecisionPriority;
+  confidenceBreakdown?: AnalyticsConfidenceBreakdown;
 };
 
 
@@ -243,7 +247,7 @@ function insightMessage(item: AnalyticsInsight, locale: string) {
     : interpolate(translated, item.params);
 }
 
-export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl, performanceCenter, benchmarkCenter }: Props) {
+export default function AIInsightsCard({ insights = [], forecast, riskSummary, growthSummary, executiveDecision, clientSummary, clientRisk, missionControl, performanceCenter, benchmarkCenter, aiReasoning, nextBestAction, decisionPriority, confidenceBreakdown }: Props) {
   const { locale } = useAppPreferences();
   const visibleInsights = insights.slice(0, 5);
   const executiveSummary = buildExecutiveSummary(visibleInsights);
@@ -256,6 +260,48 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
       <Text style={styles.subtitle}>
         {t("AI Business Insights Subtitle", locale)}
       </Text>
+
+      {(aiReasoning || nextBestAction || decisionPriority) ? (
+        <View style={styles.decisionPanel}>
+          <Text style={styles.decisionTitle}>🧠 AI Reasoning Engine</Text>
+
+          {aiReasoning?.decision_explanation ? (
+            <Text style={styles.decisionHeadline}>{aiReasoning.decision_explanation}</Text>
+          ) : null}
+
+          {decisionPriority?.top_action ? (
+            <View style={styles.decisionGrid}>
+              <View style={styles.decisionCell}>
+                <Text style={styles.decisionValue}>{decisionPriority.top_action.priority_score}%</Text>
+                <Text style={styles.decisionLabel}>Priority Score</Text>
+              </View>
+
+              <View style={styles.decisionCell}>
+                <Text style={styles.decisionValue}>{decisionPriority.top_action.roi_priority}/100</Text>
+                <Text style={styles.decisionLabel}>ROI Priority</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {(nextBestAction || decisionPriority?.top_action) ? (
+            <Text style={styles.decisionAction}>
+              Next best action: {(nextBestAction?.label || decisionPriority?.top_action?.label || "Recommended Action")}
+            </Text>
+          ) : null}
+
+          {(nextBestAction?.expected_result || decisionPriority?.top_action?.rationale) ? (
+            <Text style={styles.decisionLevel}>
+              {nextBestAction?.expected_result || decisionPriority?.top_action?.rationale}
+            </Text>
+          ) : null}
+
+          {confidenceBreakdown ? (
+            <Text style={styles.decisionAction}>
+              Confidence: forecast {confidenceBreakdown.forecast_confidence}% · growth {confidenceBreakdown.growth_signal}% · data {confidenceBreakdown.data_quality}%
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
 
       {visibleInsights.length ? (
         <View style={styles.summaryPanel}>
