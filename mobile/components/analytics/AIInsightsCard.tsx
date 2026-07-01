@@ -263,7 +263,7 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
 
       {(aiReasoning || nextBestAction || decisionPriority) ? (
         <View style={styles.decisionPanel}>
-          <Text style={styles.decisionTitle}>🧠 AI Reasoning Engine</Text>
+          <Text style={styles.decisionTitle}>🧠 {t("AI Reasoning Engine", locale)}</Text>
 
           {aiReasoning?.decision_explanation ? (
             <Text style={styles.decisionHeadline}>{aiReasoning.decision_explanation}</Text>
@@ -273,19 +273,19 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
             <View style={styles.decisionGrid}>
               <View style={styles.decisionCell}>
                 <Text style={styles.decisionValue}>{decisionPriority.top_action.priority_score}%</Text>
-                <Text style={styles.decisionLabel}>Priority Score</Text>
+                <Text style={styles.decisionLabel}>{t("AI Priority Score", locale)}</Text>
               </View>
 
               <View style={styles.decisionCell}>
                 <Text style={styles.decisionValue}>{decisionPriority.top_action.roi_priority}/100</Text>
-                <Text style={styles.decisionLabel}>ROI Priority</Text>
+                <Text style={styles.decisionLabel}>{t("AI ROI Priority", locale)}</Text>
               </View>
             </View>
           ) : null}
 
           {(nextBestAction || decisionPriority?.top_action) ? (
             <Text style={styles.decisionAction}>
-              Next best action: {(nextBestAction?.label || decisionPriority?.top_action?.label || "Recommended Action")}
+              {t("AI Next Best Action", locale)}: {(nextBestAction?.label || decisionPriority?.top_action?.label || t("Recommended Action", locale))}
             </Text>
           ) : null}
 
@@ -297,7 +297,7 @@ export default function AIInsightsCard({ insights = [], forecast, riskSummary, g
 
           {confidenceBreakdown ? (
             <Text style={styles.decisionAction}>
-              Confidence: forecast {confidenceBreakdown.forecast_confidence}% · growth {confidenceBreakdown.growth_signal}% · data {confidenceBreakdown.data_quality}%
+              {t("AI Confidence", locale)}: {t("AI Forecast", locale)} {confidenceBreakdown.forecast_confidence}% · {t("Growth", locale)} {confidenceBreakdown.growth_signal}% · {t("AI Data", locale)} {confidenceBreakdown.data_quality}%
             </Text>
           ) : null}
         </View>
