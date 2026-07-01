@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$HOME/Projects/SalonFlowAI"
+
+case "${1:-status}" in
+  start)
+    docker start salonflow-mongo >/dev/null 2>&1 || true
+    cd "$ROOT/backend"
+    pgrep -f "uvicorn app.main:app" >/dev/null || nohup .venv/bin/uvicorn app.main:app --reload > "$ROOT/backend/.ghost-backend.log" 2>&1 &
+    echo "👻 GhostSalon backend + mongo started"
+    ;;
+
+  stop)
+    pkill -f "uvicorn app.main:app" || true
+    docker stop salonflow-mongo >/dev/null 2>&1 || true
+    echo "👻 GhostSalon backend + mongo stopped"
+    ;;
+
+  restart)
+    "$0" stop
+    sleep 2
+    "$0" start
+    ;;
+
+  status)
+    echo "=== Mongo ==="
+    docker ps | grep salonflow-mongo || true
+    echo "=== Backend ==="
+    ps aux | grep "uvicorn app.main:app" | grep -v grep || true
+    ;;
+
+  verify)
+    curl -i http://127.0.0.1:8000/docs | head
+    ;;
+
+  *)
+    echo "Usage: ./ghostsalon {start|stop|restart|status|verify}"
+    exit 1
+    ;;
+esac
