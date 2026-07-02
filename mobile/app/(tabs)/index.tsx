@@ -181,10 +181,46 @@ export default function OverviewScreen() {
           </View>
         ) : null}
 
+        <View style={styles.aiStatusStrip}>
+          <View style={styles.aiStatusItem}>
+            <Text style={styles.aiStatusIcon}>🟢</Text>
+            <View>
+              <Text style={styles.aiStatusLabel}>AI ONLINE</Text>
+              <Text style={styles.aiStatusText}>Monitoring your business</Text>
+            </View>
+          </View>
+
+          <View style={styles.aiStatusItem}>
+            <Text style={styles.aiStatusIcon}>🌌</Text>
+            <View>
+              <Text style={styles.aiStatusLabel}>COSMOS READY</Text>
+              <Text style={styles.aiStatusText}>Executive dashboard active</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dashboardSectionHeader}>
+          <Text style={styles.dashboardSectionOverline}>EXECUTIVE KPIs</Text>
+          <Text style={styles.dashboardSectionTitle}>Business command signals</Text>
+        </View>
+
         <View style={styles.statsGrid}>
-          {statCards.map((card) => (
+          {statCards.slice(0, 4).map((card) => (
             <View key={card.label} style={responsiveCardStyle}>
               <StatCard label={card.label} value={card.value} />
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.dashboardSectionHeader}>
+          <Text style={styles.dashboardSectionOverline}>TODAY'S OPERATIONS</Text>
+          <Text style={styles.dashboardSectionTitle}>Live booking activity</Text>
+        </View>
+
+        <View style={styles.statsGrid}>
+          {statCards.slice(4).map((card) => (
+            <View key={card.label} style={responsiveCardStyle}>
+              <StatCard label={card.label} value={card.value} variant="accent" />
             </View>
           ))}
         </View>
@@ -404,6 +440,60 @@ const styles = StyleSheet.create({
     color: "#b7adbf",
     fontSize: 13,
     lineHeight: 18,
+  },
+  aiStatusStrip: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 20,
+  },
+  aiStatusItem: {
+    flexGrow: 1,
+    flexBasis: "48%",
+    minWidth: 156,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.md,
+    backgroundColor: "rgba(10, 11, 16, 0.82)",
+    borderWidth: 1,
+    borderColor: "rgba(34, 197, 94, 0.22)",
+    boxShadow: UI.depth.card,
+    elevation: 10,
+  },
+  aiStatusIcon: {
+    fontSize: 18,
+  },
+  aiStatusLabel: {
+    color: "#bbf7d0",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  aiStatusText: {
+    color: "rgba(232, 221, 255, 0.72)",
+    fontSize: 11,
+    fontWeight: "700",
+    marginTop: 3,
+  },
+  dashboardSectionHeader: {
+    marginTop: 2,
+    marginBottom: 12,
+    paddingHorizontal: 2,
+  },
+  dashboardSectionOverline: {
+    color: "#f5d27a",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.4,
+    marginBottom: 5,
+  },
+  dashboardSectionTitle: {
+    color: "#f8fafc",
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "900",
   },
   statsGrid: {
     flexDirection: "row",
