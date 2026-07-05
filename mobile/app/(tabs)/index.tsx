@@ -1,4 +1,3 @@
-import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import React from "react";
 import { UI } from "../../lib/theme/tokens";
 import { router } from "expo-router";
@@ -17,6 +16,7 @@ import { useLogout } from "../../hooks/useLogout";
 import SessionActionBar from "../../components/auth/SessionActionBar";
 import SectionCard from "../../components/dashboard/SectionCard";
 import ActionButton from "../../components/dashboard/ActionButton";
+import CommandTile from "../../components/dashboard/CommandTile";
 import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
@@ -143,7 +143,6 @@ export default function OverviewScreen() {
             <Text style={styles.heroSignalText}>{summary?.today_appointments ?? 0} {t("Today", locale)}</Text>
           </View>
 
-          <LanguageSwitcher />
         </View>
 
         <SessionActionBar
@@ -182,20 +181,21 @@ export default function OverviewScreen() {
         ) : null}
 
         <View style={styles.aiStatusStrip}>
-          <View style={styles.aiStatusItem}>
+          <View style={styles.aiStatusSignal}>
             <Text style={styles.aiStatusIcon}>🟢</Text>
-            <View>
-              <Text style={styles.aiStatusLabel}>AI ONLINE</Text>
-              <Text style={styles.aiStatusText}>Monitoring your business</Text>
-            </View>
+            <Text style={styles.aiStatusLabel}>AI ONLINE</Text>
           </View>
-
-          <View style={styles.aiStatusItem}>
+          <View style={styles.aiStatusSignal}>
             <Text style={styles.aiStatusIcon}>🌌</Text>
-            <View>
-              <Text style={styles.aiStatusLabel}>COSMOS READY</Text>
-              <Text style={styles.aiStatusText}>Executive dashboard active</Text>
-            </View>
+            <Text style={styles.aiStatusLabel}>COSMOS SYNCED</Text>
+          </View>
+          <View style={styles.aiStatusSignal}>
+            <Text style={styles.aiStatusIcon}>⚡</Text>
+            <Text style={styles.aiStatusLabel}>LIVE DATA</Text>
+          </View>
+          <View style={styles.aiStatusSignal}>
+            <Text style={styles.aiStatusIcon}>🛡️</Text>
+            <Text style={styles.aiStatusLabel}>VERIFIED</Text>
           </View>
         </View>
 
@@ -230,34 +230,32 @@ export default function OverviewScreen() {
           subtitle={t("Command NavigationSubtitle", locale)}
         >
           <View style={styles.commandTilesGrid}>
-            <ActionButton
-              compact
-              style={[styles.commandTile, responsiveCardStyle]}
-              title={`📊 ${t("Insights", locale)}`}
+            <CommandTile
+              icon="📊"
+              style={responsiveCardStyle}
+              title={t("Insights", locale)}
+              subtitle={t("Insights Info Subtitle", locale)}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
-            <ActionButton
-              compact
-              style={[styles.commandTile, responsiveCardStyle]}
-              title={`📄 ${t("Pdf Reports", locale)}`}
-              onPress={() => router.navigate("/(tabs)/reports")}
-            />
-            <ActionButton
-              compact
-              style={[styles.commandTile, responsiveCardStyle]}
-              title={`📅 ${t("Appointments", locale)}`}
+            <CommandTile
+              icon="📅"
+              style={responsiveCardStyle}
+              title={t("Appointments", locale)}
+              subtitle={t("AppointmentsInfoSubtitle", locale)}
               onPress={() => router.navigate("/(tabs)/appointments")}
             />
-            <ActionButton
-              compact
-              style={[styles.commandTile, responsiveCardStyle]}
-              title={`👥 ${t("Clients", locale)}`}
+            <CommandTile
+              icon="👥"
+              style={responsiveCardStyle}
+              title={t("Clients", locale)}
+              subtitle={t("ClientsInfoSubtitle", locale)}
               onPress={() => router.navigate("/(tabs)/clients")}
             />
-            <ActionButton
-              compact
-              style={[styles.commandTile, responsiveCardStyle]}
-              title={`✂️ ${t("Service Catalog", locale)}`}
+            <CommandTile
+              icon="✂️"
+              style={responsiveCardStyle}
+              title={t("Service Catalog", locale)}
+              subtitle={t("Service CatalogHeroSubtitle", locale)}
               onPress={() => router.navigate("/(tabs)/services")}
             />
           </View>
@@ -404,38 +402,40 @@ const styles = StyleSheet.create({
   aiStatusStrip: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 20,
-  },
-  aiStatusItem: {
-    flexGrow: 1,
-    flexBasis: "48%",
-    minWidth: 156,
-    flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 10,
+    marginBottom: 20,
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.md,
-    backgroundColor: "rgba(10, 11, 16, 0.82)",
+    padding: 12,
+    backgroundColor: "rgba(10, 11, 16, 0.78)",
     borderWidth: 1,
     borderColor: "rgba(34, 197, 94, 0.22)",
     boxShadow: UI.depth.card,
     elevation: 10,
   },
+  aiStatusSignal: {
+    flexGrow: 1,
+    flexBasis: "22%",
+    minWidth: 128,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+    borderRadius: UI.radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    backgroundColor: "rgba(255,255,255,0.035)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
   aiStatusIcon: {
-    fontSize: 18,
+    fontSize: 13,
   },
   aiStatusLabel: {
     color: "#bbf7d0",
     fontSize: 10,
     fontWeight: "900",
-    letterSpacing: 1,
-  },
-  aiStatusText: {
-    color: "rgba(232, 221, 255, 0.72)",
-    fontSize: 11,
-    fontWeight: "700",
-    marginTop: 3,
+    letterSpacing: 0.9,
   },
   dashboardSectionHeader: {
     marginTop: 2,
