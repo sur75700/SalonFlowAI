@@ -229,76 +229,36 @@ export default function OverviewScreen() {
           title={t("Command Navigation", locale)}
           subtitle={t("Command NavigationSubtitle", locale)}
         >
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Insights", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("Insights Info Subtitle", locale)}
-            </Text>
-          </View>
-
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Pdf Reports", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("Pdf ReportsInfoSubtitle", locale)}
-            </Text>
-          </View>
-
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Appointments", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("AppointmentsInfoSubtitle", locale)}
-            </Text>
-          </View>
-
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Clients", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("ClientsInfoSubtitle", locale)}
-            </Text>
-          </View>
-
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Service Catalog", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("Service CatalogHeroSubtitle", locale)}
-            </Text>
-          </View>
-        </SectionCard>
-
-        <SectionCard
-          title={t("Quick Actions", locale)}
-          subtitle={t("Quick Actions Subtitle", locale)}
-        >
-          <View style={styles.quickActionsGrid}>
+          <View style={styles.commandTilesGrid}>
             <ActionButton
               compact
-              style={[styles.quickActionCell, responsiveCardStyle]}
-              title={t("Bookings", locale)}
-              onPress={() => router.navigate("/(tabs)/appointments")}
-            />
-            <ActionButton
-              compact
-              style={[styles.quickActionCell, responsiveCardStyle]}
-              title={t("Clients", locale)}
-              onPress={() => router.navigate("/(tabs)/clients")}
-            />
-            <ActionButton
-              compact
-              style={[styles.quickActionCell, responsiveCardStyle]}
-              title={t("Services", locale)}
-              onPress={() => router.navigate("/(tabs)/services")}
-            />
-            <ActionButton
-              compact
-              style={[styles.quickActionCell, responsiveCardStyle]}
-              title={t("Insights", locale)}
+              style={[styles.commandTile, responsiveCardStyle]}
+              title={`📊 ${t("Insights", locale)}`}
               onPress={() => router.navigate("/(tabs)/analytics")}
             />
             <ActionButton
               compact
-              style={[styles.quickActionCell, responsiveCardStyle]}
-              title="Reports"
+              style={[styles.commandTile, responsiveCardStyle]}
+              title={`📄 ${t("Pdf Reports", locale)}`}
               onPress={() => router.navigate("/(tabs)/reports")}
+            />
+            <ActionButton
+              compact
+              style={[styles.commandTile, responsiveCardStyle]}
+              title={`📅 ${t("Appointments", locale)}`}
+              onPress={() => router.navigate("/(tabs)/appointments")}
+            />
+            <ActionButton
+              compact
+              style={[styles.commandTile, responsiveCardStyle]}
+              title={`👥 ${t("Clients", locale)}`}
+              onPress={() => router.navigate("/(tabs)/clients")}
+            />
+            <ActionButton
+              compact
+              style={[styles.commandTile, responsiveCardStyle]}
+              title={`✂️ ${t("Service Catalog", locale)}`}
+              onPress={() => router.navigate("/(tabs)/services")}
             />
           </View>
         </SectionCard>
@@ -523,6 +483,16 @@ const styles = StyleSheet.create({
     borderColor: "#241f27",
     borderRadius: UI.radius.xl,
     padding: UI.spacing.lg,
+  },
+  commandTilesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  commandTile: {
+    minHeight: 58,
+    backgroundColor: "rgba(12, 14, 22, 0.88)",
+    borderColor: "rgba(242, 209, 122, 0.24)",
   },
   infoBlock: {
     backgroundColor: "#11131a",
