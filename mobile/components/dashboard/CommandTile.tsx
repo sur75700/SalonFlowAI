@@ -41,7 +41,8 @@ const styles = StyleSheet.create({
   tile: {
     minHeight: 132,
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.md,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
     backgroundColor: "rgba(10, 11, 16, 0.9)",
     borderWidth: 1,
     borderColor: "rgba(242, 209, 122, 0.26)",

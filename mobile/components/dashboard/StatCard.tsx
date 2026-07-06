@@ -82,13 +82,14 @@ export default function StatCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: "48%",
-    minWidth: 180,
-    maxWidth: 260,
+    width: "100%",
+    minWidth: 0,
+    maxWidth: undefined,
     minHeight: 132,
     backgroundColor: "rgba(10, 11, 16, 0.86)",
     borderRadius: UI.radius.xl,
-    padding: UI.spacing.md,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
     borderWidth: 1,
     boxShadow: UI.depth.card,
     elevation: 14,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   },
   signalText: {
     color: "#bbf7d0",
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: "900",
     letterSpacing: 0.8,
   },

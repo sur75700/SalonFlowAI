@@ -11,12 +11,11 @@ import {
 } from "react-native";
 
 import DevLoginCard from "../../components/auth/DevLoginCard";
-import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
 import { useLogout } from "../../hooks/useLogout";
-import SessionActionBar from "../../components/auth/SessionActionBar";
 import SectionCard from "../../components/dashboard/SectionCard";
 import ActionButton from "../../components/dashboard/ActionButton";
 import CommandTile from "../../components/dashboard/CommandTile";
+import ExecutiveHealthCard from "../../components/dashboard/ExecutiveHealthCard";
 import StatCard from "../../components/dashboard/StatCard";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
@@ -145,17 +144,6 @@ export default function OverviewScreen() {
 
         </View>
 
-        <SessionActionBar
-          email={sessionEmail}
-          onLogout={logout}
-          loggingOut={loggingOut}
-        />
-
-        <SessionStatusBanner
-          title={t("Operations Ready", locale)}
-          subtitle={t("Operations ReadySubtitle", locale)}
-        />
-
         {error ? (
           <View style={styles.errorBox}>
             <Text style={styles.errorTitle}>{t("Dashboard sync needs attention", locale)}</Text>
@@ -265,39 +253,31 @@ export default function OverviewScreen() {
           title={t("Executive Snapshot", locale)}
           subtitle={t("Executive Snapshot Subtitle", locale)}
         >
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Clients", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.total_clients ?? 0}</Text>
-          </View>
-
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Services", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.total_services ?? 0}</Text>
-          </View>
-
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Total Bookings", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.total_appointments ?? 0}</Text>
-          </View>
-
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("ScheduledBookings", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.scheduled_appointments ?? 0}</Text>
-          </View>
-
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("CompletedBookings", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.completed_appointments ?? 0}</Text>
-          </View>
-
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Cancelled Bookings", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.cancelled_appointments ?? 0}</Text>
-          </View>
-
-          <View style={styles.metricRow}>
-            <Text style={styles.metricLabel} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("TodayBookings", locale)}</Text>
-            <Text style={styles.metricValue}>{summary?.today_appointments ?? 0}</Text>
+          <View style={styles.executiveHealthGrid}>
+            <ExecutiveHealthCard
+              icon="🟢"
+              title="Business Health"
+              value="Healthy"
+              subtitle={`${summary?.completed_appointments ?? 0} completed · ${summary?.cancelled_appointments ?? 0} needs attention`}
+            />
+            <ExecutiveHealthCard
+              icon="📅"
+              title="Operations"
+              value={summary?.total_appointments ?? 0}
+              subtitle={`${summary?.scheduled_appointments ?? 0} scheduled · ${summary?.today_appointments ?? 0} today`}
+            />
+            <ExecutiveHealthCard
+              icon="👥"
+              title="Client Base"
+              value={summary?.total_clients ?? 0}
+              subtitle={`${summary?.total_services ?? 0} active services ready`}
+            />
+            <ExecutiveHealthCard
+              icon="⚡"
+              title="Executive Status"
+              value="Ready"
+              subtitle="AI monitoring · live command center"
+            />
           </View>
         </SectionCard>
       </ScrollView>
@@ -313,18 +293,19 @@ const styles = StyleSheet.create({
     elevation: 18,
     backgroundColor: "rgba(10, 11, 16, 0.88)",
     borderRadius: UI.radius.hero,
-    padding: UI.spacing.xl,
-    marginBottom: UI.spacing.lg,
+    overflow: "hidden",
+    padding: UI.spacing.lg,
+    marginBottom: 10,
+    minHeight: 250,
     borderWidth: 1,
     borderColor: "rgba(242, 209, 122, 0.34)",
-    overflow: "hidden",
   },
   heroTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   heroBadge: {
     borderRadius: UI.radius.pill,
@@ -366,8 +347,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
     gap: 8,
-    marginTop: 16,
-    marginBottom: 10,
+    marginTop: 10,
+    marginBottom: 0,
   },
   heroSignalText: {
     color: "#e8ddff",
@@ -384,13 +365,13 @@ const styles = StyleSheet.create({
     fontSize: UI.font.overline,
     fontWeight: "900",
     letterSpacing: 2,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   heroTitle: {
     width: "100%",
     color: "#ffffff",
-    fontSize: 24,
-    lineHeight: 29,
+    fontSize: 27,
+    lineHeight: 32,
     fontWeight: "900",
     marginBottom: 8,
   },
@@ -403,8 +384,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
+    gap: 8,
+    marginTop: -24,
+    marginHorizontal: 18,
+    marginBottom: 18,
     borderRadius: UI.radius.xl,
     padding: 12,
     backgroundColor: "rgba(10, 11, 16, 0.78)",
@@ -438,8 +421,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.9,
   },
   dashboardSectionHeader: {
-    marginTop: 2,
-    marginBottom: 12,
+    marginTop: 0,
+    marginBottom: 10,
     paddingHorizontal: 2,
   },
   dashboardSectionOverline: {
@@ -458,8 +441,8 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 12,
   },
   responsiveFullCard: {
     width: "100%",
@@ -513,6 +496,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  executiveHealthGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
   metricRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -541,7 +529,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#301218",
     padding: 12,
     borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: "#5a232e",
   },
