@@ -187,99 +187,119 @@ export default function OverviewScreen() {
           </View>
         </View>
 
-        <View style={styles.dashboardSectionHeader}>
-          <Text style={styles.dashboardSectionOverline}>EXECUTIVE KPIs</Text>
-          <Text style={styles.dashboardSectionTitle}>Business command signals</Text>
-        </View>
-
-        <View style={styles.statsGrid}>
-          {statCards.slice(0, 4).map((card) => (
-            <View key={card.label} style={responsiveCardStyle}>
-              <StatCard label={card.label} value={card.value} />
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.dashboardSectionHeader}>
-          <Text style={styles.dashboardSectionOverline}>TODAY'S OPERATIONS</Text>
-          <Text style={styles.dashboardSectionTitle}>Live booking activity</Text>
-        </View>
-
-        <View style={styles.statsGrid}>
-          {statCards.slice(4).map((card) => (
-            <View key={card.label} style={responsiveCardStyle}>
-              <StatCard label={card.label} value={card.value} variant="accent" />
-            </View>
-          ))}
-        </View>
-
-        <SectionCard
-          title={t("Command Navigation", locale)}
-          subtitle={t("Command NavigationSubtitle", locale)}
-        >
-          <View style={styles.commandTilesGrid}>
-            <CommandTile
-              icon="📊"
-              style={responsiveCardStyle}
-              title={t("Insights", locale)}
-              subtitle={t("Insights Info Subtitle", locale)}
-              onPress={() => router.navigate("/(tabs)/analytics")}
-            />
-            <CommandTile
-              icon="📅"
-              style={responsiveCardStyle}
-              title={t("Appointments", locale)}
-              subtitle={t("AppointmentsInfoSubtitle", locale)}
-              onPress={() => router.navigate("/(tabs)/appointments")}
-            />
-            <CommandTile
-              icon="👥"
-              style={responsiveCardStyle}
-              title={t("Clients", locale)}
-              subtitle={t("ClientsInfoSubtitle", locale)}
-              onPress={() => router.navigate("/(tabs)/clients")}
-            />
-            <CommandTile
-              icon="✂️"
-              style={responsiveCardStyle}
-              title={t("Service Catalog", locale)}
-              subtitle={t("Service CatalogHeroSubtitle", locale)}
-              onPress={() => router.navigate("/(tabs)/services")}
-            />
+        <View style={styles.executiveStage}>
+          <View style={styles.statsGrid}>
+            {statCards.slice(0, 4).map((card) => (
+              <View key={card.label} style={responsiveCardStyle}>
+                <StatCard label={card.label} value={card.value} />
+              </View>
+            ))}
           </View>
-        </SectionCard>
 
-        <SectionCard
-          title={t("Executive Snapshot", locale)}
-          subtitle={t("Executive Snapshot Subtitle", locale)}
-        >
-          <View style={styles.executiveHealthGrid}>
-            <ExecutiveHealthCard
-              icon="🟢"
-              title="Business Health"
-              value="Healthy"
-              subtitle={`${summary?.completed_appointments ?? 0} completed · ${summary?.cancelled_appointments ?? 0} needs attention`}
-            />
-            <ExecutiveHealthCard
-              icon="📅"
-              title="Operations"
-              value={summary?.total_appointments ?? 0}
-              subtitle={`${summary?.scheduled_appointments ?? 0} scheduled · ${summary?.today_appointments ?? 0} today`}
-            />
-            <ExecutiveHealthCard
-              icon="👥"
-              title="Client Base"
-              value={summary?.total_clients ?? 0}
-              subtitle={`${summary?.total_services ?? 0} active services ready`}
-            />
-            <ExecutiveHealthCard
-              icon="⚡"
-              title="Executive Status"
-              value="Ready"
-              subtitle="AI monitoring · live command center"
-            />
+          <SectionCard
+            title="Revenue Overview"
+            subtitle="Live business performance, growth signals, and AI operating context."
+          >
+            <View style={styles.analyticsHeroGrid}>
+              <View style={styles.analyticsHeroPrimary}>
+                <Text style={styles.analyticsHeroLabel}>TOTAL REVENUE</Text>
+                <Text style={styles.analyticsHeroValue}>€12,450</Text>
+                <Text style={styles.analyticsHeroTrend}>↗ +18.6% vs yesterday</Text>
+
+                <View style={styles.analyticsHeroLine}>
+                  <View style={styles.analyticsHeroLineGlow} />
+                </View>
+              </View>
+
+              <View style={styles.analyticsHeroSide}>
+                <Text style={styles.analyticsHeroLabel}>AI SCORE</Text>
+                <Text style={styles.analyticsHeroScore}>94/100</Text>
+                <Text style={styles.analyticsHeroNote}>Excellent operating signal</Text>
+              </View>
+            </View>
+          </SectionCard>
+
+          <SectionCard
+            title={t("Command Navigation", locale)}
+            subtitle={t("Command NavigationSubtitle", locale)}
+          >
+            <View style={styles.commandTilesGrid}>
+              <CommandTile
+                icon="📊"
+                style={responsiveCardStyle}
+                title={t("Insights", locale)}
+                subtitle={t("Insights Info Subtitle", locale)}
+                onPress={() => router.navigate("/(tabs)/analytics")}
+              />
+              <CommandTile
+                icon="📅"
+                style={responsiveCardStyle}
+                title={t("Appointments", locale)}
+                subtitle={t("AppointmentsInfoSubtitle", locale)}
+                onPress={() => router.navigate("/(tabs)/appointments")}
+              />
+              <CommandTile
+                icon="👥"
+                style={responsiveCardStyle}
+                title={t("Clients", locale)}
+                subtitle={t("ClientsInfoSubtitle", locale)}
+                onPress={() => router.navigate("/(tabs)/clients")}
+              />
+              <CommandTile
+                icon="✂️"
+                style={responsiveCardStyle}
+                title={t("Service Catalog", locale)}
+                subtitle={t("Service CatalogHeroSubtitle", locale)}
+                onPress={() => router.navigate("/(tabs)/services")}
+              />
+            </View>
+          </SectionCard>
+
+          <View style={styles.dashboardSectionHeader}>
+            <Text style={styles.dashboardSectionOverline}>TODAY'S OPERATIONS</Text>
+            <Text style={styles.dashboardSectionTitle}>Live booking activity</Text>
           </View>
-        </SectionCard>
+
+          <View style={styles.statsGrid}>
+            {statCards.slice(4).map((card) => (
+              <View key={card.label} style={responsiveCardStyle}>
+                <StatCard label={card.label} value={card.value} variant="accent" />
+              </View>
+            ))}
+          </View>
+
+          <SectionCard
+            title={t("Executive Snapshot", locale)}
+            subtitle={t("Executive Snapshot Subtitle", locale)}
+          >
+            <View style={styles.executiveHealthGrid}>
+              <ExecutiveHealthCard
+                icon="🟢"
+                title="Business Health"
+                value="Healthy"
+                subtitle={`${summary?.completed_appointments ?? 0} completed · ${summary?.cancelled_appointments ?? 0} needs attention`}
+              />
+              <ExecutiveHealthCard
+                icon="📅"
+                title="Operations"
+                value={summary?.total_appointments ?? 0}
+                subtitle={`${summary?.scheduled_appointments ?? 0} scheduled · ${summary?.today_appointments ?? 0} today`}
+              />
+              <ExecutiveHealthCard
+                icon="👥"
+                title="Client Base"
+                value={summary?.total_clients ?? 0}
+                subtitle={`${summary?.total_services ?? 0} active services ready`}
+              />
+              <ExecutiveHealthCard
+                icon="⚡"
+                title="Executive Status"
+                value="Ready"
+                subtitle="AI monitoring · live command center"
+              />
+            </View>
+          </SectionCard>
+        </View>
       </ScrollView>
     </RoyalCosmosBackground>
   );
@@ -420,6 +440,76 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0.9,
   },
+  analyticsHeroGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  analyticsHeroPrimary: {
+    flex: 2,
+    minWidth: 260,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    backgroundColor: "rgba(10, 18, 38, 0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(59,130,246,0.26)",
+    boxShadow: UI.depth.soft,
+  },
+  analyticsHeroSide: {
+    flex: 1,
+    minWidth: 180,
+    borderRadius: UI.radius.xl,
+    padding: UI.spacing.lg,
+    backgroundColor: "rgba(24, 18, 44, 0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(168,85,247,0.26)",
+    boxShadow: UI.depth.soft,
+  },
+  analyticsHeroLabel: {
+    color: "#f5d27a",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.4,
+    marginBottom: 8,
+  },
+  analyticsHeroValue: {
+    color: "#ffffff",
+    fontSize: 34,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
+  analyticsHeroTrend: {
+    color: "#34d399",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 18,
+  },
+  analyticsHeroLine: {
+    height: 76,
+    borderRadius: 18,
+    backgroundColor: "rgba(37,99,235,0.12)",
+    overflow: "hidden",
+  },
+  analyticsHeroLineGlow: {
+    height: 3,
+    width: "82%",
+    marginTop: 48,
+    marginLeft: 16,
+    borderRadius: 999,
+    backgroundColor: "#3b82f6",
+  },
+  analyticsHeroScore: {
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
+  analyticsHeroNote: {
+    color: "#bdb6c8",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
   dashboardSectionHeader: {
     marginTop: 0,
     marginBottom: 10,
@@ -437,6 +527,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 22,
     fontWeight: "900",
+  },
+  executiveStage: {
+    gap: 14,
+    marginTop: 4,
   },
   statsGrid: {
     flexDirection: "row",
