@@ -8,62 +8,44 @@ type Props = {
   variant?: "default" | "accent";
 };
 
-function getIcon(label: string) {
-  const normalized = label.toLowerCase();
+function getKpiMeta(label: string) {
+  const n = label.toLowerCase();
 
-  if (normalized.includes("client")) return "👥";
-  if (normalized.includes("service")) return "✂️";
-  if (normalized.includes("booking") || normalized.includes("appointment")) return "📅";
-  if (normalized.includes("scheduled")) return "🟦";
-  if (normalized.includes("completed")) return "✅";
-  if (normalized.includes("cancelled") || normalized.includes("canceled")) return "⚠️";
-  if (normalized.includes("today")) return "⚡";
-  if (normalized.includes("revenue")) return "💰";
-  if (normalized.includes("pipeline")) return "🚀";
-
-  return "💎";
-}
-
-function getSignal(label: string) {
-  const normalized = label.toLowerCase();
-
-  if (normalized.includes("cancelled") || normalized.includes("canceled")) {
-    return "Needs attention";
+  if (n.includes("cancelled") || n.includes("canceled")) {
+    return { icon: "⚠️", signal: "Needs attention", trend: "Review", tone: "warning" as const };
   }
+  if (n.includes("completed")) return { icon: "✅", signal: "Operational proof", trend: "Stable", tone: "success" as const };
+  if (n.includes("scheduled")) return { icon: "🟦", signal: "Pipeline active", trend: "Live", tone: "blue" as const };
+  if (n.includes("today")) return { icon: "⚡", signal: "Live activity", trend: "Today", tone: "success" as const };
+  if (n.includes("client")) return { icon: "👥", signal: "Client base", trend: "+12%", tone: "violet" as const };
+  if (n.includes("service")) return { icon: "✂️", signal: "Offer strength", trend: "Ready", tone: "gold" as const };
+  if (n.includes("revenue")) return { icon: "💰", signal: "Growth signal", trend: "+18.6%", tone: "gold" as const };
+  if (n.includes("booking") || n.includes("appointment")) return { icon: "📅", signal: "Demand pulse", trend: "Live", tone: "blue" as const };
 
-  if (normalized.includes("completed")) return "Operational proof";
-  if (normalized.includes("scheduled")) return "Pipeline active";
-  if (normalized.includes("today")) return "Live activity";
-  if (normalized.includes("revenue")) return "Growth signal";
-  if (normalized.includes("client")) return "Client base";
-  if (normalized.includes("service")) return "Offer strength";
-  if (normalized.includes("booking") || normalized.includes("appointment")) return "Demand pulse";
-
-  return "Executive signal";
+  return { icon: "💎", signal: "Executive signal", trend: "Live", tone: "gold" as const };
 }
 
-export default function StatCard({
-  label,
-  value,
-  variant = "default",
-}: Props) {
-  const icon = getIcon(label);
-  const signal = getSignal(label);
+export default function StatCard({ label, value, variant = "default" }: Props) {
+  const meta = getKpiMeta(label);
+  const isAccent = variant === "accent";
 
   return (
-    <View style={[styles.card, variant === "accent" && styles.cardAccent]}>
+    <View style={[styles.card, isAccent && styles.cardAccent]}>
+      <View style={styles.glowOrb} />
+
       <View style={styles.topRow}>
-        <View style={[styles.iconWrap, variant === "accent" && styles.iconWrapAccent]}>
-          <Text style={styles.icon}>{icon}</Text>
+        <View style={[styles.iconWrap, styles[`tone_${meta.tone}`]]}>
+          <Text style={styles.icon}>{meta.icon}</Text>
         </View>
-        <View style={[styles.signalPill, variant === "accent" && styles.signalPillAccent]}>
-          <Text style={[styles.signalText, variant === "accent" && styles.signalTextAccent]}>
-            LIVE
+
+        <View style={[styles.trendPill, isAccent && styles.trendPillAccent]}>
+          <Text style={[styles.trendText, isAccent && styles.trendTextAccent]}>
+            {meta.trend}
           </Text>
         </View>
       </View>
 
-      <Text style={[styles.value, variant === "accent" && styles.valueAccent]}>
+      <Text style={[styles.value, isAccent && styles.valueAccent]} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
 
@@ -71,10 +53,15 @@ export default function StatCard({
         {label}
       </Text>
 
+      <View style={styles.sparkTrack}>
+        <View style={[styles.sparkFill, isAccent && styles.sparkFillAccent]} />
+      </View>
+
       <View style={styles.footerLine}>
         <Text style={styles.signalLabel} numberOfLines={1}>
-          {signal}
+          {meta.signal}
         </Text>
+        <Text style={styles.liveDot}>●</Text>
       </View>
     </View>
   );
@@ -83,74 +70,95 @@ export default function StatCard({
 const styles = StyleSheet.create({
   card: {
     width: "100%",
-    minWidth: 0,
-    maxWidth: undefined,
-    minHeight: 132,
-    backgroundColor: "rgba(10, 11, 16, 0.86)",
-    borderRadius: 24,
-    paddingVertical: 22,
-    paddingHorizontal: 22,
-    borderWidth: 1.2,
+    minHeight: 150,
+    borderRadius: 28,
+    padding: 18,
+    overflow: "hidden",
+    backgroundColor: "rgba(8, 10, 20, 0.92)",
+    borderWidth: 1,
+    borderColor: "rgba(242, 209, 122, 0.26)",
     boxShadow: UI.depth.card,
     elevation: 14,
-    borderColor: "rgba(242, 209, 122, 0.24)",
-    overflow: "hidden",
   },
   cardAccent: {
-    backgroundColor: "rgba(21, 19, 32, 0.9)",
-    borderColor: "rgba(196, 161, 255, 0.38)",
+    backgroundColor: "rgba(15, 13, 30, 0.94)",
+    borderColor: "rgba(196, 161, 255, 0.34)",
+  },
+  glowOrb: {
+    position: "absolute",
+    right: -34,
+    top: -34,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: "rgba(245, 210, 122, 0.10)",
   },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 16,
     gap: 10,
   },
   iconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(242, 209, 122, 0.12)",
-    borderWidth: 1.2,
-    borderColor: "rgba(242, 209, 122, 0.28)",
+    borderWidth: 1,
   },
-  iconWrapAccent: {
-    backgroundColor: "rgba(196, 161, 255, 0.13)",
+  tone_gold: {
+    backgroundColor: "rgba(242, 209, 122, 0.13)",
+    borderColor: "rgba(242, 209, 122, 0.30)",
+  },
+  tone_blue: {
+    backgroundColor: "rgba(59, 130, 246, 0.13)",
+    borderColor: "rgba(59, 130, 246, 0.30)",
+  },
+  tone_violet: {
+    backgroundColor: "rgba(196, 161, 255, 0.14)",
     borderColor: "rgba(196, 161, 255, 0.32)",
   },
+  tone_success: {
+    backgroundColor: "rgba(52, 211, 153, 0.12)",
+    borderColor: "rgba(52, 211, 153, 0.28)",
+  },
+  tone_warning: {
+    backgroundColor: "rgba(251, 113, 133, 0.12)",
+    borderColor: "rgba(251, 113, 133, 0.30)",
+  },
   icon: {
-    fontSize: 17,
+    fontSize: 18,
   },
-  signalPill: {
+  trendPill: {
     borderRadius: UI.radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
-    borderWidth: 1.2,
-    borderColor: "rgba(34, 197, 94, 0.22)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "rgba(52, 211, 153, 0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(52, 211, 153, 0.24)",
   },
-  signalPillAccent: {
+  trendPillAccent: {
     backgroundColor: "rgba(196, 161, 255, 0.12)",
     borderColor: "rgba(196, 161, 255, 0.28)",
   },
-  signalText: {
+  trendText: {
     color: "#bbf7d0",
     fontSize: 11,
     fontWeight: "900",
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
   },
-  signalTextAccent: {
+  trendTextAccent: {
     color: "#e8ddff",
   },
   value: {
     color: "#f5d27a",
-    fontSize: 28,
-    lineHeight: 33,
+    fontSize: 34,
+    lineHeight: 39,
     fontWeight: "900",
-    marginBottom: 6,
+    letterSpacing: -1,
+    marginBottom: 7,
   },
   valueAccent: {
     color: "#c4a1ff",
@@ -160,17 +168,43 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.75,
-    marginBottom: 12,
+    letterSpacing: 0.8,
+    marginBottom: 14,
+  },
+  sparkTrack: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    overflow: "hidden",
+    marginBottom: 13,
+  },
+  sparkFill: {
+    width: "72%",
+    height: "100%",
+    borderRadius: 999,
+    backgroundColor: "#f5d27a",
+  },
+  sparkFillAccent: {
+    width: "58%",
+    backgroundColor: "#c4a1ff",
   },
   footerLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.08)",
-    paddingTop: 9,
+    paddingTop: 10,
   },
   signalLabel: {
+    flex: 1,
     color: "rgba(232, 221, 255, 0.72)",
     fontSize: 11,
-    fontWeight: "700",
+    fontWeight: "800",
+  },
+  liveDot: {
+    color: "#34d399",
+    fontSize: 9,
   },
 });
