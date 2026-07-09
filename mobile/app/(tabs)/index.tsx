@@ -118,28 +118,40 @@ export default function OverviewScreen() {
         <View style={styles.hero}>
           <View style={styles.heroTopRow}>
             <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>ROYAL COMMAND CENTER</Text>
+              <Text style={styles.heroBadgeText}>ROYAL COSMOS DASHBOARD</Text>
             </View>
             <View style={styles.heroLivePill}>
               <Text style={styles.heroLiveDot}>●</Text>
-              <Text style={styles.heroLiveText}>LIVE</Text>
+              <Text style={styles.heroLiveText}>LIVE BUSINESS PULSE</Text>
             </View>
           </View>
 
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
           <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">
-            {t("Dashboard", locale)}
+            {t("Good Evening", locale)}{sessionEmail ? `, ${sessionEmail.split("@")[0]}` : ""} 👋
           </Text>
           <Text style={styles.heroText}>
-            {t("Dashboard Hero Subtitle", locale)}
+            {t("Your business is growing beautifully. AI is watching bookings, revenue, clients, and daily momentum.", locale)}
           </Text>
 
           <View style={styles.heroSignalRow}>
-            <Text style={styles.heroSignalText}>{summary?.total_appointments ?? 0} {t("Total Bookings", locale)}</Text>
-            <Text style={styles.heroSignalDivider}>•</Text>
-            <Text style={styles.heroSignalText}>{summary?.completed_appointments ?? 0} {t("Completed", locale)}</Text>
-            <Text style={styles.heroSignalDivider}>•</Text>
-            <Text style={styles.heroSignalText}>{summary?.today_appointments ?? 0} {t("Today", locale)}</Text>
+            <View style={styles.heroSignalCard}>
+              <Text style={styles.heroSignalLabel}>{t("Revenue Signal", locale)}</Text>
+              <Text style={styles.heroSignalValue}>€12,450</Text>
+              <Text style={styles.heroSignalTrend}>↗ +18.6%</Text>
+            </View>
+
+            <View style={styles.heroSignalCard}>
+              <Text style={styles.heroSignalLabel}>{t("Today", locale)}</Text>
+              <Text style={styles.heroSignalValue}>{summary?.today_appointments ?? 0}</Text>
+              <Text style={styles.heroSignalTrend}>{t("appointments", locale)}</Text>
+            </View>
+
+            <View style={styles.heroSignalCard}>
+              <Text style={styles.heroSignalLabel}>AI SCORE</Text>
+              <Text style={styles.heroSignalValue}>94/100</Text>
+              <Text style={styles.heroSignalTrend}>Excellent</Text>
+            </View>
           </View>
 
         </View>
@@ -407,6 +419,36 @@ const styles = StyleSheet.create({
     color: "rgba(245, 210, 122, 0.62)",
     fontSize: 12,
     fontWeight: "900",
+  },
+  heroSignalCard: {
+    flexGrow: 1,
+    flexBasis: 108,
+    minHeight: 84,
+    padding: 13,
+    borderRadius: dashboardTopStandard.radiusMD,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "rgba(255,255,255,0.075)",
+  },
+  heroSignalLabel: {
+    color: "rgba(220,232,255,0.62)",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+    marginBottom: 7,
+  },
+  heroSignalValue: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+    letterSpacing: -0.4,
+  },
+  heroSignalTrend: {
+    color: "#34d399",
+    fontSize: 12,
+    fontWeight: "800",
+    marginTop: 5,
   },
   heroOverline: {
     color: "#f2d17a",
