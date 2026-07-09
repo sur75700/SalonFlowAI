@@ -305,34 +305,6 @@ export default function OverviewScreen() {
   );
 }
 
-
-/**
- * PHASE_30_6_TOP_DASHBOARD_STANDARD
- * Premium dashboard rules:
- * - Royal Cosmos stays primary identity
- * - Cards must feel calm, readable, fast, luxurious
- * - Mobile-first spacing and touch comfort
- * - No random redesign; only hierarchy/comfort refinements
- */
-const dashboardTopStandard = {
-  screenPadding: 18,
-  sectionGap: 18,
-  cardGap: 12,
-  radiusXL: 28,
-  radiusLG: 22,
-  radiusMD: 18,
-  hairline: 'rgba(255,255,255,0.14)',
-  glass: 'rgba(255,255,255,0.075)',
-  deepGlass: 'rgba(8,12,28,0.72)',
-  premiumShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 18 },
-    shadowOpacity: 0.24,
-    shadowRadius: 36,
-    elevation: 12,
-  },
-};
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#040508" },
   content: { padding: 16, paddingBottom: UI.spacing.bottom },
@@ -471,7 +443,7 @@ const styles = StyleSheet.create({
   analyticsHeroGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: dashboardTopStandard.cardGap,
+    gap: 12,
   },
   analyticsHeroPrimary: {
     flex: 2,
@@ -563,7 +535,7 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: dashboardTopStandard.cardGap,
+    gap: 12,
     marginBottom: 18,
   },
   responsiveFullCard: {
@@ -594,7 +566,7 @@ const styles = StyleSheet.create({
   commandTilesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: dashboardTopStandard.cardGap,
+    gap: 12,
   },
   commandTile: {
     minHeight: 58,
@@ -623,7 +595,7 @@ const styles = StyleSheet.create({
   executiveHealthGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: dashboardTopStandard.cardGap,
+    gap: 12,
   },
   metricRow: {
     flexDirection: "row",
@@ -652,7 +624,7 @@ const styles = StyleSheet.create({
   errorBox: {
     backgroundColor: "#301218",
     padding: 12,
-    borderRadius: dashboardTopStandard.radiusMD,
+    borderRadius: 16,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#5a232e",
