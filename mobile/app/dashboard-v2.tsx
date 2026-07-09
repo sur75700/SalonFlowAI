@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import DashboardV2 from "../components/dashboard-v2/DashboardV2";
-import RoyalCosmosBackground from "../components/RoyalCosmosBackground";
+import RoyalCosmosBackground from "../components/ui/RoyalCosmosBackground";
 
 export default function DashboardV2PreviewScreen() {
   return (
