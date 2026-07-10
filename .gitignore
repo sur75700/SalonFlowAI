@@ -62,3 +62,6 @@ backups/
 
 # Local GHOST backups
 mobile/.ghost-backups/
+backend/.ghost-backend.pid
+backend/.ghost-backend.log
+ghostsalon.before-lifecycle-fix.*.bak
