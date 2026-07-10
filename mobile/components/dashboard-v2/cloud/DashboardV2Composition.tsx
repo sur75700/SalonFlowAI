@@ -1,141 +1,395 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, StyleSheet, ScrollView, SafeAreaView, useWindowDimensions } from 'react-native';
 
 import ExecutiveGreetingV2 from './ExecutiveGreetingV2';
 import KPICardV2 from './KPICardV2';
+import RevenueAnalyticsV2 from './RevenueAnalyticsV2';
+import AppointmentAnalyticsV2 from './AppointmentAnalyticsV2';
 import AICommandCenterV2 from './AICommandCenterV2';
+import QuickActionsV2 from './QuickActionsV2';
+import CalendarSnapshotV2 from './CalendarSnapshotV2';
+import StaffPerformanceV2 from './StaffPerformanceV2';
+import RecentActivityV2 from './RecentActivityV2';
+
+type DeviceClass = 'phone' | 'tablet' | 'desktop';
+
+function classifyDevice(width: number): DeviceClass {
+  if (width >= 1100) return 'desktop';
+  if (width >= 700) return 'tablet';
+  return 'phone';
+}
+
+// ---- sample data — visual QA only, not real business data ----
+
+const kpiData = [
+  {
+    label: 'Revenue',
+    value: '$18,240',
+    trendLabel: '+8.4%',
+    trendDirection: 'up' as const,
+    helperText: 'vs last 30 days',
+    accent: 'gold' as const,
+    sparklineData: [12, 14, 13, 16, 18, 17, 19],
+  },
+  {
+    label: 'Appointments',
+    value: '146',
+    trendLabel: '+5.1%',
+    trendDirection: 'up' as const,
+    helperText: 'this month',
+    accent: 'royal' as const,
+    sparklineData: [20, 22, 21, 24, 23, 25, 27],
+  },
+  {
+    label: 'New Clients',
+    value: '32',
+    trendLabel: '-2.3%',
+    trendDirection: 'down' as const,
+    helperText: 'vs last month',
+    accent: 'blue' as const,
+    sparklineData: [9, 11, 10, 8, 9, 7, 8],
+  },
+  {
+    label: 'Retention',
+    value: '87%',
+    trendLabel: 'Steady',
+    trendDirection: 'flat' as const,
+    helperText: '12-month average',
+    accent: 'green' as const,
+    sparklineData: [85, 86, 87, 86, 87, 87, 87],
+  },
+];
+
+const revenueSeries = [
+  { label: 'May 6', value: 12200 },
+  { label: 'May 9', value: 13400 },
+  { label: 'May 13', value: 14100 },
+  { label: 'May 16', value: 15800 },
+  { label: 'May 20', value: 16900 },
+  { label: 'May 23', value: 18200 },
+  { label: 'May 27', value: 19100 },
+  { label: 'May 30', value: 21400 },
+  { label: 'Jun 3', value: 24580 },
+];
+
+const revenueComparisonSeries = [
+  { label: 'May 6', value: 10800 },
+  { label: 'May 9', value: 11600 },
+  { label: 'May 13', value: 12900 },
+  { label: 'May 16', value: 13500 },
+  { label: 'May 20', value: 14700 },
+  { label: 'May 23', value: 15600 },
+  { label: 'May 27', value: 16200 },
+  { label: 'May 30', value: 17800 },
+  { label: 'Jun 3', value: 18950 },
+];
+
+const appointmentSegments = [
+  { label: 'Completed', value: 148, tone: 'completed' as const },
+  { label: 'Upcoming', value: 68, tone: 'scheduled' as const },
+  { label: 'Cancelled', value: 18, tone: 'cancelled' as const },
+  { label: 'No Show', value: 14, tone: 'other' as const },
+];
+
+const quickActions = [
+  { id: 'new-appt', label: 'New Appointment', tone: 'royal' as const },
+  { id: 'new-client', label: 'New Client', tone: 'gold' as const },
+  { id: 'invoice', label: 'Create Invoice', tone: 'green' as const },
+  { id: 'calendar', label: 'Calendar', tone: 'blue' as const },
+  { id: 'message', label: 'Send Message', tone: 'royal' as const },
+  { id: 'payment', label: 'Add Payment', tone: 'gold' as const },
+  { id: 'ai-assistant', label: 'AI Assistant', tone: 'red' as const, helperText: 'Ask anything' },
+];
+
+const calendarEvents = [
+  {
+    id: 'evt-1',
+    time: '2:30 PM',
+    clientName: 'Sarah K.',
+    serviceName: 'Balayage Color',
+    staffName: 'Maya',
+    tone: 'gold' as const,
+    statusLabel: 'Confirmed',
+  },
+  {
+    id: 'evt-2',
+    time: '3:15 PM',
+    clientName: 'Devon R.',
+    serviceName: "Men's Cut",
+    staffName: 'Alex',
+    tone: 'blue' as const,
+    statusLabel: 'Confirmed',
+  },
+  {
+    id: 'evt-3',
+    time: '5:00 PM',
+    clientName: 'Priya N.',
+    serviceName: 'Gel Manicure',
+    staffName: 'Jordan',
+    tone: 'royal' as const,
+    statusLabel: 'Pending',
+  },
+];
+
+const staffMembers = [
+  {
+    id: 'staff-1',
+    name: 'Maya Chen',
+    role: 'Senior Colorist',
+    revenueLabel: '$5,240',
+    appointmentCount: 38,
+    performancePercent: 96,
+    trendLabel: '+12%',
+    trendDirection: 'up' as const,
+  },
+  {
+    id: 'staff-2',
+    name: 'Alex Rivera',
+    role: 'Barber',
+    revenueLabel: '$4,180',
+    appointmentCount: 41,
+    performancePercent: 88,
+    trendLabel: '+4%',
+    trendDirection: 'up' as const,
+  },
+  {
+    id: 'staff-3',
+    name: 'Jordan Lee',
+    role: 'Nail Technician',
+    revenueLabel: '$3,020',
+    appointmentCount: 29,
+    performancePercent: 71,
+    trendLabel: '-3%',
+    trendDirection: 'down' as const,
+  },
+];
+
+const recentActivities = [
+  {
+    id: 'act-1',
+    title: 'Payment received',
+    description: 'Sarah K. paid $185 for Balayage Color.',
+    timeLabel: '12m ago',
+    actorName: 'Front Desk',
+    tone: 'green' as const,
+    statusLabel: 'Paid',
+  },
+  {
+    id: 'act-2',
+    title: 'Appointment rescheduled',
+    description: 'Devon R. moved from Tue 10 AM to Wed 3:15 PM.',
+    timeLabel: '1h ago',
+    actorName: 'Alex',
+    tone: 'blue' as const,
+  },
+  {
+    id: 'act-3',
+    title: 'New client booked',
+    description: 'Priya N. booked a Gel Manicure for Friday.',
+    timeLabel: '3h ago',
+    actorName: 'Online Booking',
+    tone: 'royal' as const,
+    statusLabel: 'New',
+  },
+];
 
 /**
- * DashboardV2Composition
- *
- * Pure composition screen for Dashboard V2. Uses only ExecutiveGreetingV2,
- * KPICardV2, and AICommandCenterV2 — no new components are introduced,
- * and the only styles defined are the layout/spacing rules needed to
- * arrange those three into a premium, mobile-first screen.
+ * DashboardV2Composition — final responsive assembly of the nine approved
+ * Dashboard V2 components. Composition only: no new components, no new
+ * design tokens, no business logic. Layout switches on measured window
+ * width — phone (single column) → tablet (two-column sections) →
+ * desktop (executive grid: primary content + right rail).
  */
 function DashboardV2Composition() {
+  const { width } = useWindowDimensions();
+  const device = classifyDevice(width);
+  const isPhone = device === 'phone';
+  const isTablet = device === 'tablet';
+  const isDesktop = device === 'desktop';
+
+  const kpiColumns = isPhone ? 2 : isTablet ? 3 : 4;
+  const kpiCellWidth = `${100 / kpiColumns}%`;
+  const pagePadding = isPhone ? 16 : isTablet ? 28 : 40;
+
+  const greeting = (
+    <ExecutiveGreetingV2
+      ownerFirstName="Maya"
+      salonName="Lumière Studio"
+      businessHealth={{ label: 'Excellent', tone: 'positive' }}
+      revenueToday={{ amount: '$2,480', trendLabel: '+12% vs yesterday', trendDirection: 'up' }}
+      aiConfidence={{ value: 94, label: 'High accuracy today' }}
+      appointmentPulse={{ completed: 8, total: 14, nextClientName: 'Sarah K.', nextTime: '2:30 PM' }}
+    />
+  );
+
+  const kpiGrid = (
+    <View style={styles.kpiGrid}>
+      {kpiData.map((kpi) => (
+        <View key={kpi.label} style={[styles.kpiCell, { width: kpiCellWidth as any }]}>
+          <KPICardV2 {...kpi} compact={isPhone} />
+        </View>
+      ))}
+    </View>
+  );
+
+  const revenueSection = (
+    <RevenueAnalyticsV2
+      title="Revenue Overview"
+      periodLabel="This Month"
+      totalValue="$124,580"
+      trendLabel="+18.6%"
+      trendDirection="up"
+      currentSeries={revenueSeries}
+      comparisonSeries={revenueComparisonSeries}
+    />
+  );
+
+  const appointmentSection = (
+    <AppointmentAnalyticsV2
+      title="Appointments"
+      totalAppointments={248}
+      periodLabel="This Week"
+      segments={appointmentSegments}
+    />
+  );
+
+  const aiSection = (
+    <AICommandCenterV2
+      healthLabel="Thriving"
+      aiScore={86}
+      confidenceLabel="94% confidence, based on the last 30 days of bookings and revenue."
+      todaysFocus={[
+        {
+          time: '2:30 PM',
+          label: "Confirm Sarah K.'s color appointment",
+          detail: 'High no-show risk based on booking history.',
+          tone: 'warning',
+        },
+        {
+          time: '5:00 PM',
+          label: 'Follow up with 3 clients overdue for rebooking',
+          detail: 'Retention window closes this week.',
+          tone: 'neutral',
+        },
+      ]}
+      forecast={{
+        headline: 'Revenue trending 12% above forecast this week.',
+        helperText: 'Driven by strong Friday and Saturday bookings.',
+        trendLabel: '+12%',
+        trendDirection: 'up',
+        series: [
+          { label: 'Mon', value: 1800 },
+          { label: 'Tue', value: 2100 },
+          { label: 'Wed', value: 1950 },
+          { label: 'Thu', value: 2400 },
+          { label: 'Fri', value: 2900 },
+          { label: 'Sat', value: 3200 },
+          { label: 'Sun', value: 2600 },
+        ],
+      }}
+      insights={[
+        {
+          title: 'Peak hours shifting later',
+          description: 'Saturday demand is now heaviest between 1–4 PM, up from 11 AM–1 PM last quarter.',
+          tone: 'neutral',
+        },
+        {
+          title: '3 empty slots tomorrow',
+          description: '10 AM, 11:30 AM, and 3 PM are open with no waitlist match yet.',
+          tone: 'warning',
+        },
+      ]}
+      recommendations={[
+        'Send a rebooking reminder to clients inactive for 45+ days.',
+        'Offer the 10 AM slot to your waitlist before end of day.',
+      ]}
+    />
+  );
+
+  const quickActionsSection = <QuickActionsV2 title="Quick Actions" actions={quickActions} />;
+
+  const calendarSection = (
+    <CalendarSnapshotV2
+      title="Calendar Snapshot"
+      dateLabel="June 6, 2026"
+      events={calendarEvents}
+      emptyLabel="No appointments scheduled for the rest of today."
+    />
+  );
+
+  const staffSection = (
+    <StaffPerformanceV2
+      title="Staff Performance"
+      periodLabel="This Month"
+      staff={staffMembers}
+      emptyLabel="No staff performance data for this period."
+    />
+  );
+
+  const activitySection = (
+    <RecentActivityV2
+      title="Recent Activity"
+      activities={recentActivities}
+      emptyLabel="No recent activity to show."
+    />
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* 1. Executive Greeting */}
-        <ExecutiveGreetingV2
-          ownerFirstName="Maya"
-          salonName="Lumière Studio"
-          businessHealth={{ label: 'Excellent', tone: 'positive' }}
-          revenueToday={{ amount: '$2,480', trendLabel: '+12% vs yesterday', trendDirection: 'up' }}
-          aiConfidence={{ value: 94, label: 'High accuracy today' }}
-          appointmentPulse={{ completed: 8, total: 14, nextClientName: 'Sarah K.', nextTime: '2:30 PM' }}
-        />
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: pagePadding }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={isDesktop ? styles.pageInnerDesktop : styles.pageInner}>
+          <View style={styles.sectionGap}>{greeting}</View>
+          <View style={styles.sectionGap}>{kpiGrid}</View>
 
-        {/* 2. KPI Command Center — 2x2 grid on phone */}
-        <View style={styles.kpiGrid}>
-          <View style={styles.kpiRow}>
-            <View style={styles.kpiCell}>
-              <KPICardV2
-                label="Revenue"
-                value="$18,240"
-                trendLabel="+8.4%"
-                trendDirection="up"
-                helperText="vs last 30 days"
-                accent="gold"
-                sparklineData={[12, 14, 13, 16, 18, 17, 19]}
-                compact
-              />
-            </View>
-            <View style={styles.kpiCell}>
-              <KPICardV2
-                label="Appointments"
-                value="146"
-                trendLabel="+5.1%"
-                trendDirection="up"
-                helperText="this month"
-                accent="royal"
-                sparklineData={[20, 22, 21, 24, 23, 25, 27]}
-                compact
-              />
-            </View>
-          </View>
+          {isPhone && (
+            <>
+              <View style={styles.sectionGap}>{revenueSection}</View>
+              <View style={styles.sectionGap}>{appointmentSection}</View>
+              <View style={styles.sectionGap}>{aiSection}</View>
+              <View style={styles.sectionGap}>{quickActionsSection}</View>
+              <View style={styles.sectionGap}>{calendarSection}</View>
+              <View style={styles.sectionGap}>{staffSection}</View>
+              <View style={styles.sectionGap}>{activitySection}</View>
+            </>
+          )}
 
-          <View style={styles.kpiRow}>
-            <View style={styles.kpiCell}>
-              <KPICardV2
-                label="New Clients"
-                value="32"
-                trendLabel="-2.3%"
-                trendDirection="down"
-                helperText="vs last month"
-                accent="blue"
-                sparklineData={[9, 11, 10, 8, 9, 7, 8]}
-                compact
-              />
-            </View>
-            <View style={styles.kpiCell}>
-              <KPICardV2
-                label="Retention"
-                value="87%"
-                trendLabel="Steady"
-                trendDirection="flat"
-                helperText="12-month average"
-                accent="green"
-                sparklineData={[85, 86, 87, 86, 87, 87, 87]}
-                compact
-              />
-            </View>
-          </View>
-        </View>
+          {isTablet && (
+            <>
+              <View style={[styles.twoColRow, styles.sectionGap]}>
+                <View style={styles.twoColCell}>{revenueSection}</View>
+                <View style={styles.twoColCell}>{appointmentSection}</View>
+              </View>
+              <View style={styles.sectionGap}>{aiSection}</View>
+              <View style={styles.sectionGap}>{quickActionsSection}</View>
+              <View style={[styles.twoColRow, styles.sectionGap]}>
+                <View style={styles.twoColCell}>{calendarSection}</View>
+                <View style={styles.twoColCell}>{staffSection}</View>
+              </View>
+              <View style={styles.sectionGap}>{activitySection}</View>
+            </>
+          )}
 
-        {/* 3. AI Command Center */}
-        <View style={styles.aiWrap}>
-          <AICommandCenterV2
-            healthLabel="Thriving"
-            aiScore={86}
-            confidenceLabel="94% confidence, based on the last 30 days of bookings and revenue."
-            todaysFocus={[
-              {
-                time: '2:30 PM',
-                label: "Confirm Sarah K.'s color appointment",
-                detail: 'High no-show risk based on booking history.',
-                tone: 'warning',
-              },
-              {
-                time: '5:00 PM',
-                label: 'Follow up with 3 clients overdue for rebooking',
-                detail: 'Retention window closes this week.',
-                tone: 'neutral',
-              },
-            ]}
-            forecast={{
-              headline: 'Revenue trending 12% above forecast this week.',
-              helperText: 'Driven by strong Friday and Saturday bookings.',
-              trendLabel: '+12%',
-              trendDirection: 'up',
-              series: [
-                { label: 'Mon', value: 1800 },
-                { label: 'Tue', value: 2100 },
-                { label: 'Wed', value: 1950 },
-                { label: 'Thu', value: 2400 },
-                { label: 'Fri', value: 2900 },
-                { label: 'Sat', value: 3200 },
-                { label: 'Sun', value: 2600 },
-              ],
-            }}
-            insights={[
-              {
-                title: 'Peak hours shifting later',
-                description: 'Saturday demand is now heaviest between 1–4 PM, up from 11 AM–1 PM last quarter.',
-                tone: 'neutral',
-              },
-              {
-                title: '3 empty slots tomorrow',
-                description: '10 AM, 11:30 AM, and 3 PM are open with no waitlist match yet.',
-                tone: 'warning',
-              },
-            ]}
-            recommendations={[
-              'Send a rebooking reminder to clients inactive for 45+ days.',
-              'Offer the 10 AM slot to your waitlist before end of day.',
-            ]}
-          />
+          {isDesktop && (
+            <View style={styles.executiveGrid}>
+              <View style={styles.primaryCol}>
+                <View style={styles.sectionGap}>{revenueSection}</View>
+                <View style={styles.sectionGap}>{quickActionsSection}</View>
+                <View style={[styles.twoColRow, styles.sectionGap]}>
+                  <View style={styles.twoColCell}>{calendarSection}</View>
+                  <View style={styles.twoColCell}>{staffSection}</View>
+                </View>
+                <View>{activitySection}</View>
+              </View>
+
+              <View style={styles.rightRail}>
+                <View style={styles.sectionGap}>{appointmentSection}</View>
+                <View>{aiSection}</View>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -148,22 +402,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#0B0B18',
   },
   scrollContent: {
-    padding: 16,
+    paddingTop: 16,
     paddingBottom: 40,
   },
-  kpiGrid: {
-    marginTop: 16,
+  pageInner: {
+    width: '100%',
   },
-  kpiRow: {
+  pageInnerDesktop: {
+    width: '100%',
+    maxWidth: 1280,
+    alignSelf: 'center',
+  },
+  sectionGap: {
+    marginBottom: 20,
+  },
+  kpiGrid: {
     flexDirection: 'row',
-    marginBottom: 12,
+    flexWrap: 'wrap',
+    marginHorizontal: -6,
   },
   kpiCell: {
-    flex: 1,
-    marginHorizontal: 6,
+    padding: 6,
   },
-  aiWrap: {
-    marginTop: 4,
+  twoColRow: {
+    flexDirection: 'row',
+    marginHorizontal: -8,
+  },
+  twoColCell: {
+    flex: 1,
+    paddingHorizontal: 8,
+  },
+  executiveGrid: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  primaryCol: {
+    flex: 2,
+    minWidth: 0,
+    marginRight: 20,
+  },
+  rightRail: {
+    flex: 1,
+    minWidth: 280,
   },
 });
 
