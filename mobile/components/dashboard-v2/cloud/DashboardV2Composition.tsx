@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, SafeAreaView, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, useWindowDimensions } from 'react-native';
+import { useRouter, type Href } from 'expo-router';
 
 import ExecutiveGreetingV2 from './ExecutiveGreetingV2';
 import KPICardV2 from './KPICardV2';
@@ -91,14 +92,43 @@ const appointmentSegments = [
   { label: 'No Show', value: 14, tone: 'other' as const },
 ];
 
-const quickActions = [
-  { id: 'new-appt', label: 'New Appointment', tone: 'royal' as const },
-  { id: 'new-client', label: 'New Client', tone: 'gold' as const },
-  { id: 'invoice', label: 'Create Invoice', tone: 'green' as const },
-  { id: 'calendar', label: 'Calendar', tone: 'blue' as const },
-  { id: 'message', label: 'Send Message', tone: 'royal' as const },
-  { id: 'payment', label: 'Add Payment', tone: 'gold' as const },
-  { id: 'ai-assistant', label: 'AI Assistant', tone: 'red' as const, helperText: 'Ask anything' },
+const quickActionBlueprints = [
+  {
+    id: 'clients',
+    label: 'Clients',
+    icon: <Text style={{ fontSize: 20 }}>👥</Text>,
+    tone: 'gold' as const,
+  },
+  {
+    id: 'services',
+    label: 'Services',
+    icon: <Text style={{ fontSize: 20 }}>✂️</Text>,
+    tone: 'royal' as const,
+  },
+  {
+    id: 'bookings',
+    label: 'Bookings',
+    icon: <Text style={{ fontSize: 20 }}>📅</Text>,
+    tone: 'blue' as const,
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: <Text style={{ fontSize: 20 }}>📄</Text>,
+    tone: 'green' as const,
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: <Text style={{ fontSize: 20 }}>⚙️</Text>,
+    tone: 'gold' as const,
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: <Text style={{ fontSize: 20 }}>📊</Text>,
+    tone: 'royal' as const,
+  },
 ];
 
 const calendarEvents = [
@@ -201,7 +231,51 @@ const recentActivities = [
  * desktop (executive grid: primary content + right rail).
  */
 function DashboardV2Composition() {
+  const router = useRouter();
   const { width } = useWindowDimensions();
+
+  const quickActions = quickActionBlueprints.map((action) => {
+    switch (action.id) {
+      case 'clients':
+        return {
+          ...action,
+          onPress: () => router.push('/(tabs)/clients' as Href),
+        };
+
+      case 'services':
+        return {
+          ...action,
+          onPress: () => router.push('/(tabs)/services' as Href),
+        };
+
+      case 'bookings':
+        return {
+          ...action,
+          onPress: () => router.push('/(tabs)/appointments' as Href),
+        };
+
+      case 'reports':
+        return {
+          ...action,
+          onPress: () => router.push('/(tabs)/reports' as Href),
+        };
+
+      case 'settings':
+        return {
+          ...action,
+          onPress: () => router.push('/(tabs)/explore' as Href),
+        };
+
+      case 'analytics':
+        return {
+          ...action,
+          onPress: () => router.push('/(tabs)/analytics' as Href),
+        };
+
+      default:
+        return action;
+    }
+  });
   const device = classifyDevice(width);
   const isPhone = device === 'phone';
   const isTablet = device === 'tablet';
