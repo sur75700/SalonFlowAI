@@ -11,6 +11,7 @@ import QuickActionsV2 from './QuickActionsV2';
 import CalendarSnapshotV2 from './CalendarSnapshotV2';
 import StaffPerformanceV2 from './StaffPerformanceV2';
 import RecentActivityV2 from './RecentActivityV2';
+import RoyalCosmosBackground from '../../ui/RoyalCosmosBackground';
 
 type DeviceClass = 'phone' | 'tablet' | 'desktop';
 
@@ -409,8 +410,9 @@ function DashboardV2Composition() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
+    <RoyalCosmosBackground style={styles.cosmosShell}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingHorizontal: pagePadding }]}
         showsVerticalScrollIndicator={false}
       >
@@ -465,15 +467,20 @@ function DashboardV2Composition() {
             </View>
           )}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  cosmosShell: {
+    flex: 1,
+    backgroundColor: '#040508',
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#0B0B18',
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     paddingTop: 16,
