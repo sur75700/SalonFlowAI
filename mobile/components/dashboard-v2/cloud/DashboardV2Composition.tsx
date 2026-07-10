@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, RefreshControl, useWindowDimensions } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 
 import ExecutiveGreetingV2 from './ExecutiveGreetingV2';
@@ -12,6 +12,8 @@ import CalendarSnapshotV2 from './CalendarSnapshotV2';
 import StaffPerformanceV2 from './StaffPerformanceV2';
 import RecentActivityV2 from './RecentActivityV2';
 import RoyalCosmosBackground from '../../ui/RoyalCosmosBackground';
+import { useSession } from '../../../hooks/useSession';
+import { useSummaryData } from '../../../hooks/useDashboardData';
 
 type DeviceClass = 'phone' | 'tablet' | 'desktop';
 
@@ -22,45 +24,6 @@ function classifyDevice(width: number): DeviceClass {
 }
 
 // ---- sample data — visual QA only, not real business data ----
-
-const kpiData = [
-  {
-    label: 'Revenue',
-    value: '$18,240',
-    trendLabel: '+8.4%',
-    trendDirection: 'up' as const,
-    helperText: 'vs last 30 days',
-    accent: 'gold' as const,
-    sparklineData: [12, 14, 13, 16, 18, 17, 19],
-  },
-  {
-    label: 'Appointments',
-    value: '146',
-    trendLabel: '+5.1%',
-    trendDirection: 'up' as const,
-    helperText: 'this month',
-    accent: 'royal' as const,
-    sparklineData: [20, 22, 21, 24, 23, 25, 27],
-  },
-  {
-    label: 'New Clients',
-    value: '32',
-    trendLabel: '-2.3%',
-    trendDirection: 'down' as const,
-    helperText: 'vs last month',
-    accent: 'blue' as const,
-    sparklineData: [9, 11, 10, 8, 9, 7, 8],
-  },
-  {
-    label: 'Retention',
-    value: '87%',
-    trendLabel: 'Steady',
-    trendDirection: 'flat' as const,
-    helperText: '12-month average',
-    accent: 'green' as const,
-    sparklineData: [85, 86, 87, 86, 87, 87, 87],
-  },
-];
 
 const revenueSeries = [
   { label: 'May 6', value: 12200 },
@@ -233,7 +196,70 @@ const recentActivities = [
  */
 function DashboardV2Composition() {
   const router = useRouter();
+  const { token, booting, clearToken, sessionEmail } = useSession();
+  const {
+    summary,
+    loading,
+    refreshing,
+    error,
+    refresh,
+  } = useSummaryData(token, clearToken);
   const { width } = useWindowDimensions();
+
+  const dataPending = booting || loading;
+  const displayValue = (value: number | undefined) =>
+    dataPending ? '—' : String(value ?? 0);
+
+  const ownerFirstName =
+    sessionEmail?.split('@')[0]?.trim() || 'Owner';
+
+  const totalBookings = summary?.total_appointments ?? 0;
+  const completedBookings = summary?.completed_appointments ?? 0;
+  const todayBookings = summary?.today_appointments ?? 0;
+
+  const completionRate =
+    totalBookings > 0
+      ? Math.round((completedBookings / totalBookings) * 100)
+      : 0;
+
+  const realKpiData = [
+    {
+      label: 'Clients',
+      value: displayValue(summary?.total_clients),
+      trendLabel: dataPending ? 'Syncing' : 'Live',
+      trendDirection: 'flat' as const,
+      helperText: error ? 'Data unavailable' : 'Client base',
+      accent: 'gold' as const,
+      sparklineData: undefined,
+    },
+    {
+      label: 'Services',
+      value: displayValue(summary?.total_services),
+      trendLabel: dataPending ? 'Syncing' : 'Live',
+      trendDirection: 'flat' as const,
+      helperText: error ? 'Data unavailable' : 'Active catalog',
+      accent: 'royal' as const,
+      sparklineData: undefined,
+    },
+    {
+      label: 'Bookings',
+      value: displayValue(summary?.total_appointments),
+      trendLabel: dataPending ? 'Syncing' : `${completionRate}% done`,
+      trendDirection: completionRate >= 60 ? 'up' as const : 'flat' as const,
+      helperText: error ? 'Data unavailable' : 'Total demand',
+      accent: 'blue' as const,
+      sparklineData: undefined,
+    },
+    {
+      label: 'Today',
+      value: displayValue(summary?.today_appointments),
+      trendLabel: dataPending ? 'Syncing' : 'Live',
+      trendDirection: todayBookings > 0 ? 'up' as const : 'flat' as const,
+      helperText: error ? 'Data unavailable' : 'Today activity',
+      accent: 'green' as const,
+      sparklineData: undefined,
+    },
+  ];
 
   const quickActions = quickActionBlueprints.map((action) => {
     switch (action.id) {
@@ -288,18 +314,45 @@ function DashboardV2Composition() {
 
   const greeting = (
     <ExecutiveGreetingV2
-      ownerFirstName="Maya"
-      salonName="Lumière Studio"
-      businessHealth={{ label: 'Excellent', tone: 'positive' }}
-      revenueToday={{ amount: '$2,480', trendLabel: '+12% vs yesterday', trendDirection: 'up' }}
-      aiConfidence={{ value: 94, label: 'High accuracy today' }}
-      appointmentPulse={{ completed: 8, total: 14, nextClientName: 'Sarah K.', nextTime: '2:30 PM' }}
+      ownerFirstName={ownerFirstName}
+      salonName="SalonFlowAI"
+      businessHealth={{
+        label: error
+          ? 'Needs Attention'
+          : dataPending
+            ? 'Synchronizing'
+            : totalBookings > 0
+              ? 'Live'
+              : 'Ready',
+        tone: error ? 'negative' : dataPending ? 'neutral' : 'positive',
+      }}
+      revenueToday={{
+        amount: '—',
+        trendLabel: 'Revenue analytics connects next',
+        trendDirection: 'flat',
+      }}
+      aiConfidence={{
+        value: error ? 0 : dataPending ? 0 : 94,
+        label: error
+          ? 'Summary unavailable'
+          : dataPending
+            ? 'Synchronizing live data'
+            : 'Summary connected',
+      }}
+      appointmentPulse={{
+        completed: completedBookings,
+        total: totalBookings,
+        nextClientName: undefined,
+        nextTime: todayBookings > 0
+          ? `${todayBookings} today`
+          : undefined,
+      }}
     />
   );
 
   const kpiGrid = (
     <View style={styles.kpiGrid}>
-      {kpiData.map((kpi) => (
+      {realKpiData.map((kpi) => (
         <View key={kpi.label} style={[styles.kpiCell, { width: kpiCellWidth as any }]}>
           <KPICardV2 {...kpi} compact={isPhone} />
         </View>
@@ -413,9 +466,16 @@ function DashboardV2Composition() {
     <RoyalCosmosBackground style={styles.cosmosShell}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingHorizontal: pagePadding }]}
-        showsVerticalScrollIndicator={false}
-      >
+          contentContainerStyle={[styles.scrollContent, { paddingHorizontal: pagePadding }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              tintColor="#7C5CFF"
+            />
+          }
+        >
         <View style={isDesktop ? styles.pageInnerDesktop : styles.pageInner}>
           <View style={styles.sectionGap}>{greeting}</View>
           <View style={styles.sectionGap}>{kpiGrid}</View>
