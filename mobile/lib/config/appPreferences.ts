@@ -4,5 +4,5 @@ export const APP_PREFERENCES = {
   defaultLocale: "en" as AppLocale,
   defaultCurrency: "AMD" as AppCurrency,
   supportedLocales: ["en", "hy", "ru", "fr"] as AppLocale[],
-  supportedCurrencies: ["AMD", "USD", "EUR"] as AppCurrency[],
+  supportedCurrencies: ["AMD", "USD", "EUR", "RUB"] as AppCurrency[],
 } as const;

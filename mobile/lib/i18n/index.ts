@@ -3,7 +3,7 @@ import { translations as nestedTranslations } from "../../translations";
 export type AppLanguage = "en" | "hy" | "ru" | "fr";
 export type AppLocale = AppLanguage;
 export type Locale = AppLanguage;
-export type AppCurrency = "AMD" | "USD" | "EUR";
+export type AppCurrency = "AMD" | "USD" | "EUR" | "RUB";
 
 export const defaultLanguage: AppLanguage = "en";
 export const defaultLocale: AppLocale = "en";
