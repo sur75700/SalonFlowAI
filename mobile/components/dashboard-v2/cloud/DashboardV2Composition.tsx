@@ -13,7 +13,10 @@ import StaffPerformanceV2 from './StaffPerformanceV2';
 import RecentActivityV2 from './RecentActivityV2';
 import RoyalCosmosBackground from '../../ui/RoyalCosmosBackground';
 import { useSession } from '../../../hooks/useSession';
-import { useSummaryData } from '../../../hooks/useDashboardData';
+import { useAnalyticsData } from '../../../hooks/useDashboardData';
+import { useAppPreferences } from '../../../hooks/useAppPreferences';
+import { formatMoney } from '../../../utils/money';
+import type { AppCurrency } from '../../../lib/i18n/types';
 
 type DeviceClass = 'phone' | 'tablet' | 'desktop';
 
@@ -23,38 +26,92 @@ function classifyDevice(width: number): DeviceClass {
   return 'phone';
 }
 
+const SUPPORTED_REVENUE_CURRENCIES:
+  readonly AppCurrency[] = ['AMD', 'USD', 'EUR', 'RUB'];
+
+function normalizeRevenueCurrency(
+  value: string | null | undefined
+): AppCurrency {
+  const normalized = value?.trim().toUpperCase();
+
+  return SUPPORTED_REVENUE_CURRENCIES.includes(
+    normalized as AppCurrency
+  )
+    ? (normalized as AppCurrency)
+    : 'AMD';
+}
+
+function formatRevenueDateLabel(
+  value: string,
+  locale: string
+): string {
+  const date = new Date(`${value}T00:00:00`);
+
+  if (!Number.isFinite(date.getTime())) {
+    return value;
+  }
+
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  } catch {
+    return value;
+  }
+}
+
+function formatCompactRevenue(
+  value: number,
+  currency: AppCurrency,
+  locale: string
+): string {
+  const safeValue =
+    typeof value === 'number' && Number.isFinite(value)
+      ? value
+      : 0;
+
+  const absoluteValue = Math.abs(safeValue);
+
+  let divisor = 1;
+  let suffix = '';
+
+  if (absoluteValue >= 1_000_000_000) {
+    divisor = 1_000_000_000;
+    suffix = 'B';
+  } else if (absoluteValue >= 1_000_000) {
+    divisor = 1_000_000;
+    suffix = 'M';
+  } else if (absoluteValue >= 1_000) {
+    divisor = 1_000;
+    suffix = 'K';
+  }
+
+  try {
+    const compactNumber = new Intl.NumberFormat(locale, {
+      maximumFractionDigits: divisor === 1 ? 0 : 1,
+    }).format(safeValue / divisor);
+
+    return `${compactNumber}${suffix} ${currency}`;
+  } catch {
+    return `${Math.round(safeValue / divisor)}${suffix} ${currency}`;
+  }
+}
+
+function getLocalDateKey(): string {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
 // ---- sample data — visual QA only, not real business data ----
 
-const revenueSeries = [
-  { label: 'May 6', value: 12200 },
-  { label: 'May 9', value: 13400 },
-  { label: 'May 13', value: 14100 },
-  { label: 'May 16', value: 15800 },
-  { label: 'May 20', value: 16900 },
-  { label: 'May 23', value: 18200 },
-  { label: 'May 27', value: 19100 },
-  { label: 'May 30', value: 21400 },
-  { label: 'Jun 3', value: 24580 },
-];
 
-const revenueComparisonSeries = [
-  { label: 'May 6', value: 10800 },
-  { label: 'May 9', value: 11600 },
-  { label: 'May 13', value: 12900 },
-  { label: 'May 16', value: 13500 },
-  { label: 'May 20', value: 14700 },
-  { label: 'May 23', value: 15600 },
-  { label: 'May 27', value: 16200 },
-  { label: 'May 30', value: 17800 },
-  { label: 'Jun 3', value: 18950 },
-];
 
-const appointmentSegments = [
-  { label: 'Completed', value: 148, tone: 'completed' as const },
-  { label: 'Upcoming', value: 68, tone: 'scheduled' as const },
-  { label: 'Cancelled', value: 18, tone: 'cancelled' as const },
-  { label: 'No Show', value: 14, tone: 'other' as const },
-];
 
 const quickActionBlueprints = [
   {
@@ -197,13 +254,15 @@ const recentActivities = [
 function DashboardV2Composition() {
   const router = useRouter();
   const { token, booting, clearToken, sessionEmail } = useSession();
+  const { locale } = useAppPreferences();
   const {
     summary,
+    analytics,
     loading,
     refreshing,
     error,
     refresh,
-  } = useSummaryData(token, clearToken);
+  } = useAnalyticsData(token, clearToken);
   const { width } = useWindowDimensions();
 
   const dataPending = booting || loading;
@@ -312,6 +371,70 @@ function DashboardV2Composition() {
   const kpiCellWidth = `${100 / kpiColumns}%`;
   const pagePadding = isPhone ? 16 : isTablet ? 28 : 40;
 
+  const revenueCurrency = normalizeRevenueCurrency(
+    analytics?.currency
+  );
+
+  const revenueSeries = (
+    analytics?.revenue_last_7_days ?? []
+  )
+    .filter((point) => {
+      const value = Number(point.completed_revenue);
+      const date = new Date(`${point.date}T00:00:00`);
+
+      return (
+        Number.isFinite(value) &&
+        Number.isFinite(date.getTime())
+      );
+    })
+    .slice()
+    .sort((first, second) =>
+      first.date.localeCompare(second.date)
+    )
+    .map((point) => ({
+      label: formatRevenueDateLabel(point.date, locale),
+      value: Number(point.completed_revenue),
+    }));
+
+  const revenueLast7DaysTotal = revenueSeries.reduce(
+    (total, point) => total + point.value,
+    0
+  );
+
+  const todayRevenue =
+    analytics?.revenue_last_7_days?.find(
+      (point) => point.date === getLocalDateKey()
+    )?.completed_revenue ?? 0;
+
+  const revenueReady =
+    !loading &&
+    !error &&
+    analytics !== null;
+
+  const revenueTotalLabel = revenueReady
+    ? formatMoney(
+        revenueLast7DaysTotal,
+        revenueCurrency,
+        locale
+      )
+    : '—';
+
+  const revenueTodayLabel = revenueReady
+    ? formatMoney(
+        Number(todayRevenue),
+        revenueCurrency,
+        locale
+      )
+    : '—';
+
+  const revenueStatusLabel = loading
+    ? 'Synchronizing'
+    : error
+      ? 'Revenue unavailable'
+      : revenueSeries.length > 0
+        ? 'Actual completed revenue'
+        : 'No completed revenue';
+
   const greeting = (
     <ExecutiveGreetingV2
       ownerFirstName={ownerFirstName}
@@ -327,8 +450,10 @@ function DashboardV2Composition() {
         tone: error ? 'negative' : dataPending ? 'neutral' : 'positive',
       }}
       revenueToday={{
-        amount: '—',
-        trendLabel: 'Revenue analytics connects next',
+        amount: revenueTodayLabel,
+        trendLabel: revenueReady
+          ? 'Completed today'
+          : revenueStatusLabel,
         trendDirection: 'flat',
       }}
       aiConfidence={{
@@ -363,20 +488,47 @@ function DashboardV2Composition() {
   const revenueSection = (
     <RevenueAnalyticsV2
       title="Revenue Overview"
-      periodLabel="This Month"
-      totalValue="$124,580"
-      trendLabel="+18.6%"
-      trendDirection="up"
+      periodLabel="Last 7 Days"
+      totalValue={revenueTotalLabel}
+      trendLabel={revenueStatusLabel}
+      trendDirection="flat"
       currentSeries={revenueSeries}
-      comparisonSeries={revenueComparisonSeries}
+      currentSeriesLabel="Completed Revenue"
+      axisValueFormatter={(value) =>
+        formatCompactRevenue(
+          value,
+          revenueCurrency,
+          locale
+        )
+      }
     />
   );
+
+  const appointmentSegments = summary
+    ? [
+        {
+          label: 'Completed',
+          value: summary.completed_appointments,
+          tone: 'completed' as const,
+        },
+        {
+          label: 'Scheduled',
+          value: summary.scheduled_appointments,
+          tone: 'scheduled' as const,
+        },
+        {
+          label: 'Cancelled',
+          value: summary.cancelled_appointments,
+          tone: 'cancelled' as const,
+        },
+      ]
+    : [];
 
   const appointmentSection = (
     <AppointmentAnalyticsV2
       title="Appointments"
-      totalAppointments={248}
-      periodLabel="This Week"
+      totalAppointments={summary?.total_appointments ?? 0}
+      periodLabel="Summary"
       segments={appointmentSegments}
     />
   );

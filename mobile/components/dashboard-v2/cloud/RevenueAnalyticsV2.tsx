@@ -19,6 +19,7 @@ export interface RevenueAnalyticsV2Props {
   comparisonSeries?: RevenueSeriesPoint[];
   currentSeriesLabel?: string; // default "This Month"
   comparisonSeriesLabel?: string; // default "Last Month"
+  axisValueFormatter?: (value: number) => string;
   /** Plot height in px — width is always measured/fluid */
   height?: number;
 }
@@ -50,7 +51,7 @@ const trendBgMap: Record<TrendDirection, string> = {
   flat: 'rgba(111,112,146,0.14)',
 };
 
-function formatAxisValue(value: number): string {
+function defaultFormatAxisValue(value: number): string {
   if (Math.abs(value) >= 1000) {
     const k = value / 1000;
     return `$${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`;
@@ -253,6 +254,7 @@ function RevenueAnalyticsV2({
   comparisonSeries,
   currentSeriesLabel = 'This Month',
   comparisonSeriesLabel = 'Last Month',
+  axisValueFormatter = defaultFormatAxisValue,
   height = 200,
 }: RevenueAnalyticsV2Props) {
   const [chartWidth, setChartWidth] = useState(0);
@@ -319,7 +321,7 @@ function RevenueAnalyticsV2({
         <View style={[styles.yAxis, { height }]}>
           {yAxisSteps.map((step) => (
             <Text key={step} style={styles.yAxisLabel}>
-              {formatAxisValue(min + (max - min) * step)}
+              {axisValueFormatter(min + (max - min) * step)}
             </Text>
           ))}
         </View>
