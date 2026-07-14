@@ -23,6 +23,17 @@ export interface ForecastSeriesPoint {
 }
 
 export interface AICommandCenterV2Props {
+  labels: {
+    commandCenter: string;
+    score: string;
+    todaysFocus: string;
+    forecast: string;
+    insights: string;
+    recommendations: string;
+    emptyFocus: string;
+    emptyInsights: string;
+    caughtUp: string;
+  };
   healthLabel: string;
   aiScore: number; // 0–100
   confidenceLabel: string;
@@ -155,6 +166,7 @@ function ForecastBars({ series, color }: { series: ForecastSeriesPoint[]; color:
  * View ticks and the forecast chart from plain bars.
  */
 function AICommandCenterV2({
+  labels,
   healthLabel,
   aiScore,
   confidenceLabel,
@@ -197,7 +209,7 @@ function AICommandCenterV2({
             />
             <View style={styles.pulseDot} />
           </View>
-          <Text style={styles.eyebrow}>AI COMMAND CENTER</Text>
+          <Text style={styles.eyebrow}>{labels.commandCenter.toUpperCase()}</Text>
         </View>
         <View style={[styles.healthPill, { backgroundColor: scoreTone.bg }]}>
           <Text style={[styles.healthLabel, { color: scoreTone.fg }]} numberOfLines={1}>
@@ -210,7 +222,7 @@ function AICommandCenterV2({
       <View style={styles.scoreRow}>
         <ScoreDial score={aiScore} tone={scoreTone.fg} />
         <View style={styles.scoreTextCol}>
-          <Text style={styles.scoreHeadline}>AI Score</Text>
+          <Text style={styles.scoreHeadline}>{labels.score}</Text>
           <Text style={styles.confidenceLabel}>{confidenceLabel}</Text>
         </View>
       </View>
@@ -218,16 +230,34 @@ function AICommandCenterV2({
       <View style={styles.divider} />
 
       {/* Today's Focus */}
-      <Text style={styles.sectionEyebrow}>TODAY'S FOCUS</Text>
+      <Text style={styles.sectionEyebrow}>{labels.todaysFocus.toUpperCase()}</Text>
       {todaysFocus.length === 0 ? (
-        <Text style={styles.emptyText}>Nothing urgent — the day looks clear.</Text>
+        <Text style={styles.emptyText}>{labels.emptyFocus}</Text>
       ) : (
         <View style={styles.focusList}>
           {todaysFocus.map((item, i) => {
             const tone = toneColorMap[item.tone ?? 'neutral'];
             return (
               <View key={i} style={styles.focusRow}>
-                <View style={[styles.focusDot, { backgroundColor: tone.fg }]} />
+                <View style={styles.focusDotWrap}>
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.focusPulseRing,
+                      {
+                        backgroundColor: tone.fg,
+                        opacity: pulseOpacity,
+                        transform: [{ scale: pulseScale }],
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.focusDot,
+                      { backgroundColor: tone.fg },
+                    ]}
+                  />
+                </View>
                 <View style={styles.focusTextCol}>
                   <View style={styles.focusTopLine}>
                     {!!item.time && <Text style={styles.focusTime}>{item.time}</Text>}
@@ -250,7 +280,7 @@ function AICommandCenterV2({
       <View style={styles.divider} />
 
       {/* Forecast */}
-      <Text style={styles.sectionEyebrow}>FORECAST</Text>
+      <Text style={styles.sectionEyebrow}>{labels.forecast.toUpperCase()}</Text>
       <View style={styles.forecastHeaderRow}>
         <Text style={styles.forecastHeadline} numberOfLines={2}>
           {forecast.headline}
@@ -267,9 +297,9 @@ function AICommandCenterV2({
       <View style={styles.divider} />
 
       {/* Insights */}
-      <Text style={styles.sectionEyebrow}>INSIGHTS</Text>
+      <Text style={styles.sectionEyebrow}>{labels.insights.toUpperCase()}</Text>
       {insights.length === 0 ? (
-        <Text style={styles.emptyText}>No new insights right now.</Text>
+        <Text style={styles.emptyText}>{labels.emptyInsights}</Text>
       ) : (
         <View style={styles.insightList}>
           {insights.map((insight, i) => {
@@ -294,9 +324,9 @@ function AICommandCenterV2({
       <View style={styles.divider} />
 
       {/* Recommendations */}
-      <Text style={styles.sectionEyebrow}>RECOMMENDATIONS</Text>
+      <Text style={styles.sectionEyebrow}>{labels.recommendations.toUpperCase()}</Text>
       {recommendations.length === 0 ? (
-        <Text style={styles.emptyText}>You're all caught up.</Text>
+        <Text style={styles.emptyText}>{labels.caughtUp}</Text>
       ) : (
         <View style={styles.recommendationList}>
           {recommendations.map((rec, i) => (
@@ -438,12 +468,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 12,
   },
+  focusDotWrap: {
+    width: 8,
+    height: 8,
+    marginTop: 5,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  focusPulseRing: {
+    position: 'absolute',
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
   focusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginTop: 6,
-    marginRight: 10,
   },
   focusTextCol: {
     flex: 1,

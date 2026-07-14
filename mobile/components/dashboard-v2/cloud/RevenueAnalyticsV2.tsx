@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
+import { View, Text, StyleSheet, LayoutChangeEvent, Pressable } from 'react-native';
 
 export type TrendDirection = 'up' | 'down' | 'flat';
 
@@ -8,9 +8,17 @@ export interface RevenueSeriesPoint {
   value: number;
 }
 
+export interface RevenuePeriodOption {
+  value: string;
+  label: string;
+}
+
 export interface RevenueAnalyticsV2Props {
   title?: string; // default "Revenue Overview"
   periodLabel: string; // e.g. "This Month"
+  periodOptions?: readonly RevenuePeriodOption[];
+  selectedPeriod?: string;
+  onPeriodChange?: (value: string) => void;
   totalValue: string; // pre-formatted, e.g. "$124,580"
   trendLabel: string; // pre-formatted, e.g. "+18.6%"
   trendDirection: TrendDirection;
@@ -247,6 +255,9 @@ function LineSegments({
 function RevenueAnalyticsV2({
   title = 'Revenue Overview',
   periodLabel,
+  periodOptions = [],
+  selectedPeriod,
+  onPeriodChange,
   totalValue,
   trendLabel,
   trendDirection,
@@ -258,7 +269,19 @@ function RevenueAnalyticsV2({
   height = 200,
 }: RevenueAnalyticsV2Props) {
   const [chartWidth, setChartWidth] = useState(0);
-  const onChartLayout = (e: LayoutChangeEvent) => setChartWidth(e.nativeEvent.layout.width);
+  const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
+
+  const canSelectPeriod =
+    periodOptions.length > 1 &&
+    typeof onPeriodChange === 'function';
+
+  const selectPeriod = (value: string) => {
+    onPeriodChange?.(value);
+    setPeriodMenuOpen(false);
+  };
+
+  const onChartLayout = (e: LayoutChangeEvent) =>
+    setChartWidth(e.nativeEvent.layout.width);
 
   const { min, max } = useMemo(() => {
     const all = [...currentSeries, ...(comparisonSeries ?? [])].map((p) => p.value);
@@ -282,11 +305,49 @@ function RevenueAnalyticsV2({
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.periodChip}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Select revenue period. Current: ${periodLabel}`}
+          disabled={!canSelectPeriod}
+          onPress={() => setPeriodMenuOpen((open) => !open)}
+          style={({ pressed }) => [
+            styles.periodChip,
+            pressed && canSelectPeriod && styles.periodChipPressed,
+          ]}
+        >
           <Text style={styles.periodChipText}>{periodLabel}</Text>
           <View style={styles.chevronDown} />
-        </View>
+        </Pressable>
       </View>
+
+      {periodMenuOpen && canSelectPeriod && (
+        <View style={styles.periodMenu}>
+          {periodOptions.map((option) => {
+            const active = option.value === selectedPeriod;
+
+            return (
+              <Pressable
+                key={option.value}
+                onPress={() => selectPeriod(option.value)}
+                style={({ pressed }) => [
+                  styles.periodOption,
+                  active && styles.periodOptionActive,
+                  pressed && styles.periodOptionPressed,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.periodOptionText,
+                    active && styles.periodOptionTextActive,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
 
       <View style={styles.summaryRow}>
         <View style={styles.summaryLeft}>
@@ -402,6 +463,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textSecondary,
     marginRight: 6,
+  },
+  periodChipPressed: {
+    opacity: 0.7,
+  },
+  periodMenu: {
+    marginTop: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  periodOption: {
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    borderRadius: 999,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  periodOptionActive: {
+    backgroundColor: 'rgba(124,92,255,0.22)',
+    borderColor: 'rgba(124,92,255,0.62)',
+  },
+  periodOptionPressed: {
+    opacity: 0.7,
+  },
+  periodOptionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  periodOptionTextActive: {
+    color: colors.textPrimary,
   },
   chevronDown: {
     width: 0,

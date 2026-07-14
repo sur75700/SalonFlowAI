@@ -15,6 +15,7 @@ export interface QuickAction {
 
 export interface QuickActionsV2Props {
   title: string;
+  emptyLabel: string;
   actions: QuickAction[];
 }
 
@@ -80,7 +81,11 @@ function ActionTile({ action }: { action: QuickAction }) {
  * no navigation, no business logic lives here. Self-contained, no
  * external packages; column count adapts to measured card width.
  */
-function QuickActionsV2({ title, actions }: QuickActionsV2Props) {
+function QuickActionsV2({
+  title,
+  emptyLabel,
+  actions,
+}: QuickActionsV2Props) {
   const [containerWidth, setContainerWidth] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
 
@@ -94,7 +99,7 @@ function QuickActionsV2({ title, actions }: QuickActionsV2Props) {
 
       <View style={styles.grid} onLayout={onLayout}>
         {isEmpty ? (
-          <Text style={styles.emptyText}>No quick actions available right now.</Text>
+          <Text style={styles.emptyText}>{emptyLabel}</Text>
         ) : (
           actions.map((action) => (
             <View key={action.id} style={[styles.cell, { width: `${cellWidthPercent}%` }]}>

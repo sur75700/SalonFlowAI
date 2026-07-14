@@ -9,16 +9,44 @@ import AppointmentAnalyticsV2 from './AppointmentAnalyticsV2';
 import AICommandCenterV2 from './AICommandCenterV2';
 import QuickActionsV2 from './QuickActionsV2';
 import CalendarSnapshotV2 from './CalendarSnapshotV2';
-import StaffPerformanceV2 from './StaffPerformanceV2';
-import RecentActivityV2 from './RecentActivityV2';
 import RoyalCosmosBackground from '../../ui/RoyalCosmosBackground';
 import { useSession } from '../../../hooks/useSession';
+import { useLogout } from '../../../hooks/useLogout';
+import { useAppLanguage } from '../../../contexts/LanguageContext';
+import {
+  languageLabels,
+  type AppLanguage,
+} from '../../../lib/i18n';
 import { useAnalyticsData } from '../../../hooks/useDashboardData';
+import { useAppointmentsData } from '../../../hooks/useResourceData';
+import type { AppointmentItem } from '../../../types/models';
 import { useAppPreferences } from '../../../hooks/useAppPreferences';
 import { formatMoney } from '../../../utils/money';
 import type { AppCurrency } from '../../../lib/i18n/types';
 
 type DeviceClass = 'phone' | 'tablet' | 'desktop';
+
+type RevenuePeriod = '7d' | '30d' | '90d';
+type AppointmentPeriod =
+  | 'today'
+  | '7d'
+  | '30d'
+  | '90d'
+  | 'all';
+
+const REVENUE_PERIOD_OPTIONS = [
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '30d', label: 'Last 30 Days' },
+  { value: '90d', label: 'Last 90 Days' },
+] as const;
+
+const APPOINTMENT_PERIOD_OPTIONS = [
+  { value: 'today', label: 'Today' },
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '30d', label: 'Last 30 Days' },
+  { value: '90d', label: 'Last 90 Days' },
+  { value: 'all', label: 'All Time' },
+] as const;
 
 function classifyDevice(width: number): DeviceClass {
   if (width >= 1100) return 'desktop';
@@ -108,6 +136,223 @@ function getLocalDateKey(): string {
   return `${year}-${month}-${day}`;
 }
 
+type DashboardAITone =
+  | 'positive'
+  | 'neutral'
+  | 'warning'
+  | 'danger';
+
+type DashboardTrendDirection =
+  | 'up'
+  | 'down'
+  | 'flat';
+
+function clampDashboardScore(
+  value: number | null | undefined
+): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, value));
+}
+
+function mapDashboardAITone(
+  value: string | null | undefined
+): DashboardAITone {
+  const tone = value?.trim().toLowerCase();
+
+  if (
+    tone === 'positive' ||
+    tone === 'success' ||
+    tone === 'good'
+  ) {
+    return 'positive';
+  }
+
+  if (
+    tone === 'danger' ||
+    tone === 'critical' ||
+    tone === 'high'
+  ) {
+    return 'danger';
+  }
+
+  if (
+    tone === 'warning' ||
+    tone === 'medium' ||
+    tone === 'risk'
+  ) {
+    return 'warning';
+  }
+
+  return 'neutral';
+}
+
+function mapDashboardTrend(
+  value: string | null | undefined
+): DashboardTrendDirection {
+  const trend = value?.trim().toLowerCase();
+
+  if (
+    trend === 'up' ||
+    trend === 'growing' ||
+    trend === 'positive' ||
+    trend === 'increase'
+  ) {
+    return 'up';
+  }
+
+  if (
+    trend === 'down' ||
+    trend === 'declining' ||
+    trend === 'negative' ||
+    trend === 'decrease'
+  ) {
+    return 'down';
+  }
+
+  return 'flat';
+}
+
+function isValidAppointmentTimestamp(
+  value: string | null | undefined
+): value is string {
+  if (!value) return false;
+
+  return Number.isFinite(new Date(value).getTime());
+}
+
+function isAppointmentToday(value: string): boolean {
+  const appointmentDate = new Date(value);
+  const today = new Date();
+
+  return (
+    appointmentDate.getFullYear() === today.getFullYear() &&
+    appointmentDate.getMonth() === today.getMonth() &&
+    appointmentDate.getDate() === today.getDate()
+  );
+}
+
+function formatCalendarDate(locale: string): string {
+  const today = new Date();
+
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(today);
+  } catch {
+    return today.toDateString();
+  }
+}
+
+function formatCalendarTime(
+  value: string,
+  locale: string
+): string {
+  const date = new Date(value);
+
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(date);
+  } catch {
+    return date.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+}
+
+type CalendarCopy = {
+  completed: string;
+  cancelled: string;
+  scheduled: string;
+  unknown: string;
+  unknownClient: string;
+  serviceNotSpecified: string;
+};
+
+function mapCalendarStatus(
+  statusValue: string,
+  copy: CalendarCopy
+) {
+  const status = statusValue.trim().toLowerCase();
+
+  switch (status) {
+    case 'completed':
+      return {
+        statusLabel: copy.completed,
+        tone: 'green' as const,
+      };
+
+    case 'cancelled':
+      return {
+        statusLabel: copy.cancelled,
+        tone: 'red' as const,
+      };
+
+    case 'scheduled':
+      return {
+        statusLabel: copy.scheduled,
+        tone: 'blue' as const,
+      };
+
+    default:
+      return {
+        statusLabel: status
+          ? status.charAt(0).toUpperCase() + status.slice(1)
+          : copy.unknown,
+        tone: 'royal' as const,
+      };
+  }
+}
+
+function buildRealCalendarEvents(
+  appointments: AppointmentItem[],
+  locale: string,
+  copy: CalendarCopy
+) {
+  return appointments
+    .filter(
+      (appointment) =>
+        isValidAppointmentTimestamp(appointment.starts_at) &&
+        isAppointmentToday(appointment.starts_at)
+    )
+    .slice()
+    .sort(
+      (first, second) =>
+        new Date(first.starts_at).getTime() -
+        new Date(second.starts_at).getTime()
+    )
+    .map((appointment) => {
+      const status = mapCalendarStatus(
+        appointment.status,
+        copy
+      );
+
+      return {
+        id: appointment.id,
+        time: formatCalendarTime(
+          appointment.starts_at,
+          locale
+        ),
+        clientName:
+          appointment.client_name?.trim() ||
+          copy.unknownClient,
+        serviceName:
+          appointment.service_name?.trim() ||
+          copy.serviceNotSpecified,
+        statusLabel: status.statusLabel,
+        tone: status.tone,
+      };
+    });
+}
+
 // ---- sample data — visual QA only, not real business data ----
 
 
@@ -152,97 +397,6 @@ const quickActionBlueprints = [
   },
 ];
 
-const calendarEvents = [
-  {
-    id: 'evt-1',
-    time: '2:30 PM',
-    clientName: 'Sarah K.',
-    serviceName: 'Balayage Color',
-    staffName: 'Maya',
-    tone: 'gold' as const,
-    statusLabel: 'Confirmed',
-  },
-  {
-    id: 'evt-2',
-    time: '3:15 PM',
-    clientName: 'Devon R.',
-    serviceName: "Men's Cut",
-    staffName: 'Alex',
-    tone: 'blue' as const,
-    statusLabel: 'Confirmed',
-  },
-  {
-    id: 'evt-3',
-    time: '5:00 PM',
-    clientName: 'Priya N.',
-    serviceName: 'Gel Manicure',
-    staffName: 'Jordan',
-    tone: 'royal' as const,
-    statusLabel: 'Pending',
-  },
-];
-
-const staffMembers = [
-  {
-    id: 'staff-1',
-    name: 'Maya Chen',
-    role: 'Senior Colorist',
-    revenueLabel: '$5,240',
-    appointmentCount: 38,
-    performancePercent: 96,
-    trendLabel: '+12%',
-    trendDirection: 'up' as const,
-  },
-  {
-    id: 'staff-2',
-    name: 'Alex Rivera',
-    role: 'Barber',
-    revenueLabel: '$4,180',
-    appointmentCount: 41,
-    performancePercent: 88,
-    trendLabel: '+4%',
-    trendDirection: 'up' as const,
-  },
-  {
-    id: 'staff-3',
-    name: 'Jordan Lee',
-    role: 'Nail Technician',
-    revenueLabel: '$3,020',
-    appointmentCount: 29,
-    performancePercent: 71,
-    trendLabel: '-3%',
-    trendDirection: 'down' as const,
-  },
-];
-
-const recentActivities = [
-  {
-    id: 'act-1',
-    title: 'Payment received',
-    description: 'Sarah K. paid $185 for Balayage Color.',
-    timeLabel: '12m ago',
-    actorName: 'Front Desk',
-    tone: 'green' as const,
-    statusLabel: 'Paid',
-  },
-  {
-    id: 'act-2',
-    title: 'Appointment rescheduled',
-    description: 'Devon R. moved from Tue 10 AM to Wed 3:15 PM.',
-    timeLabel: '1h ago',
-    actorName: 'Alex',
-    tone: 'blue' as const,
-  },
-  {
-    id: 'act-3',
-    title: 'New client booked',
-    description: 'Priya N. booked a Gel Manicure for Friday.',
-    timeLabel: '3h ago',
-    actorName: 'Online Booking',
-    tone: 'royal' as const,
-    statusLabel: 'New',
-  },
-];
 
 /**
  * DashboardV2Composition — final responsive assembly of the nine approved
@@ -253,7 +407,118 @@ const recentActivities = [
  */
 function DashboardV2Composition() {
   const router = useRouter();
-  const { token, booting, clearToken, sessionEmail } = useSession();
+
+  const [revenuePeriod, setRevenuePeriod] =
+    React.useState<RevenuePeriod>('7d');
+
+  const [appointmentPeriod, setAppointmentPeriod] =
+    React.useState<AppointmentPeriod>('all');
+  const {
+    token,
+    booting,
+    clearToken,
+    sessionEmail,
+  } = useSession();
+
+  const { logout, loggingOut } = useLogout();
+
+  const {
+    language,
+    setLanguage,
+    t,
+  } = useAppLanguage();
+
+  const dashboardCopy = t.dashboardV2;
+
+  const revenuePeriodOptions = [
+    { value: '7d', label: dashboardCopy.periods.last7Days },
+    { value: '30d', label: dashboardCopy.periods.last30Days },
+    { value: '90d', label: dashboardCopy.periods.last90Days },
+  ] as const;
+
+  const appointmentPeriodOptions = [
+    { value: 'today', label: dashboardCopy.periods.today },
+    { value: '7d', label: dashboardCopy.periods.last7Days },
+    { value: '30d', label: dashboardCopy.periods.last30Days },
+    { value: '90d', label: dashboardCopy.periods.last90Days },
+    { value: 'all', label: dashboardCopy.periods.allTime },
+  ] as const;
+
+  const translateRuntimeAIText = (
+    value: string | null | undefined
+  ): string | undefined => {
+    const original = value?.trim();
+
+    if (!original) return undefined;
+
+    const normalized = original.toLowerCase();
+
+    if (normalized.includes('capture growth opportunity')) {
+      return dashboardCopy.ai.captureGrowthOpportunity;
+    }
+
+    if (
+      normalized.includes(
+        'increase bookings and completed revenue'
+      )
+    ) {
+      return dashboardCopy.ai.increaseBookingsRevenue;
+    }
+
+    const leadingRevenueMatch = original.match(
+      /^(.+?)\s+is leading revenue/i
+    );
+
+    if (leadingRevenueMatch?.[1]) {
+      return dashboardCopy.ai.leadingRevenue.replace(
+        '{service}',
+        leadingRevenueMatch[1].trim()
+      );
+    }
+
+    if (
+      normalized.includes(
+        'this service currently contributes the strongest'
+      )
+    ) {
+      return dashboardCopy.ai.leadingRevenueDetail;
+    }
+
+    const generatedRevenueMatch = original.match(
+      /^this service generated\s+(.+?)\s+across\s+(\d+)\s+bookings\.?$/i
+    );
+
+    if (generatedRevenueMatch) {
+      return dashboardCopy.ai.generatedRevenueDetail
+        .replace(
+          '{amount}',
+          generatedRevenueMatch[1].trim()
+        )
+        .replace(
+          '{count}',
+          generatedRevenueMatch[2]
+        );
+    }
+
+    if (
+      normalized.includes(
+        'average completed ticket is visible'
+      )
+    ) {
+      return dashboardCopy.ai.averageTicketVisible;
+    }
+
+    if (
+      normalized.includes(
+        'use this as the baseline for upsell'
+      )
+    ) {
+      return dashboardCopy.ai.upsellBaseline;
+    }
+
+    return original;
+  };
+
   const { locale } = useAppPreferences();
   const {
     summary,
@@ -263,6 +528,19 @@ function DashboardV2Composition() {
     error,
     refresh,
   } = useAnalyticsData(token, clearToken);
+
+  const {
+    appointments,
+    loading: appointmentsLoading,
+    refreshing: appointmentsRefreshing,
+    error: appointmentsError,
+    refresh: refreshAppointments,
+  } = useAppointmentsData(token, clearToken);
+
+  const handleDashboardRefresh = () => {
+    refresh();
+    refreshAppointments();
+  };
   const { width } = useWindowDimensions();
 
   const dataPending = booting || loading;
@@ -271,6 +549,36 @@ function DashboardV2Composition() {
 
   const ownerFirstName =
     sessionEmail?.split('@')[0]?.trim() || 'Owner';
+
+  const accountInitials = ownerFirstName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('') || 'SF';
+
+  const accountLanguageOptions = [
+    {
+      value: 'en',
+      label: languageLabels.en,
+      flag: '🇺🇸',
+    },
+    {
+      value: 'hy',
+      label: languageLabels.hy,
+      flag: '🇦🇲',
+    },
+    {
+      value: 'ru',
+      label: languageLabels.ru,
+      flag: '🇷🇺',
+    },
+    {
+      value: 'fr',
+      label: languageLabels.fr,
+      flag: '🇫🇷',
+    },
+  ] as const;
 
   const totalBookings = summary?.total_appointments ?? 0;
   const completedBookings = summary?.completed_appointments ?? 0;
@@ -283,83 +591,114 @@ function DashboardV2Composition() {
 
   const realKpiData = [
     {
-      label: 'Clients',
+      label: dashboardCopy.kpi.clients,
       value: displayValue(summary?.total_clients),
-      trendLabel: dataPending ? 'Syncing' : 'Live',
+      trendLabel: dataPending ? dashboardCopy.common.syncing : dashboardCopy.common.live,
       trendDirection: 'flat' as const,
-      helperText: error ? 'Data unavailable' : 'Client base',
+      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.clientBase,
       accent: 'gold' as const,
       sparklineData: undefined,
     },
     {
-      label: 'Services',
+      label: dashboardCopy.kpi.services,
       value: displayValue(summary?.total_services),
-      trendLabel: dataPending ? 'Syncing' : 'Live',
+      trendLabel: dataPending ? dashboardCopy.common.syncing : dashboardCopy.common.live,
       trendDirection: 'flat' as const,
-      helperText: error ? 'Data unavailable' : 'Active catalog',
+      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.activeCatalog,
       accent: 'royal' as const,
       sparklineData: undefined,
     },
     {
-      label: 'Bookings',
+      label: dashboardCopy.kpi.bookings,
       value: displayValue(summary?.total_appointments),
-      trendLabel: dataPending ? 'Syncing' : `${completionRate}% done`,
+      trendLabel: dataPending
+        ? dashboardCopy.common.syncing
+        : dashboardCopy.ai.completionPercent.replace(
+            '{value}',
+            String(completionRate)
+          ),
       trendDirection: completionRate >= 60 ? 'up' as const : 'flat' as const,
-      helperText: error ? 'Data unavailable' : 'Total demand',
+      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.totalDemand,
       accent: 'blue' as const,
       sparklineData: undefined,
     },
     {
-      label: 'Today',
+      label: dashboardCopy.kpi.today,
       value: displayValue(summary?.today_appointments),
-      trendLabel: dataPending ? 'Syncing' : 'Live',
+      trendLabel: dataPending ? dashboardCopy.common.syncing : dashboardCopy.common.live,
       trendDirection: todayBookings > 0 ? 'up' as const : 'flat' as const,
-      helperText: error ? 'Data unavailable' : 'Today activity',
+      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.todayActivity,
       accent: 'green' as const,
       sparklineData: undefined,
     },
   ];
 
   const quickActions = quickActionBlueprints.map((action) => {
+    const localizedLabel =
+      action.id === 'clients'
+        ? dashboardCopy.actions.clients
+        : action.id === 'services'
+          ? dashboardCopy.actions.services
+          : action.id === 'bookings'
+            ? dashboardCopy.actions.bookings
+            : action.id === 'reports'
+              ? dashboardCopy.actions.reports
+              : action.id === 'settings'
+                ? dashboardCopy.actions.settings
+                : action.id === 'analytics'
+                  ? dashboardCopy.actions.analytics
+                  : action.label;
+
+    const localizedAction = {
+      ...action,
+      label: localizedLabel,
+    };
+
     switch (action.id) {
       case 'clients':
         return {
-          ...action,
-          onPress: () => router.push('/(tabs)/clients' as Href),
+          ...localizedAction,
+          onPress: () =>
+            router.push('/(tabs)/clients' as Href),
         };
 
       case 'services':
         return {
-          ...action,
-          onPress: () => router.push('/(tabs)/services' as Href),
+          ...localizedAction,
+          onPress: () =>
+            router.push('/(tabs)/services' as Href),
         };
 
       case 'bookings':
         return {
-          ...action,
-          onPress: () => router.push('/(tabs)/appointments' as Href),
+          ...localizedAction,
+          onPress: () =>
+            router.push('/(tabs)/appointments' as Href),
         };
 
       case 'reports':
         return {
-          ...action,
-          onPress: () => router.push('/(tabs)/reports' as Href),
+          ...localizedAction,
+          onPress: () =>
+            router.push('/(tabs)/reports' as Href),
         };
 
       case 'settings':
         return {
-          ...action,
-          onPress: () => router.push('/(tabs)/explore' as Href),
+          ...localizedAction,
+          onPress: () =>
+            router.push('/(tabs)/explore' as Href),
         };
 
       case 'analytics':
         return {
-          ...action,
-          onPress: () => router.push('/(tabs)/analytics' as Href),
+          ...localizedAction,
+          onPress: () =>
+            router.push('/(tabs)/analytics' as Href),
         };
 
       default:
-        return action;
+        return localizedAction;
     }
   });
   const device = classifyDevice(width);
@@ -375,36 +714,89 @@ function DashboardV2Composition() {
     analytics?.currency
   );
 
-  const revenueSeries = (
-    analytics?.revenue_last_7_days ?? []
-  )
-    .filter((point) => {
-      const value = Number(point.completed_revenue);
-      const date = new Date(`${point.date}T00:00:00`);
+  const revenuePeriodDays =
+    revenuePeriod === '7d'
+      ? 7
+      : revenuePeriod === '30d'
+        ? 30
+        : 90;
+
+  const revenueStartDate = new Date();
+  revenueStartDate.setHours(0, 0, 0, 0);
+  revenueStartDate.setDate(
+    revenueStartDate.getDate() -
+      (revenuePeriodDays - 1)
+  );
+
+  const revenueByDate = new Map<string, number>();
+
+  appointments
+    .filter((appointment) => {
+      const date = new Date(appointment.starts_at);
+      const status = String(
+        appointment.status ?? ''
+      ).toLowerCase();
 
       return (
-        Number.isFinite(value) &&
-        Number.isFinite(date.getTime())
+        status === 'completed' &&
+        Number.isFinite(date.getTime()) &&
+        date >= revenueStartDate
       );
     })
-    .slice()
-    .sort((first, second) =>
-      first.date.localeCompare(second.date)
-    )
-    .map((point) => ({
-      label: formatRevenueDateLabel(point.date, locale),
-      value: Number(point.completed_revenue),
-    }));
+    .forEach((appointment) => {
+      const date = new Date(appointment.starts_at);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const key = `${year}-${month}-${day}`;
+
+      const rawPrice = Number(
+        appointment.price_snapshot ?? 0
+      );
+
+      const price = Number.isFinite(rawPrice)
+        ? rawPrice
+        : 0;
+
+      revenueByDate.set(
+        key,
+        (revenueByDate.get(key) ?? 0) + price
+      );
+    });
+
+  const revenueSeries = Array.from(
+    { length: revenuePeriodDays },
+    (_, index) => {
+      const date = new Date(revenueStartDate);
+      date.setDate(date.getDate() + index);
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const key = `${year}-${month}-${day}`;
+
+      return {
+        label: formatRevenueDateLabel(key, locale),
+        value: revenueByDate.get(key) ?? 0,
+      };
+    }
+  );
 
   const revenueLast7DaysTotal = revenueSeries.reduce(
     (total, point) => total + point.value,
     0
   );
 
+  const hasCompletedRevenue = revenueSeries.some(
+    (point) => point.value > 0
+  );
+
+  const visibleRevenueSeries = hasCompletedRevenue
+    ? revenueSeries
+    : [];
+
   const todayRevenue =
-    analytics?.revenue_last_7_days?.find(
-      (point) => point.date === getLocalDateKey()
-    )?.completed_revenue ?? 0;
+    revenueByDate.get(getLocalDateKey()) ?? 0;
 
   const revenueReady =
     !loading &&
@@ -428,49 +820,83 @@ function DashboardV2Composition() {
     : '—';
 
   const revenueStatusLabel = loading
-    ? 'Synchronizing'
+    ? dashboardCopy.common.syncing
     : error
-      ? 'Revenue unavailable'
-      : revenueSeries.length > 0
-        ? 'Actual completed revenue'
-        : 'No completed revenue';
+      ? dashboardCopy.revenue.unavailable
+      : hasCompletedRevenue
+        ? dashboardCopy.revenue.actualCompletedRevenue
+        : dashboardCopy.revenue.empty;
 
   const greeting = (
     <ExecutiveGreetingV2
+      greetingLabels={{
+        morning: dashboardCopy.hero.morning,
+        afternoon: dashboardCopy.hero.afternoon,
+        evening: dashboardCopy.hero.evening,
+        salonPerformance: dashboardCopy.hero.salonPerformance,
+      }}
+      metricLabels={{
+        revenueToday: dashboardCopy.hero.revenueToday,
+        aiConfidence: dashboardCopy.hero.aiConfidence,
+        appointmentPulse: dashboardCopy.hero.appointmentPulse,
+        next: dashboardCopy.hero.next,
+      }}
+      accountLabels={{
+        language: dashboardCopy.hero.language,
+        settings: dashboardCopy.common.settings,
+        signOut: dashboardCopy.common.signOut,
+        signingOut: dashboardCopy.common.signingOut,
+      }}
       ownerFirstName={ownerFirstName}
       salonName="SalonFlowAI"
       businessHealth={{
         label: error
-          ? 'Needs Attention'
+          ? dashboardCopy.hero.needsAttention
           : dataPending
-            ? 'Synchronizing'
+            ? dashboardCopy.common.syncing
             : totalBookings > 0
-              ? 'Live'
-              : 'Ready',
+              ? dashboardCopy.common.live
+              : dashboardCopy.common.ready,
         tone: error ? 'negative' : dataPending ? 'neutral' : 'positive',
       }}
       revenueToday={{
         amount: revenueTodayLabel,
         trendLabel: revenueReady
-          ? 'Completed today'
+          ? dashboardCopy.hero.completedToday
           : revenueStatusLabel,
         trendDirection: 'flat',
       }}
       aiConfidence={{
         value: error ? 0 : dataPending ? 0 : 94,
         label: error
-          ? 'Summary unavailable'
+          ? dashboardCopy.hero.summaryUnavailable
           : dataPending
-            ? 'Synchronizing live data'
-            : 'Summary connected',
+            ? dashboardCopy.hero.synchronizingLiveData
+            : dashboardCopy.hero.summaryConnected,
       }}
       appointmentPulse={{
         completed: completedBookings,
         total: totalBookings,
         nextClientName: undefined,
         nextTime: todayBookings > 0
-          ? `${todayBookings} today`
+          ? `${todayBookings} ${dashboardCopy.periods.today}`
           : undefined,
+      }}
+      accountMenu={{
+        email: sessionEmail || undefined,
+        initials: accountInitials,
+        languageLabel: languageLabels[language],
+        languageOptions: accountLanguageOptions,
+        selectedLanguage: language,
+        onLanguageChange: (value) =>
+          setLanguage(value as AppLanguage),
+        onSettings: () =>
+          router.push('/(tabs)/explore' as Href),
+        onLogout: async () => {
+          await logout();
+          router.replace("/login");
+        },
+        loggingOut,
       }}
     />
   );
@@ -485,15 +911,25 @@ function DashboardV2Composition() {
     </View>
   );
 
+  const revenuePeriodLabel =
+    revenuePeriodOptions.find(
+      (option) => option.value === revenuePeriod
+    )?.label ?? dashboardCopy.periods.last7Days;
+
   const revenueSection = (
     <RevenueAnalyticsV2
-      title="Revenue Overview"
-      periodLabel="Last 7 Days"
+      title={dashboardCopy.revenue.title}
+      periodLabel={revenuePeriodLabel}
+      periodOptions={revenuePeriodOptions}
+      selectedPeriod={revenuePeriod}
+      onPeriodChange={(value) =>
+        setRevenuePeriod(value as RevenuePeriod)
+      }
       totalValue={revenueTotalLabel}
       trendLabel={revenueStatusLabel}
       trendDirection="flat"
-      currentSeries={revenueSeries}
-      currentSeriesLabel="Completed Revenue"
+      currentSeries={visibleRevenueSeries}
+      currentSeriesLabel={dashboardCopy.revenue.completedRevenue}
       axisValueFormatter={(value) =>
         formatCompactRevenue(
           value,
@@ -504,115 +940,363 @@ function DashboardV2Composition() {
     />
   );
 
-  const appointmentSegments = summary
-    ? [
-        {
-          label: 'Completed',
-          value: summary.completed_appointments,
-          tone: 'completed' as const,
-        },
-        {
-          label: 'Scheduled',
-          value: summary.scheduled_appointments,
-          tone: 'scheduled' as const,
-        },
-        {
-          label: 'Cancelled',
-          value: summary.cancelled_appointments,
-          tone: 'cancelled' as const,
-        },
-      ]
-    : [];
+  const appointmentNow = new Date();
+
+  const filteredAppointments = appointments.filter(
+    (appointment) => {
+      const date = new Date(appointment.starts_at);
+
+      if (!Number.isFinite(date.getTime())) {
+        return false;
+      }
+
+      if (appointmentPeriod === 'all') {
+        return true;
+      }
+
+      if (appointmentPeriod === 'today') {
+        return (
+          date.getFullYear() === appointmentNow.getFullYear() &&
+          date.getMonth() === appointmentNow.getMonth() &&
+          date.getDate() === appointmentNow.getDate()
+        );
+      }
+
+      const days =
+        appointmentPeriod === '7d'
+          ? 7
+          : appointmentPeriod === '30d'
+            ? 30
+            : 90;
+
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - (days - 1));
+
+      return date >= start && date <= appointmentNow;
+    }
+  );
+
+  const appointmentCounts =
+    filteredAppointments.reduce(
+      (counts, appointment) => {
+        const status = String(
+          appointment.status ?? ''
+        ).toLowerCase();
+
+        if (status === 'completed') {
+          counts.completed += 1;
+        } else if (status === 'scheduled') {
+          counts.scheduled += 1;
+        } else if (status === 'cancelled') {
+          counts.cancelled += 1;
+        }
+
+        return counts;
+      },
+      {
+        completed: 0,
+        scheduled: 0,
+        cancelled: 0,
+      }
+    );
+
+  const appointmentSegments = [
+    {
+      label: dashboardCopy.appointments.completed,
+      value: appointmentCounts.completed,
+      tone: 'completed' as const,
+    },
+    {
+      label: dashboardCopy.appointments.scheduled,
+      value: appointmentCounts.scheduled,
+      tone: 'scheduled' as const,
+    },
+    {
+      label: dashboardCopy.appointments.cancelled,
+      value: appointmentCounts.cancelled,
+      tone: 'cancelled' as const,
+    },
+  ].filter((segment) => segment.value > 0);
+
+  const appointmentPeriodLabel =
+    appointmentPeriodOptions.find(
+      (option) => option.value === appointmentPeriod
+    )?.label ?? dashboardCopy.periods.allTime;
 
   const appointmentSection = (
     <AppointmentAnalyticsV2
-      title="Appointments"
-      totalAppointments={summary?.total_appointments ?? 0}
-      periodLabel="Summary"
+      labels={{
+        total: dashboardCopy.common.total,
+        noData: dashboardCopy.common.noData,
+        emptyPeriod: dashboardCopy.appointments.emptyPeriod,
+        selectPeriod: dashboardCopy.appointments.selectPeriod,
+      }}
+      title={dashboardCopy.appointments.title}
+      totalAppointments={filteredAppointments.length}
+      periodLabel={appointmentPeriodLabel}
+      periodOptions={appointmentPeriodOptions}
+      selectedPeriod={appointmentPeriod}
+      onPeriodChange={(value) =>
+        setAppointmentPeriod(
+          value as AppointmentPeriod
+        )
+      }
       segments={appointmentSegments}
     />
   );
 
+  const aiScore = clampDashboardScore(
+    analytics?.benchmark_center?.benchmark_score ??
+      analytics?.ai_reasoning?.decision_score ??
+      analytics?.growth_summary?.growth_score ??
+      analytics?.ai_data_quality?.score
+  );
+
+  const rawAIHealthLabel =
+    analytics?.benchmark_center?.salon_tier ||
+    analytics?.ai_mode ||
+    analytics?.growth_summary?.growth_level;
+
+  const aiHealthLabel = loading
+    ? dashboardCopy.common.syncing
+    : error
+      ? dashboardCopy.common.unavailable
+      : rawAIHealthLabel?.trim().toLowerCase() === 'elite'
+        ? dashboardCopy.ai.tierElite
+        : rawAIHealthLabel || dashboardCopy.common.ready;
+
+  const aiConfidenceValue =
+    analytics?.forecast?.confidence ??
+    analytics?.ai_reasoning?.data_quality_score ??
+    analytics?.ai_data_quality?.score;
+
+  const aiConfidenceLabel =
+    typeof aiConfidenceValue === 'number' &&
+    Number.isFinite(aiConfidenceValue)
+      ? dashboardCopy.ai.confidencePercent.replace(
+          '{value}',
+          String(Math.round(aiConfidenceValue))
+        )
+      : loading
+        ? 'Analyzing business data…'
+        : error
+          ? 'AI analytics unavailable.'
+          : 'Confidence data unavailable.';
+
+  const aiTodaysFocus = (
+    analytics?.mission_control ?? []
+  )
+    .slice()
+    .sort(
+      (first, second) =>
+        Number(first.priority ?? 0) -
+        Number(second.priority ?? 0)
+    )
+    .slice(0, 3)
+    .map((mission) => ({
+      label:
+        translateRuntimeAIText(
+          mission.title?.trim() ||
+          mission.action_label?.trim() ||
+          mission.action?.trim()
+        ) ||
+        dashboardCopy.ai.businessPriority,
+      detail:
+        translateRuntimeAIText(
+          mission.expected_result?.trim() ||
+          mission.execution_playbook?.trim() ||
+          mission.action?.trim()
+        ),
+      tone: mapDashboardAITone(
+        mission.urgency ||
+        (
+          typeof mission.priority === 'number' &&
+          mission.priority <= 1
+            ? 'warning'
+            : 'neutral'
+        )
+      ),
+    }));
+
+  const realForecast = analytics?.forecast;
+
+  const hasRevenueForecast =
+    realForecast !== null &&
+    realForecast !== undefined &&
+    (
+      Number(realForecast.revenue_7_days) > 0 ||
+      Number(realForecast.revenue_30_days) > 0
+    );
+
+  const aiForecastSeries = hasRevenueForecast && realForecast
+    ? [
+        {
+          label: dashboardCopy.ai.sevenDays,
+          value: Number(realForecast.revenue_7_days),
+        },
+        {
+          label: dashboardCopy.ai.thirtyDays,
+          value: Number(realForecast.revenue_30_days),
+        },
+      ]
+    : [];
+
+  const aiForecastHeadline = loading
+    ? 'Building revenue forecast…'
+    : error
+      ? 'Revenue forecast unavailable.'
+      : hasRevenueForecast && realForecast
+        ? dashboardCopy.ai.projectedRevenue7Days.replace(
+            '{amount}',
+            formatMoney(
+              realForecast.revenue_7_days,
+              revenueCurrency,
+              locale
+            )
+          )
+        : dashboardCopy.revenue.moreHistoryRequired;
+
+  const aiForecastHelper =
+    hasRevenueForecast && realForecast
+      ? dashboardCopy.ai.projection30Days.replace(
+          '{amount}',
+          formatMoney(
+            realForecast.revenue_30_days,
+            revenueCurrency,
+            locale
+          )
+        )
+      : undefined;
+
+  const aiInsights = (
+    analytics?.insights ?? []
+  )
+    .slice(0, 3)
+    .map((insight) => ({
+      title:
+        translateRuntimeAIText(
+          insight.title?.trim() ||
+          insight.code?.trim()
+        ) ||
+        dashboardCopy.ai.businessInsight,
+      description:
+        translateRuntimeAIText(
+          insight.message?.trim()
+        ) ||
+        dashboardCopy.ai.noInsightDetail,
+      tone: mapDashboardAITone(insight.tone),
+    }));
+
+  const aiRecommendations = (
+    analytics?.decision_priority?.ranked_actions ?? []
+  )
+    .slice(0, 3)
+    .map(
+      (item) =>
+        translateRuntimeAIText(
+          item.label?.trim() ||
+          item.action?.trim()
+        )
+    )
+    .filter(
+      (item): item is string =>
+        typeof item === 'string' &&
+        item.length > 0
+    );
+
+  const fallbackRecommendations =
+    aiRecommendations.length > 0
+      ? aiRecommendations
+      : (analytics?.mission_control ?? [])
+          .slice(0, 3)
+          .map(
+            (mission) =>
+              translateRuntimeAIText(
+                mission.action_label?.trim() ||
+                mission.action?.trim()
+              )
+          )
+          .filter(
+            (item): item is string =>
+              typeof item === 'string' &&
+              item.length > 0
+          );
+
   const aiSection = (
     <AICommandCenterV2
-      healthLabel="Thriving"
-      aiScore={86}
-      confidenceLabel="94% confidence, based on the last 30 days of bookings and revenue."
-      todaysFocus={[
-        {
-          time: '2:30 PM',
-          label: "Confirm Sarah K.'s color appointment",
-          detail: 'High no-show risk based on booking history.',
-          tone: 'warning',
-        },
-        {
-          time: '5:00 PM',
-          label: 'Follow up with 3 clients overdue for rebooking',
-          detail: 'Retention window closes this week.',
-          tone: 'neutral',
-        },
-      ]}
-      forecast={{
-        headline: 'Revenue trending 12% above forecast this week.',
-        helperText: 'Driven by strong Friday and Saturday bookings.',
-        trendLabel: '+12%',
-        trendDirection: 'up',
-        series: [
-          { label: 'Mon', value: 1800 },
-          { label: 'Tue', value: 2100 },
-          { label: 'Wed', value: 1950 },
-          { label: 'Thu', value: 2400 },
-          { label: 'Fri', value: 2900 },
-          { label: 'Sat', value: 3200 },
-          { label: 'Sun', value: 2600 },
-        ],
+      labels={{
+        commandCenter: dashboardCopy.ai.commandCenter,
+        score: dashboardCopy.ai.score,
+        todaysFocus: dashboardCopy.ai.todaysFocus,
+        forecast: dashboardCopy.ai.forecast,
+        insights: dashboardCopy.ai.insights,
+        recommendations: dashboardCopy.ai.recommendations,
+        emptyFocus: dashboardCopy.ai.emptyFocus,
+        emptyInsights: dashboardCopy.ai.emptyInsights,
+        caughtUp: dashboardCopy.ai.caughtUp,
       }}
-      insights={[
-        {
-          title: 'Peak hours shifting later',
-          description: 'Saturday demand is now heaviest between 1–4 PM, up from 11 AM–1 PM last quarter.',
-          tone: 'neutral',
-        },
-        {
-          title: '3 empty slots tomorrow',
-          description: '10 AM, 11:30 AM, and 3 PM are open with no waitlist match yet.',
-          tone: 'warning',
-        },
-      ]}
-      recommendations={[
-        'Send a rebooking reminder to clients inactive for 45+ days.',
-        'Offer the 10 AM slot to your waitlist before end of day.',
-      ]}
+      healthLabel={aiHealthLabel}
+      aiScore={aiScore}
+      confidenceLabel={aiConfidenceLabel}
+      todaysFocus={aiTodaysFocus}
+      forecast={{
+        headline: aiForecastHeadline,
+        helperText: aiForecastHelper,
+        trendLabel:
+          hasRevenueForecast && realForecast?.trend
+            ? realForecast.trend
+            : undefined,
+        trendDirection: mapDashboardTrend(
+          hasRevenueForecast
+            ? realForecast?.trend
+            : undefined
+        ),
+        series: aiForecastSeries,
+      }}
+      insights={aiInsights}
+      recommendations={fallbackRecommendations}
     />
   );
 
-  const quickActionsSection = <QuickActionsV2 title="Quick Actions" actions={quickActions} />;
+  const quickActionsSection = (
+    <QuickActionsV2
+      title={dashboardCopy.actions.title}
+      emptyLabel={dashboardCopy.actions.empty}
+      actions={quickActions}
+    />
+  );
+
+  const calendarEvents = buildRealCalendarEvents(
+    appointments,
+    locale,
+    {
+      completed: dashboardCopy.appointments.completed,
+      cancelled: dashboardCopy.appointments.cancelled,
+      scheduled: dashboardCopy.appointments.scheduled,
+      unknown: dashboardCopy.common.unknown,
+      unknownClient: dashboardCopy.appointments.unknownClient,
+      serviceNotSpecified:
+        dashboardCopy.appointments.serviceNotSpecified,
+    }
+  );
+
+  const calendarEmptyLabel = appointmentsLoading
+    ? dashboardCopy.appointments.loading
+    : appointmentsError
+      ? dashboardCopy.appointments.unavailable
+      : dashboardCopy.appointments.emptyToday;
 
   const calendarSection = (
     <CalendarSnapshotV2
-      title="Calendar Snapshot"
-      dateLabel="June 6, 2026"
+      title={dashboardCopy.calendar.title}
+      dateLabel={formatCalendarDate(locale)}
       events={calendarEvents}
-      emptyLabel="No appointments scheduled for the rest of today."
+      emptyLabel={calendarEmptyLabel}
     />
   );
 
-  const staffSection = (
-    <StaffPerformanceV2
-      title="Staff Performance"
-      periodLabel="This Month"
-      staff={staffMembers}
-      emptyLabel="No staff performance data for this period."
-    />
-  );
 
-  const activitySection = (
-    <RecentActivityV2
-      title="Recent Activity"
-      activities={recentActivities}
-      emptyLabel="No recent activity to show."
-    />
-  );
 
   return (
     <RoyalCosmosBackground style={styles.cosmosShell}>
@@ -622,8 +1306,8 @@ function DashboardV2Composition() {
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
-              onRefresh={refresh}
+              refreshing={refreshing || appointmentsRefreshing}
+              onRefresh={handleDashboardRefresh}
               tintColor="#7C5CFF"
             />
           }
@@ -639,8 +1323,6 @@ function DashboardV2Composition() {
               <View style={styles.sectionGap}>{aiSection}</View>
               <View style={styles.sectionGap}>{quickActionsSection}</View>
               <View style={styles.sectionGap}>{calendarSection}</View>
-              <View style={styles.sectionGap}>{staffSection}</View>
-              <View style={styles.sectionGap}>{activitySection}</View>
             </>
           )}
 
@@ -652,11 +1334,7 @@ function DashboardV2Composition() {
               </View>
               <View style={styles.sectionGap}>{aiSection}</View>
               <View style={styles.sectionGap}>{quickActionsSection}</View>
-              <View style={[styles.twoColRow, styles.sectionGap]}>
-                <View style={styles.twoColCell}>{calendarSection}</View>
-                <View style={styles.twoColCell}>{staffSection}</View>
-              </View>
-              <View style={styles.sectionGap}>{activitySection}</View>
+              <View style={styles.sectionGap}>{calendarSection}</View>
             </>
           )}
 
@@ -665,11 +1343,7 @@ function DashboardV2Composition() {
               <View style={styles.primaryCol}>
                 <View style={styles.sectionGap}>{revenueSection}</View>
                 <View style={styles.sectionGap}>{quickActionsSection}</View>
-                <View style={[styles.twoColRow, styles.sectionGap]}>
-                  <View style={styles.twoColCell}>{calendarSection}</View>
-                  <View style={styles.twoColCell}>{staffSection}</View>
-                </View>
-                <View>{activitySection}</View>
+                <View style={styles.sectionGap}>{calendarSection}</View>
               </View>
 
               <View style={styles.rightRail}>

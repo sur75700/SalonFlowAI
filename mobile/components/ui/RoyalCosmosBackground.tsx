@@ -44,25 +44,27 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
+    width: "100%",
+    height: "100%",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
   darkVeil: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(3, 5, 12, 0.78)",
+    backgroundColor: "rgba(3, 5, 12, 0.60)",
   },
   blueCalmLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(8, 16, 36, 0.34)",
+    backgroundColor: "rgba(8, 16, 36, 0.27)",
   },
   bottomDepth: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    height: "40%",
-    backgroundColor: "rgba(4, 5, 8, 0.72)",
+    height: "42%",
+    backgroundColor: "rgba(10, 18, 42, 0.18)",
   },
   content: {
     flex: 1,

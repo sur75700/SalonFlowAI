@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 export type AppointmentSegmentTone = 'scheduled' | 'completed' | 'cancelled' | 'other';
 
@@ -9,10 +9,24 @@ export interface AppointmentSegment {
   tone: AppointmentSegmentTone;
 }
 
+export interface AppointmentPeriodOption {
+  value: string;
+  label: string;
+}
+
 export interface AppointmentAnalyticsV2Props {
+  labels: {
+    total: string;
+    noData: string;
+    emptyPeriod: string;
+    selectPeriod: string;
+  };
   title: string; // e.g. "Appointments"
   totalAppointments: number; // e.g. 248
   periodLabel: string; // e.g. "This Week"
+  periodOptions?: readonly AppointmentPeriodOption[];
+  selectedPeriod?: string;
+  onPeriodChange?: (value: string) => void;
   segments: AppointmentSegment[];
 }
 
@@ -121,7 +135,28 @@ function SegmentedDial({
  * Ring is proportional View ticks; legend shows label, count, and
  * percentage per segment; falls back to a calm empty state with no data.
  */
-function AppointmentAnalyticsV2({ title, totalAppointments, periodLabel, segments }: AppointmentAnalyticsV2Props) {
+function AppointmentAnalyticsV2({
+  labels,
+  title,
+  totalAppointments,
+  periodLabel,
+  periodOptions = [],
+  selectedPeriod,
+  onPeriodChange,
+  segments,
+}: AppointmentAnalyticsV2Props) {
+  const [periodMenuOpen, setPeriodMenuOpen] =
+    React.useState(false);
+
+  const canSelectPeriod =
+    periodOptions.length > 1 &&
+    typeof onPeriodChange === 'function';
+
+  const selectPeriod = (value: string) => {
+    onPeriodChange?.(value);
+    setPeriodMenuOpen(false);
+  };
+
   const isEmpty = !segments || segments.length === 0 || totalAppointments <= 0;
 
   const tickColors = useMemo(
@@ -133,22 +168,67 @@ function AppointmentAnalyticsV2({ title, totalAppointments, periodLabel, segment
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.periodChip}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={labels.selectPeriod.replace(
+            '{period}',
+            periodLabel
+          )}
+          disabled={!canSelectPeriod}
+          onPress={() => setPeriodMenuOpen((open) => !open)}
+          style={({ pressed }) => [
+            styles.periodChip,
+            pressed && canSelectPeriod && styles.periodChipPressed,
+          ]}
+        >
           <Text style={styles.periodChipText}>{periodLabel}</Text>
           <View style={styles.chevronDown} />
-        </View>
+        </Pressable>
       </View>
+
+      {periodMenuOpen && canSelectPeriod && (
+        <View style={styles.periodMenu}>
+          {periodOptions.map((option) => {
+            const active = option.value === selectedPeriod;
+
+            return (
+              <Pressable
+                key={option.value}
+                onPress={() => selectPeriod(option.value)}
+                style={({ pressed }) => [
+                  styles.periodOption,
+                  active && styles.periodOptionActive,
+                  pressed && styles.periodOptionPressed,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.periodOptionText,
+                    active && styles.periodOptionTextActive,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
 
       <View style={styles.contentRow}>
         <SegmentedDial
           tickColors={tickColors}
           centerValue={isEmpty ? '—' : String(totalAppointments)}
-          centerCaption={isEmpty ? 'No data' : 'Total'}
+          centerCaption={
+            isEmpty ? labels.noData : labels.total
+          }
         />
 
         <View style={styles.legendCol}>
           {isEmpty ? (
-            <Text style={styles.emptyText}>No appointment data for this period.</Text>
+            <Text style={styles.emptyText}>
+              {labels.emptyPeriod}
+            </Text>
           ) : (
             segments.map((seg, i) => {
               const tone = toneColorMap[seg.tone];
@@ -208,6 +288,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textSecondary,
     marginRight: 6,
+  },
+  periodChipPressed: {
+    opacity: 0.7,
+  },
+  periodMenu: {
+    marginTop: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  periodOption: {
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    borderRadius: 999,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  periodOptionActive: {
+    backgroundColor: 'rgba(124,92,255,0.22)',
+    borderColor: 'rgba(124,92,255,0.62)',
+  },
+  periodOptionPressed: {
+    opacity: 0.7,
+  },
+  periodOptionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  periodOptionTextActive: {
+    color: colors.textPrimary,
   },
   chevronDown: {
     width: 0,

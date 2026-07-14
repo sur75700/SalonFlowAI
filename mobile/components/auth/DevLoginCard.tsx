@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
@@ -33,6 +34,7 @@ export default function DevLoginCard({
   title = "Admin Session Recovery",
   subtitle = "Restore your active session to continue managing SalonFlow AI.",
 }: DevLoginCardProps) {
+  const router = useRouter();
   const { t } = useAppLanguage();
   const { setToken } = useSession();
   const { showToast } = useToast();
@@ -99,6 +101,8 @@ export default function DevLoginCard({
       setToken(token);
       await refreshBilling(token);
       showToast(t.auth.adminSessionRestored, "success");
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      router.replace("/(tabs)");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.signInFailed);
       setError(message);
@@ -143,6 +147,8 @@ export default function DevLoginCard({
       setToken(token);
       await refreshBilling(token);
       showToast(t.auth.googleSignInSuccess, "success");
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      router.replace("/(tabs)");
     } catch (err: any) {
       const message = getErrorMessage(err, t.auth.googleSignInFailed);
       setError(message);
@@ -186,6 +192,8 @@ export default function DevLoginCard({
       setToken(token);
       await refreshBilling(token);
       showToast(t.auth.appleSignInSuccess, "success");
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      router.replace("/(tabs)");
     } catch (err: any) {
       if (err?.code === "ERR_REQUEST_CANCELED") {
         return;

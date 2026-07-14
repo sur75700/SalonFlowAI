@@ -37,6 +37,9 @@ export type AppointmentItem = {
   client_name: string;
   service_id?: string | null;
   service_name?: string | null;
+  price_snapshot?: number | null;
+  currency_snapshot?: string | null;
+  duration_minutes_snapshot?: number | null;
   starts_at: string;
   ends_at?: string | null;
   status: string;
