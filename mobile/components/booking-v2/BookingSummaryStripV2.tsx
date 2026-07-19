@@ -12,10 +12,13 @@ export interface BookingSummaryStripV2Props {
 }
 
 const colors = {
-  surface: '#171938',
-  border: 'rgba(255,255,255,0.07)',
-  textPrimary: '#F6F5FB',
-  textTertiary: '#6F7092',
+  surface: 'rgba(10, 13, 36, 0.94)',
+  surfaceTop: 'rgba(24, 28, 66, 0.96)',
+  border: 'rgba(139, 114, 255, 0.30)',
+  borderSoft: 'rgba(255, 255, 255, 0.06)',
+  textPrimary: '#FBFAFF',
+  textSecondary: '#B7B9D4',
+  textTertiary: '#8589AB',
 } as const;
 
 const toneColorMap = {
@@ -35,19 +38,29 @@ const toneColorMap = {
 function BookingSummaryStripV2({ stats }: BookingSummaryStripV2Props) {
   return (
     <View style={styles.row}>
-      {stats.map((stat) => (
+      {stats.map((stat) => {
+        const tone = stat.tone ? toneColorMap[stat.tone] : toneColorMap.royal;
+
+        return (
           <View key={stat.label} style={styles.cell}>
-            <Text
-              style={[styles.value, stat.tone && { color: toneColorMap[stat.tone] }]}
-              numberOfLines={1}
-            >
-              {stat.value}
-            </Text>
+            <View style={[styles.accentLine, { backgroundColor: tone }]} />
+
+            <View style={styles.valueRow}>
+              <View style={[styles.signalDot, { backgroundColor: tone }]} />
+
+              <Text style={[styles.value, { color: tone }]} numberOfLines={1}>
+                {stat.value}
+              </Text>
+            </View>
+
             <Text style={styles.label} numberOfLines={1}>
               {stat.label}
             </Text>
+
+            <View style={styles.footerLine} />
           </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
@@ -55,33 +68,91 @@ function BookingSummaryStripV2({ stats }: BookingSummaryStripV2Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     backgroundColor: 'transparent',
-    paddingVertical: 0,
-    gap: 12,
+    gap: 14,
   },
+
   cell: {
+    position: 'relative',
+    overflow: 'hidden',
     flex: 1,
+    minWidth: 0,
+    minHeight: 112,
     alignItems: 'center',
-    minHeight: 82,
     justifyContent: 'center',
-    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 24,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: '#02030D',
+    shadowOpacity: 0.42,
+    shadowRadius: 24,
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+    elevation: 10,
   },
-  divider: {
-    display: 'none',
+
+  accentLine: {
+    position: 'absolute',
+    top: 0,
+    left: 22,
+    right: 22,
+    height: 2,
+    borderBottomLeftRadius: 999,
+    borderBottomRightRadius: 999,
+    opacity: 0.9,
   },
+
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+
+  signalDot: {
+    width: 8,
+    height: 8,
+    marginRight: 9,
+    borderRadius: 4,
+    shadowColor: '#FFFFFF',
+    shadowOpacity: 0.28,
+    shadowRadius: 7,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+  },
+
   value: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '900',
+    letterSpacing: -0.9,
     color: colors.textPrimary,
   },
+
   label: {
-    marginTop: 6,
-    fontSize: 12,
-    color: colors.textTertiary,
+    marginTop: 0,
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '900',
+    letterSpacing: 0.72,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+
+  footerLine: {
+    width: 34,
+    height: 1,
+    marginTop: 13,
+    backgroundColor: colors.borderSoft,
   },
 });
 

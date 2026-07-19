@@ -155,7 +155,7 @@ function BookingCenterCompositionV2(props: BookingCenterCompositionV2Props) {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingHorizontal: isDesktop ? 40 : 16 }]}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator
           refreshControl={
             props.onRefresh ? (
               <RefreshControl

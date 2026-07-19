@@ -46,6 +46,7 @@ function buildPreviewToday(locale: string): BookingListItem[] {
   return [
     {
       id: 'pv-1',
+      dateLabel: 'TODAY · JUL 15 · 2026',
       time: '4:30 PM',
       endTime: '5:30 PM',
       clientName: 'Lilit Hakobyan',
@@ -69,7 +70,8 @@ function buildPreviewUpcoming(locale: string): BookingListItem[] {
   return [
     {
       id: 'pv-2',
-      time: '7/16, 6:30 PM',
+      dateLabel: 'THURSDAY · JUL 16 · 2026',
+      time: '6:30 PM',
       endTime: '9:00 PM',
       clientName: 'Sona Avagyan',
       serviceName: 'Hair Coloring',
@@ -80,7 +82,8 @@ function buildPreviewUpcoming(locale: string): BookingListItem[] {
     },
     {
       id: 'pv-3',
-      time: '7/17, 10:30 AM',
+      dateLabel: 'FRIDAY · JUL 17 · 2026',
+      time: '10:30 AM',
       endTime: '11:30 AM',
       clientName: 'Elina Martirosyan',
       serviceName: 'Manicure Gel',
@@ -96,23 +99,25 @@ function buildPreviewRegistry(locale: string): BookingListItem[] {
   return [
     {
       id: 'pv-4',
-      time: '4/17',
+      dateLabel: 'FRIDAY · APR 17 · 2026',
+      time: '—',
       clientName: 'Ani Petrosyan',
       serviceName: 'Hair Coloring',
       status: 'cancelled' as PreviewStatus,
       statusLabel: t('Cancelled', locale as any),
-      notes: 'Demo historical appointment.',
+      notes: undefined,
       editLabel: t('Edit', locale as any),
       deleteLabel: t('Delete', locale as any),
     },
     {
       id: 'pv-5',
-      time: '4/18',
+      dateLabel: 'SATURDAY · APR 18 · 2026',
+      time: '—',
       clientName: 'Mariam Sargsyan',
       serviceName: 'Keratin Treatment',
       status: 'completed' as PreviewStatus,
       statusLabel: t('Completed', locale as any),
-      notes: 'Demo historical appointment.',
+      notes: undefined,
       editLabel: t('Edit', locale as any),
       deleteLabel: t('Delete', locale as any),
     },
@@ -172,7 +177,7 @@ function BookingCenterPreviewAdapterV2() {
       upcomingAppointments={applyFilter(upcoming)}
       registryAppointments={applyFilter(registry)}
       summaryStats={[
-        { label: t('TodayLabel', locale as any), value: String(today.length), tone: 'royal' },
+        { label: t('Today Label', locale as any), value: String(today.length), tone: 'royal' },
         { label: t('Total Label', locale as any), value: '99', tone: 'gold' },
         { label: t('Upcoming Label', locale as any), value: String(upcoming.length), tone: 'blue' },
       ]}

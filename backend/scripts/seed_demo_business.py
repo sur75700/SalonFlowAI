@@ -112,7 +112,7 @@ async def main():
             "starts_at": iso(start),
             "ends_at": iso(end),
             "status": status,
-            "notes": "Demo historical appointment.",
+            "notes": null,
             "seed_tag": SEED_TAG,
             "created_at": iso(start - timedelta(days=2)),
         })
@@ -135,7 +135,7 @@ async def main():
             "starts_at": iso(start),
             "ends_at": iso(end),
             "status": "scheduled",
-            "notes": "Demo upcoming appointment.",
+            "notes": null,
             "seed_tag": SEED_TAG,
             "created_at": iso(now),
         })

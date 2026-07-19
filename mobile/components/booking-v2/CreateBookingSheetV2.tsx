@@ -121,7 +121,13 @@ function SelectField({
 
       {open && (
         <View style={styles.optionList}>
-          <ScrollView style={styles.optionScroll} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.optionScroll}
+            contentContainerStyle={styles.optionScrollContent}
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+            keyboardShouldPersistTaps="handled"
+          >
             {options.length === 0 ? (
               <Text style={styles.optionEmptyText}>—</Text>
             ) : (
@@ -398,6 +404,8 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
   },
   scrollArea: {
+    flex: 1,
+    minHeight: 0,
     marginTop: 12,
   },
   scrollContent: {
@@ -448,6 +456,9 @@ const styles = StyleSheet.create({
   },
   optionScroll: {
     maxHeight: 168,
+  },
+  optionScrollContent: {
+    flexGrow: 0,
   },
   optionRow: {
     paddingVertical: 11,

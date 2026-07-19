@@ -14,6 +14,7 @@ export type BookingCardLayout = 'stacked' | 'row';
 
 export interface BookingCardV2Props {
   /** Pre-formatted display strings only — no Date objects, no formatting logic here. */
+  dateLabel?: string;
   time: string;
   endTime?: string;
   /** Missing real value → fallback label renders instead (pre-translated), never a blank line. */

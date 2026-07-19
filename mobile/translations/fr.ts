@@ -128,6 +128,12 @@ const fr = {
     bookingFiltersSubtitle:
       "Basculez rapidement entre les différents états opérationnels des réservations.",
     bookingRegistry: "Registre des réservations",
+
+    editAppointmentV2: "Modifier la réservation",
+
+    saveChangesV2: "Enregistrer les modifications",
+
+    emptyTodayV2: "Aucune réservation prévue aujourd’hui.",
     bookingRegistrySubtitle:
       "Recherchez, filtrez, mettez à jour, terminez, annulez ou supprimez des réservations depuis une seule interface.",
   },

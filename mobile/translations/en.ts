@@ -128,6 +128,12 @@ const en = {
     bookingFiltersSubtitle:
       "Switch between operational booking states instantly.",
     bookingRegistry: "Booking Registry",
+
+    editAppointmentV2: "Edit Appointment",
+
+    saveChangesV2: "Save Changes",
+
+    emptyTodayV2: "No appointments scheduled for today.",
     bookingRegistrySubtitle:
       "Search, filter, update, complete, cancel, or remove bookings from one control surface.",
   },
