@@ -66,7 +66,7 @@ export default function ClientCenterCompositionV2({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: theme.color.bgBase,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     padding: theme.space.lg,
