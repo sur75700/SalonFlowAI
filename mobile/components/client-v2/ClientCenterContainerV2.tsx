@@ -31,7 +31,7 @@ export interface ClientCenterCreateForm {
   loading?: boolean;
   disabled?: boolean;
   onChangeField: (field: keyof CreateClientFormValues, value: string) => void;
-  onCreate: () => void;
+  onCreate: () => boolean | Promise<boolean>;
   onReset?: () => void;
 }
 
@@ -42,7 +42,8 @@ export interface ClientCenterDetailForm {
   disabled?: boolean;
   statusOptions?: { key: ClientStatus; label: string }[];
   onChangeField: (field: keyof ClientDetailFormValues, value: string) => void;
-  onSave: () => void;
+  onOpenClient?: (client: ClientRecord) => void;
+  onSave: (clientId: string) => boolean | Promise<boolean>;
 }
 
 export interface ClientCenterLabelOverrides {
@@ -117,17 +118,41 @@ export default function ClientCenterContainerV2({
     [clients, selectedClientId]
   );
 
-  const handleSelectClient = useCallback((id: string) => {
-    setSelectedClientId(id);
-    setDetailMode('view');
-  }, []);
+  const handleSelectClient = useCallback(
+    (id: string) => {
+      const client = clients.find((item) => item.id === id);
 
-  const handleEditClient = useCallback((id: string) => {
-    setSelectedClientId(id);
+      if (client) {
+        detailForm.onOpenClient?.(client);
+      }
+
+      setSelectedClientId(id);
+      setDetailMode('view');
+    },
+    [clients, detailForm]
+  );
+
+  const handleEditClient = useCallback(
+    (id: string) => {
+      const client = clients.find((item) => item.id === id);
+
+      if (client) {
+        detailForm.onOpenClient?.(client);
+      }
+
+      setSelectedClientId(id);
+      setDetailMode('edit');
+    },
+    [clients, detailForm]
+  );
+
+  const handleRequestEdit = useCallback(() => {
+    if (selectedClient) {
+      detailForm.onOpenClient?.(selectedClient);
+    }
+
     setDetailMode('edit');
-  }, []);
-
-  const handleRequestEdit = useCallback(() => setDetailMode('edit'), []);
+  }, [detailForm, selectedClient]);
   const handleCancelEdit = useCallback(() => setDetailMode('view'), []);
 
   const handleCloseDetailSheet = useCallback(() => {
@@ -135,8 +160,32 @@ export default function ClientCenterContainerV2({
     setDetailMode('view');
   }, []);
 
-  const handleOpenCreateSheet = useCallback(() => setCreateSheetOpen(true), []);
+  const handleOpenCreateSheet = useCallback(() => {
+    createForm.onReset?.();
+    setCreateSheetOpen(true);
+  }, [createForm]);
+
   const handleCloseCreateSheet = useCallback(() => setCreateSheetOpen(false), []);
+
+  const handleCreateClient = useCallback(async () => {
+    const created = await createForm.onCreate();
+
+    if (created) {
+      setCreateSheetOpen(false);
+    }
+  }, [createForm]);
+
+  const handleSaveClient = useCallback(async () => {
+    if (!selectedClientId) {
+      return;
+    }
+
+    const saved = await detailForm.onSave(selectedClientId);
+
+    if (saved) {
+      setDetailMode('view');
+    }
+  }, [detailForm, selectedClientId]);
 
   return (
     <ClientCenterCompositionV2
@@ -195,7 +244,7 @@ export default function ClientCenterContainerV2({
         labels: labels?.detailSheet,
         onChangeField: detailForm.onChangeField,
         onRequestEdit: handleRequestEdit,
-        onSave: detailForm.onSave,
+        onSave: handleSaveClient,
         onCancelEdit: handleCancelEdit,
         onClose: handleCloseDetailSheet,
       }}
@@ -207,7 +256,7 @@ export default function ClientCenterContainerV2({
         disabled: createForm.disabled,
         labels: labels?.createSheet,
         onChangeField: createForm.onChangeField,
-        onCreate: createForm.onCreate,
+        onCreate: handleCreateClient,
         onReset: createForm.onReset,
         onClose: handleCloseCreateSheet,
       }}

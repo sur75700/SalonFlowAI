@@ -62,6 +62,7 @@ export interface ClientCardV3Labels {
   editAction: string;
   deleteAction: string;
   openDetailsAction: string;
+  destructiveHint: string;
   lastVisitField: string;
   upcomingAppointmentField: string;
   visitCountField: string;
@@ -77,6 +78,7 @@ export const DEFAULT_CLIENT_CARD_LABELS: ClientCardV3Labels = {
   editAction: 'Edit',
   deleteAction: 'Delete',
   openDetailsAction: 'View details',
+  destructiveHint: 'This is a destructive action',
   lastVisitField: 'Last visit',
   upcomingAppointmentField: 'Next appointment',
   visitCountField: 'Visits',
@@ -308,7 +310,7 @@ function ClientCardV3({
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={`${t.deleteAction} ${name}`}
-          accessibilityHint="This is a destructive action"
+          accessibilityHint={t.destructiveHint}
           accessibilityState={{ disabled }}
           style={({ pressed }: { pressed: boolean }) => [
             styles.deleteButton,

@@ -64,7 +64,7 @@ async def main():
             "full_name": name,
             "phone": phone,
             "email": email,
-            "notes": "Demo client for AI analytics.",
+            "notes": "",
             "seed_tag": SEED_TAG,
             "created_at": iso(now - timedelta(days=90 - i * 4)),
         }
