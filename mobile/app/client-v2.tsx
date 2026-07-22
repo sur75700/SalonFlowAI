@@ -1,126 +1,215 @@
+import { useMemo, useState } from 'react';
+
 import ClientCenterContainerV2 from '../components/client-v2/ClientCenterContainerV2';
+import type {
+  ClientFilterKey,
+  ClientFilterOption,
+} from '../components/client-v2/ClientSearchFiltersV2';
+import { buildClientRecordsV2 } from '../components/client-v2/clientV2Adapter';
+import DevLoginCard from '../components/auth/DevLoginCard';
 import RoyalCosmosBackground from '../components/ui/RoyalCosmosBackground';
-import type { ClientRecord } from '../components/client-v2/ClientCardV3';
+import { useClientsData } from '../hooks/useResourceData';
+import { useSession } from '../hooks/useSession';
 
-const DEMO_CLIENTS: ClientRecord[] = [
-  {
-    id: 'demo-client-1',
-    name: 'Sophia Laurent',
-    initials: 'SL',
-    phone: '+374 91 240 680',
-    email: 'sophia.laurent@example.com',
-    status: 'vip',
-    statusLabel: 'VIP',
-    vipLabel: 'Royal Client',
-    lastVisitLabel: 'July 18, 2026',
-    upcomingAppointmentLabel: 'July 25 · 14:30',
-    visitCountLabel: '28 visits',
-    lifetimeValueLabel: '֏ 1,480,000',
-    notesPreview: 'Prefers premium hair treatments and quiet afternoon appointments.',
-    notes: 'Prefers premium hair treatments and quiet afternoon appointments.',
-  },
-  {
-    id: 'demo-client-2',
-    name: 'Anna Petrosyan',
-    initials: 'AP',
-    phone: '+374 77 555 412',
-    email: 'anna.petrosyan@example.com',
-    status: 'active',
-    statusLabel: 'Active',
-    lastVisitLabel: 'July 20, 2026',
-    upcomingAppointmentLabel: 'July 23 · 11:00',
-    visitCountLabel: '14 visits',
-    lifetimeValueLabel: '֏ 720,000',
-    notesPreview: 'Usually books manicure and eyebrow services together.',
-    notes: 'Usually books manicure and eyebrow services together.',
-  },
-  {
-    id: 'demo-client-3',
-    name: 'Mariam Grigoryan',
-    initials: 'MG',
-    phone: '+374 95 880 221',
-    email: 'mariam.g@example.com',
-    status: 'returning',
-    statusLabel: 'Returning',
-    lastVisitLabel: 'June 29, 2026',
-    upcomingAppointmentLabel: 'July 29 · 17:00',
-    visitCountLabel: '8 visits',
-    lifetimeValueLabel: '֏ 395,000',
-    notesPreview: 'Returning client interested in a new seasonal styling package.',
-    notes: 'Returning client interested in a new seasonal styling package.',
-  },
-  {
-    id: 'demo-client-4',
-    name: 'Elena Martinez',
-    initials: 'EM',
-    phone: '+1 415 555 0198',
-    email: 'elena.martinez@example.com',
-    status: 'new',
-    statusLabel: 'New',
-    lastVisitLabel: 'First visit',
-    upcomingAppointmentLabel: 'July 24 · 10:15',
-    visitCountLabel: '1 visit',
-    lifetimeValueLabel: '֏ 48,000',
-    notesPreview: 'New client referred by an existing VIP customer.',
-    notes: 'New client referred by an existing VIP customer.',
-  },
-  {
-    id: 'demo-client-5',
-    name: 'Lilit Harutyunyan',
-    initials: 'LH',
-    phone: '+374 43 310 909',
-    email: 'lilit.h@example.com',
-    status: 'inactive',
-    statusLabel: 'Inactive',
-    lastVisitLabel: 'February 12, 2026',
-    upcomingAppointmentLabel: 'None scheduled',
-    visitCountLabel: '5 visits',
-    lifetimeValueLabel: '֏ 210,000',
-    notesPreview: 'No appointment activity during the last five months.',
-    notes: 'No appointment activity during the last five months.',
-  },
-];
+const STATUS_LABELS = {
+  active: 'Active',
+  new: 'New',
+  returning: 'Returning',
+  vip: 'VIP',
+  inactive: 'Inactive',
+} as const;
 
-export default function ClientV2Preview() {
+const EMPTY_CREATE_FORM = {
+  fullName: '',
+  phone: '',
+  email: '',
+  notes: '',
+};
+
+const EMPTY_DETAIL_FORM = {
+  name: '',
+  phone: '',
+  email: '',
+  notes: '',
+  status: 'active' as const,
+};
+
+export default function ClientV2Screen() {
+  const { token, booting, clearToken } = useSession();
+  const {
+    clients,
+    loading,
+    refreshing,
+    error,
+    refresh,
+    reload,
+  } = useClientsData(token, clearToken);
+
+  const [searchValue, setSearchValue] = useState('');
+  const [activeFilterKey, setActiveFilterKey] =
+    useState<ClientFilterKey>('all');
+
+  const clientRecords = useMemo(
+    () =>
+      buildClientRecordsV2(clients, {
+        labels: {
+          unnamedClient: 'Unnamed client',
+          statusLabels: STATUS_LABELS,
+        },
+      }),
+    [clients]
+  );
+
+  const filteredClients = useMemo(() => {
+    const query = searchValue.trim().toLocaleLowerCase();
+
+    return clientRecords.filter((client) => {
+      const matchesFilter =
+        activeFilterKey === 'all' || client.status === activeFilterKey;
+
+      if (!matchesFilter) {
+        return false;
+      }
+
+      if (!query) {
+        return true;
+      }
+
+      return [
+        client.name,
+        client.phone,
+        client.email,
+        client.notes,
+      ].some((value) => value?.toLocaleLowerCase().includes(query));
+    });
+  }, [activeFilterKey, clientRecords, searchValue]);
+
+  const filters = useMemo<ClientFilterOption[]>(
+    () => [
+      {
+        key: 'all',
+        label: 'All',
+        count: clientRecords.length,
+      },
+      {
+        key: 'active',
+        label: 'Active',
+        count: clientRecords.filter(
+          (client) => client.status === 'active'
+        ).length,
+      },
+      {
+        key: 'new',
+        label: 'New',
+        count: clientRecords.filter(
+          (client) => client.status === 'new'
+        ).length,
+      },
+      {
+        key: 'returning',
+        label: 'Returning',
+        count: clientRecords.filter(
+          (client) => client.status === 'returning'
+        ).length,
+      },
+      {
+        key: 'vip',
+        label: 'VIP',
+        count: clientRecords.filter(
+          (client) => client.status === 'vip'
+        ).length,
+      },
+      {
+        key: 'inactive',
+        label: 'Inactive',
+        count: clientRecords.filter(
+          (client) => client.status === 'inactive'
+        ).length,
+      },
+    ],
+    [clientRecords]
+  );
+
+  const listState = useMemo(() => {
+    if (booting || loading || refreshing) {
+      return 'loading' as const;
+    }
+
+    if (error) {
+      return 'error' as const;
+    }
+
+    if (clientRecords.length === 0) {
+      return 'empty' as const;
+    }
+
+    if (filteredClients.length === 0) {
+      return 'no-results' as const;
+    }
+
+    return 'idle' as const;
+  }, [
+    booting,
+    clientRecords.length,
+    error,
+    filteredClients.length,
+    loading,
+    refreshing,
+  ]);
+
+  if (!booting && !token) {
+    return (
+      <DevLoginCard
+        title="Client Command Center"
+        subtitle="Sign in to access the live client registry."
+      />
+    );
+  }
+
   return (
     <RoyalCosmosBackground>
       <ClientCenterContainerV2
-      header={{
-        title: 'Client Command Center',
-        subtitle: 'Royal Cosmos client intelligence',
-        liveStatusLabel: 'Live',
-        liveStatusTone: 'active',
-      }}
-      kpis={[]}
-      clients={DEMO_CLIENTS}
-      listState="idle"
-      searchValue=""
-      onSearchChange={() => {}}
-      filters={[]}
-      activeFilterKey="all"
-      onFilterChange={() => {}}
-      createForm={{
-        values: {
-          fullName: '',
-          phone: '',
-          email: '',
-          notes: '',
-        },
-        onChangeField: () => {},
-        onCreate: () => {},
-      }}
-      detailForm={{
-        values: {
-          name: '',
-          phone: '',
-          email: '',
-          notes: '',
-          status: 'active',
-        },
-        onChangeField: () => {},
-        onSave: () => {},
-      }}
-      onDeleteClient={() => {}}
+        header={{
+          overline: 'SALONFLOW AI',
+          title: 'Client Command Center',
+          subtitle: 'Royal Cosmos client intelligence',
+          liveStatusLabel: error ? 'Attention' : 'Live',
+          liveStatusTone: error ? 'idle' : 'active',
+          createClientLabel: 'Add client',
+          disabled: true,
+          loading: booting || loading,
+        }}
+        kpis={[]}
+        summaryLoading={booting || loading}
+        clients={filteredClients}
+        listState={listState}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        filters={filters}
+        activeFilterKey={activeFilterKey}
+        onFilterChange={setActiveFilterKey}
+        searchFiltersDisabled={booting || loading}
+        createForm={{
+          values: EMPTY_CREATE_FORM,
+          disabled: true,
+          onChangeField: () => {},
+          onCreate: () => {},
+        }}
+        detailForm={{
+          values: EMPTY_DETAIL_FORM,
+          disabled: true,
+          onChangeField: () => {},
+          onSave: () => {},
+        }}
+        onDeleteClient={() => {}}
+        onEmptyStateAction={() => {}}
+        onErrorAction={reload}
+        labels={{
+          list: {
+            errorDescription:
+              error || 'The client registry could not be loaded.',
+          },
+        }}
       />
     </RoyalCosmosBackground>
   );
