@@ -164,10 +164,20 @@ export function useServicesData(
   };
 }
 
+export type AppointmentsQueryOptions = {
+  dateFrom?: string;
+  dateTo?: string;
+  limit?: number;
+};
+
 export function useAppointmentsData(
   token: string,
-  clearToken: () => void
+  clearToken: () => void,
+  options: AppointmentsQueryOptions = {}
 ): AppointmentsHookResult {
+  const dateFrom = options.dateFrom;
+  const dateTo = options.dateTo;
+  const limit = options.limit;
   const [appointments, setAppointments] = useState<AppointmentItem[]>([]);
   const [clients, setClients] = useState<ClientItem[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -190,6 +200,11 @@ export function useAppointmentsData(
       const [appointmentsRes, clientsRes, servicesRes] = await Promise.all([
         api.get("/appointments/", {
           headers: authHeaders(token),
+          params: {
+            date_from: dateFrom,
+            date_to: dateTo,
+            limit,
+          },
         }),
         api.get("/clients/", {
           headers: authHeaders(token),
@@ -221,7 +236,13 @@ export function useAppointmentsData(
       setLoading(false);
       setRefreshing(false);
     }
-  }, [token, clearToken]);
+  }, [
+      token,
+      clearToken,
+      dateFrom,
+      dateTo,
+      limit,
+    ]);
 
   useEffect(() => {
     load();

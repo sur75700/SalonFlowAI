@@ -104,6 +104,9 @@ async def create_appointment(payload: AppointmentCreate, auth: dict = Depends(re
 async def list_appointments(
     client_id: str | None = Query(default=None),
     status: str | None = Query(default=None),
+    date_from: datetime | None = Query(default=None),
+    date_to: datetime | None = Query(default=None),
+    limit: int = Query(default=200, ge=1, le=2000),
     auth: dict = Depends(require_auth),
 ):
     db = get_database()
@@ -122,7 +125,27 @@ async def list_appointments(
     if status is not None:
         query["status"] = status
 
-    docs = await db.appointments.find(query).sort("starts_at", 1).to_list(length=200)
+    if date_from is not None or date_to is not None:
+        starts_at_query: dict = {}
+
+        if date_from is not None:
+            starts_at_query["$gte"] = (
+                date_from.astimezone(UTC).isoformat()
+            )
+
+        if date_to is not None:
+            starts_at_query["$lte"] = (
+                date_to.astimezone(UTC).isoformat()
+            )
+
+        query["starts_at"] = starts_at_query
+
+    docs = (
+        await db.appointments
+        .find(query)
+        .sort("starts_at", 1)
+        .to_list(length=limit)
+    )
 
     items = []
     for doc in docs:
