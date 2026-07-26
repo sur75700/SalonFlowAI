@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/ghostsalon-common"
+
+OVERALL_OK="true"
+
+echo "===================================================="
+echo "👻 GHOSTSALON — SYSTEM STATUS"
+echo "===================================================="
+
+section "PROJECT"
+
+if [ -d "${PROJECT_ROOT}/.git" ]; then
+  success "Repository found"
+  printf 'Branch:  %s\n' \
+    "$(git -C "${PROJECT_ROOT}" branch --show-current 2>/dev/null)"
+  printf 'Root:    %s\n' "${PROJECT_ROOT}"
+else
+  failure "Repository missing"
+  OVERALL_OK="false"
+fi
+
+section "MONGO"
+
+if ! container_exists; then
+  failure "Container missing: ${MONGO_CONTAINER}"
+  OVERALL_OK="false"
+else
+  docker ps -a \
+    --filter "name=^/${MONGO_CONTAINER}$" \
+    --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+
+  ACTUAL_VOLUME="$(mongo_data_volume)"
+  printf 'Expected volume: %s\n' "${MONGO_VOLUME}"
+  printf 'Actual volume:   %s\n' "${ACTUAL_VOLUME:-<none>}"
+
+  if [ "${ACTUAL_VOLUME}" = "${MONGO_VOLUME}" ]; then
+    success "Mongo volume identity verified"
+  else
+    failure "Mongo volume mismatch"
+    OVERALL_OK="false"
+  fi
+
+  if container_running; then
+    success "Mongo container running"
+
+    if mongo_ping; then
+      success "Mongo ping OK"
+
+      ADMIN_COUNT="$(mongo_admin_count)"
+
+      if printf '%s' "${ADMIN_COUNT}" | grep -Eq '^[0-9]+$' &&
+         [ "${ADMIN_COUNT}" -ge 1 ]; then
+        success "Database identity OK: ${ADMIN_COUNT} admin user(s)"
+      else
+        failure "Database identity check failed"
+        OVERALL_OK="false"
+      fi
+    else
+      failure "Mongo ping failed"
+      OVERALL_OK="false"
+    fi
+  else
+    failure "Mongo container is stopped"
+    OVERALL_OK="false"
+  fi
+fi
+
+section "BACKEND"
+
+BACKEND_PID="$(backend_pid)"
+
+if backend_running; then
+  success "Backend process running"
+  printf 'PID: %s\n' "${BACKEND_PID}"
+  ps -p "${BACKEND_PID}" -o pid,user,etime,cmd 2>/dev/null || true
+else
+  failure "Backend process not running"
+  OVERALL_OK="false"
+fi
+
+section "NETWORK"
+
+if port_listening "${MONGO_PORT}"; then
+  success "Mongo port ${MONGO_PORT} is listening"
+
+  BIND_ADDRESS="$(mongo_bind_address)"
+  printf 'Published as: %s\n' "${BIND_ADDRESS:-<unknown>}"
+
+  case "${BIND_ADDRESS}" in
+    127.0.0.1:*)
+      success "Mongo exposure is localhost-only"
+      ;;
+    0.0.0.0:*|"[::]":*)
+      warning "Mongo is exposed on all host interfaces"
+      warning "Operational now; hardening to localhost remains recommended"
+      ;;
+  esac
+else
+  failure "Mongo port ${MONGO_PORT} is not listening"
+  OVERALL_OK="false"
+fi
+
+if port_listening "${BACKEND_PORT}"; then
+  success "Backend port ${BACKEND_PORT} is listening"
+else
+  failure "Backend port ${BACKEND_PORT} is not listening"
+  OVERALL_OK="false"
+fi
+
+section "HEALTH"
+
+if backend_health; then
+  success "HTTP health endpoint OK"
+  curl --silent "${BACKEND_HEALTH_URL}"
+  printf '\n'
+else
+  failure "HTTP health endpoint failed"
+  OVERALL_OK="false"
+fi
+
+if backend_db_probe; then
+  success "Backend → Mongo → admin_users verification OK"
+else
+  failure "Backend database verification failed"
+  OVERALL_OK="false"
+fi
+
+section "FINAL VERDICT"
+
+if [ "${OVERALL_OK}" = "true" ]; then
+  echo "🏆 HEALTHY — SalonFlowAI is fully operational"
+else
+  echo "❌ UNHEALTHY — one or more safety checks failed"
+fi
+
+echo "===================================================="

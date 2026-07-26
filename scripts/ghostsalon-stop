@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/ghostsalon-common"
+
+echo "===================================================="
+echo "👻 GHOSTSALON — SAFE STOP"
+echo "===================================================="
+
+section "STOP BACKEND"
+
+PID="$(backend_pid)"
+
+if [ -z "${PID}" ]; then
+  success "Backend is already stopped"
+
+elif ! pid_belongs_to_backend "${PID}"; then
+  failure "Backend PID ownership could not be verified"
+  warning "No process was terminated"
+
+else
+  info "Verified SalonFlowAI backend PID: ${PID}"
+
+  kill "${PID}" 2>/dev/null || true
+
+  for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    if ! kill -0 "${PID}" 2>/dev/null; then
+      break
+    fi
+
+    sleep 1
+  done
+
+  if kill -0 "${PID}" 2>/dev/null; then
+    failure "Verified backend did not stop within 10 seconds"
+    warning "No broad process termination was used"
+  else
+    success "Verified SalonFlowAI backend stopped"
+  fi
+fi
+
+rm -f "${BACKEND_PID_FILE}"
+
+if backend_running; then
+  failure "SalonFlowAI backend process is still running"
+else
+  success "Backend stop state verified"
+fi
+
+section "STOP SALONFLOW MONGO ONLY"
+
+if ! container_exists; then
+  info "Mongo container does not exist"
+elif container_running; then
+  if docker stop --time 30 "${MONGO_CONTAINER}" >/dev/null 2>&1; then
+    success "${MONGO_CONTAINER} stopped cleanly"
+  else
+    failure "Could not stop ${MONGO_CONTAINER}"
+  fi
+else
+  success "${MONGO_CONTAINER} is already stopped"
+fi
+
+section "SAFETY CONFIRMATION"
+
+info "No volumes deleted"
+info "No foreign containers modified"
+info "No source files modified"
+info "Database remains persistent in ${MONGO_VOLUME}"
+
+echo
+echo "===================================================="
+echo "✅ GHOSTSALON SAFE STOP COMPLETE"
+echo "===================================================="
