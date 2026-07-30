@@ -1,0 +1,469 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${SCRIPT_PATH}")" && pwd)"
+source "${SCRIPT_DIR}/ghostsalon-common"
+
+PASS_COUNT=0
+WARN_COUNT=0
+FAIL_COUNT=0
+
+pass_check() {
+  success "$1"
+  PASS_COUNT=$((PASS_COUNT + 1))
+}
+
+warn_check() {
+  warning "$1"
+  WARN_COUNT=$((WARN_COUNT + 1))
+}
+
+fail_check() {
+  failure "$1"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+}
+
+command_version() {
+  local command_name="$1"
+  shift
+
+  if command -v "${command_name}" >/dev/null 2>&1; then
+    printf '%-12s %s\n' \
+      "${command_name}:" \
+      "$("$@" 2>/dev/null | head -n 1)"
+    return 0
+  fi
+
+  printf '%-12s %s\n' "${command_name}:" "MISSING"
+  return 1
+}
+
+env_key_present() {
+  local env_file="$1"
+  local key_pattern="$2"
+
+  [ -f "${env_file}" ] || return 1
+
+  grep -Eqi \
+    "^[[:space:]]*(${key_pattern})[[:space:]]*=[[:space:]]*[^[:space:]#].*" \
+    "${env_file}" \
+    2>/dev/null
+}
+
+banner "👻 GHOSTSALON — DEEP DIAGNOSE"
+
+info "Read-only operational inspection"
+info "No services will be started, stopped, or modified"
+info "Secret values will never be printed"
+
+section "PROJECT IDENTITY"
+
+if [ -d "${PROJECT_ROOT}/.git" ]; then
+  pass_check "SalonFlowAI repository verified"
+  printf 'Root:          %s\n' "${PROJECT_ROOT}"
+
+  BRANCH="$(
+    git -C "${PROJECT_ROOT}" branch --show-current \
+      2>/dev/null ||
+      true
+  )"
+
+  LAST_COMMIT="$(
+    git -C "${PROJECT_ROOT}" log -1 \
+      --pretty=format:'%h %s' \
+      2>/dev/null ||
+      true
+  )"
+
+  printf 'Branch:        %s\n' "${BRANCH:-<detached-or-unknown>}"
+  printf 'Latest commit: %s\n' "${LAST_COMMIT:-<unknown>}"
+
+  WORKTREE="$(
+    git -C "${PROJECT_ROOT}" status --short \
+      2>/dev/null ||
+      true
+  )"
+
+  if [ -z "${WORKTREE}" ]; then
+    pass_check "Git worktree is clean"
+  else
+    warn_check "Git worktree contains uncommitted changes"
+    printf '%s\n' "${WORKTREE}"
+  fi
+
+  UPSTREAM="$(
+    git -C "${PROJECT_ROOT}" \
+      rev-parse --abbrev-ref '@{upstream}' \
+      2>/dev/null ||
+      true
+  )"
+
+  if [ -n "${UPSTREAM}" ]; then
+    COUNTS="$(
+      git -C "${PROJECT_ROOT}" \
+        rev-list --left-right --count \
+        "${UPSTREAM}...HEAD" \
+        2>/dev/null ||
+        true
+    )"
+
+    BEHIND="$(printf '%s' "${COUNTS}" | awk '{print $1}')"
+    AHEAD="$(printf '%s' "${COUNTS}" | awk '{print $2}')"
+
+    printf 'Upstream:      %s\n' "${UPSTREAM}"
+    printf 'Ahead/Behind:  %s / %s\n' \
+      "${AHEAD:-?}" \
+      "${BEHIND:-?}"
+  else
+    warn_check "Current branch has no configured upstream"
+  fi
+else
+  fail_check "SalonFlowAI repository is missing"
+fi
+
+section "GHOSTSALON COMMAND IDENTITY"
+
+for command_name in \
+  GhostSalon-start \
+  GhostSalon-status \
+  GhostSalon-stop \
+  GhostSalon-Diagnose
+do
+  command_location="$(
+    command -v "${command_name}" \
+      2>/dev/null ||
+      true
+  )"
+
+  if [ -z "${command_location}" ]; then
+    if [ "${command_name}" = "GhostSalon-Diagnose" ]; then
+      warn_check "${command_name} launcher is not installed yet"
+    else
+      fail_check "${command_name} is missing"
+    fi
+    continue
+  fi
+
+  canonical_location="$(
+    readlink -f "${command_location}" \
+      2>/dev/null ||
+      true
+  )"
+
+  printf '%-22s %s\n' "${command_name}:" "${canonical_location}"
+
+  case "${canonical_location}" in
+    "${PROJECT_ROOT}"/scripts/ghostsalon-*)
+      pass_check "${command_name} points to canonical repository tooling"
+      ;;
+    *)
+      fail_check "${command_name} points outside canonical repository tooling"
+      ;;
+  esac
+done
+
+section "DOCKER ENGINE"
+
+if command -v docker >/dev/null 2>&1; then
+  pass_check "Docker CLI available"
+  printf 'Docker CLI:    %s\n' \
+    "$(docker --version 2>/dev/null || printf '<unknown>')"
+
+  if docker info >/dev/null 2>&1; then
+    pass_check "Docker daemon reachable"
+  else
+    fail_check "Docker daemon is not reachable"
+  fi
+else
+  fail_check "Docker CLI is missing"
+fi
+
+section "MONGO IDENTITY"
+
+if container_exists; then
+  pass_check "Expected Mongo container exists: ${MONGO_CONTAINER}"
+
+  ACTUAL_VOLUME="$(mongo_data_volume)"
+  printf 'Expected volume: %s\n' "${MONGO_VOLUME}"
+  printf 'Actual volume:   %s\n' "${ACTUAL_VOLUME:-<none>}"
+
+  if [ "${ACTUAL_VOLUME}" = "${MONGO_VOLUME}" ]; then
+    pass_check "Mongo volume identity verified"
+  else
+    fail_check "Mongo volume identity mismatch"
+  fi
+
+  if container_running; then
+    pass_check "Mongo container is running"
+
+    if mongo_ping; then
+      pass_check "Mongo ping successful"
+
+      ADMIN_COUNT="$(mongo_admin_count)"
+
+      if printf '%s' "${ADMIN_COUNT}" | grep -Eq '^[0-9]+$' &&
+         [ "${ADMIN_COUNT}" -ge 1 ]; then
+        pass_check "Database identity verified: ${ADMIN_COUNT} admin user(s)"
+      else
+        fail_check "Database identity verification failed"
+      fi
+    else
+      fail_check "Mongo ping failed"
+    fi
+  else
+    warn_check "Mongo container is safely stopped"
+  fi
+else
+  fail_check "Expected Mongo container is missing"
+fi
+
+section "NETWORK EXPOSURE"
+
+if port_listening "${MONGO_PORT}"; then
+  pass_check "Mongo port ${MONGO_PORT} is listening"
+
+  BIND_ADDRESS="$(mongo_bind_address)"
+  printf 'Mongo publish: %s\n' "${BIND_ADDRESS:-<unknown>}"
+
+  case "${BIND_ADDRESS}" in
+    127.0.0.1:*)
+      pass_check "Mongo exposure is localhost-only"
+      ;;
+    0.0.0.0:*|"[::]":*)
+      warn_check "Mongo is exposed on all host interfaces"
+      warning "Recommended future binding: 127.0.0.1:${MONGO_PORT}"
+      ;;
+    *)
+      warn_check "Mongo bind address could not be classified"
+      ;;
+  esac
+else
+  info "Mongo port ${MONGO_PORT} is currently closed"
+fi
+
+if port_listening "${BACKEND_PORT}"; then
+  pass_check "Backend port ${BACKEND_PORT} is listening"
+else
+  info "Backend port ${BACKEND_PORT} is currently closed"
+fi
+
+section "BACKEND RUNTIME"
+
+BACKEND_PID="$(backend_pid)"
+
+if backend_running; then
+  pass_check "Verified SalonFlowAI backend process is running"
+  printf 'PID: %s\n' "${BACKEND_PID}"
+
+  ps -p "${BACKEND_PID}" \
+    -o pid,user,etime,%cpu,%mem,cmd \
+    2>/dev/null ||
+    true
+
+  if backend_health; then
+    pass_check "Backend HTTP health endpoint passed"
+    printf 'Health URL: %s\n' "${BACKEND_HEALTH_URL}"
+  else
+    fail_check "Backend HTTP health endpoint failed"
+  fi
+
+  if backend_db_probe; then
+    pass_check "Backend → Mongo connection verified"
+  else
+    fail_check "Backend → Mongo connection failed"
+  fi
+else
+  warn_check "Backend is safely stopped"
+fi
+
+section "RUNTIME TOOLCHAIN"
+
+command_version python3 python3 --version ||
+  warn_check "System Python is unavailable"
+
+if [ -x "${BACKEND_DIR}/.venv/bin/python" ]; then
+  printf '%-12s %s\n' \
+    "Backend Py:" \
+    "$("${BACKEND_DIR}/.venv/bin/python" --version 2>&1)"
+  pass_check "Backend virtual environment is available"
+else
+  fail_check "Backend virtual environment Python is missing"
+fi
+
+if command_version node node --version; then
+  pass_check "Node.js available"
+else
+  warn_check "Node.js unavailable"
+fi
+
+if command_version npm npm --version; then
+  pass_check "npm available"
+else
+  warn_check "npm unavailable"
+fi
+
+MOBILE_PACKAGE="${PROJECT_ROOT}/mobile/package.json"
+
+if [ -f "${MOBILE_PACKAGE}" ]; then
+  pass_check "Mobile package manifest found"
+
+  if command -v node >/dev/null 2>&1; then
+    EXPO_VERSION="$(
+      node -e '
+        const p = require(process.argv[1]);
+        console.log(
+          p.dependencies?.expo ??
+          p.devDependencies?.expo ??
+          "not-declared"
+        );
+      ' "${MOBILE_PACKAGE}" 2>/dev/null ||
+      true
+    )"
+
+    printf 'Expo declared: %s\n' "${EXPO_VERSION:-<unknown>}"
+  fi
+else
+  fail_check "Mobile package manifest is missing"
+fi
+
+section "HOST RESOURCES"
+
+if command -v free >/dev/null 2>&1; then
+  printf '%s\n' "Memory:"
+  free -h | sed -n '1,2p'
+else
+  warn_check "Memory inspection utility is unavailable"
+fi
+
+printf '\nDisk:\n'
+df -h "${PROJECT_ROOT}" |
+  awk 'NR == 1 || NR == 2 {print}'
+
+DISK_USE="$(
+  df -P "${PROJECT_ROOT}" |
+    awk 'NR == 2 {gsub("%", "", $5); print $5}'
+)"
+
+if printf '%s' "${DISK_USE}" | grep -Eq '^[0-9]+$'; then
+  if [ "${DISK_USE}" -ge 90 ]; then
+    fail_check "Project disk usage is critical: ${DISK_USE}%"
+  elif [ "${DISK_USE}" -ge 80 ]; then
+    warn_check "Project disk usage is elevated: ${DISK_USE}%"
+  else
+    pass_check "Project disk usage is healthy: ${DISK_USE}%"
+  fi
+fi
+
+printf '\nLoad average:\n'
+uptime
+
+section "ENVIRONMENT SAFETY"
+
+ENV_FILES_FOUND=0
+
+for env_file in \
+  "${BACKEND_DIR}/.env" \
+  "${BACKEND_DIR}/.env.local" \
+  "${PROJECT_ROOT}/.env" \
+  "${PROJECT_ROOT}/mobile/.env" \
+  "${PROJECT_ROOT}/mobile/.env.local"
+do
+  if [ -f "${env_file}" ]; then
+    ENV_FILES_FOUND=$((ENV_FILES_FOUND + 1))
+    printf 'Found: %s\n' "${env_file}"
+  fi
+done
+
+if [ "${ENV_FILES_FOUND}" -gt 0 ]; then
+  pass_check "Environment file presence verified"
+else
+  warn_check "No conventional environment files were found"
+fi
+
+BACKEND_ENV="${BACKEND_DIR}/.env"
+
+if [ -f "${BACKEND_ENV}" ]; then
+  if env_key_present \
+    "${BACKEND_ENV}" \
+    'MONGO_URL|MONGODB_URL|MONGODB_URI'; then
+    pass_check "Mongo configuration key is populated"
+  else
+    warn_check "Mongo configuration key was not detected in backend/.env"
+  fi
+
+  if env_key_present \
+    "${BACKEND_ENV}" \
+    'JWT_SECRET|JWT_SECRET_KEY|SECRET_KEY|JWT_PRIVATE_KEY|JWT_PRIVATE_KEY_PATH'; then
+    pass_check "Authentication signing configuration is populated"
+  else
+    warn_check "Authentication signing configuration was not detected in backend/.env"
+  fi
+else
+  info "backend/.env not present; configuration may use another secure source"
+fi
+
+info "No environment values were printed"
+
+section "LOG SAFETY"
+
+if [ -f "${BACKEND_LOG_FILE}" ]; then
+  LOG_SIZE="$(
+    du -h "${BACKEND_LOG_FILE}" \
+      2>/dev/null |
+      awk '{print $1}'
+  )"
+
+  printf 'Backend log:  %s\n' "${BACKEND_LOG_FILE}"
+  printf 'Log size:     %s\n' "${LOG_SIZE:-<unknown>}"
+  pass_check "Backend log file is available"
+else
+  warn_check "Backend log file does not exist yet"
+fi
+
+section "FINAL VERDICT"
+
+TOTAL_CHECKS=$((PASS_COUNT + WARN_COUNT + FAIL_COUNT))
+
+if [ "${TOTAL_CHECKS}" -gt 0 ]; then
+  SCORE="$(
+    awk \
+      -v pass="${PASS_COUNT}" \
+      -v warn="${WARN_COUNT}" \
+      -v fail="${FAIL_COUNT}" \
+      'BEGIN {
+         score = 100 - (warn * 3) - (fail * 15);
+         if (score < 0) score = 0;
+         printf "%d", score;
+       }'
+  )"
+else
+  SCORE=0
+fi
+
+printf 'PASS:  %s\n' "${PASS_COUNT}"
+printf 'WARN:  %s\n' "${WARN_COUNT}"
+printf 'FAIL:  %s\n' "${FAIL_COUNT}"
+printf 'SCORE: %s/100\n' "${SCORE}"
+
+if [ "${FAIL_COUNT}" -gt 0 ]; then
+  printf '%s❌ FAIL — critical diagnostic failures detected%s\n' \
+    "${GHOSTSALON_RED}" \
+    "${GHOSTSALON_RESET}"
+  FINAL_RC=1
+elif [ "${WARN_COUNT}" -gt 0 ]; then
+  printf '%s⚠️  PASS WITH WARNINGS — operational but hardening remains%s\n' \
+    "${GHOSTSALON_YELLOW}" \
+    "${GHOSTSALON_RESET}"
+  FINAL_RC=0
+else
+  printf '%s🏆 PASS — GhostSalon runtime is fully verified%s\n' \
+    "${GHOSTSALON_GREEN}" \
+    "${GHOSTSALON_RESET}"
+  FINAL_RC=0
+fi
+
+printf '%s====================================================%s\n' \
+  "${GHOSTSALON_BLUE}" \
+  "${GHOSTSALON_RESET}"
+
+exit "${FINAL_RC}"

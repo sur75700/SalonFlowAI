@@ -1,70 +1,87 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${SCRIPT_PATH}")" && pwd)"
 source "${SCRIPT_DIR}/ghostsalon-common"
 
-OVERALL_OK="true"
+banner "👻 GHOSTSALON — SYSTEM STATUS"
 
-echo "===================================================="
-echo "👻 GHOSTSALON — SYSTEM STATUS"
-echo "===================================================="
+PROJECT_OK="true"
+MONGO_EXISTS="false"
+MONGO_RUNNING="false"
+MONGO_VOLUME_OK="false"
+MONGO_PORT_OK="false"
+BACKEND_RUNNING_OK="false"
+BACKEND_PORT_OK="false"
+HEALTH_OK="false"
+DB_OK="false"
 
 section "PROJECT"
 
 if [ -d "${PROJECT_ROOT}/.git" ]; then
   success "Repository found"
-  printf 'Branch:  %s\n' \
+
+  printf '%sBranch:%s  %s\n' \
+    "${GHOSTSALON_BLUE}" \
+    "${GHOSTSALON_RESET}" \
     "$(git -C "${PROJECT_ROOT}" branch --show-current 2>/dev/null)"
-  printf 'Root:    %s\n' "${PROJECT_ROOT}"
+
+  printf '%sRoot:%s    %s\n' \
+    "${GHOSTSALON_BLUE}" \
+    "${GHOSTSALON_RESET}" \
+    "${PROJECT_ROOT}"
 else
-  failure "Repository missing"
-  OVERALL_OK="false"
+  failure "Repository missing: ${PROJECT_ROOT}"
+  PROJECT_OK="false"
 fi
 
 section "MONGO"
 
-if ! container_exists; then
-  failure "Container missing: ${MONGO_CONTAINER}"
-  OVERALL_OK="false"
-else
+if container_exists; then
+  MONGO_EXISTS="true"
+
   docker ps -a \
     --filter "name=^/${MONGO_CONTAINER}$" \
     --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
 
   ACTUAL_VOLUME="$(mongo_data_volume)"
+
   printf 'Expected volume: %s\n' "${MONGO_VOLUME}"
   printf 'Actual volume:   %s\n' "${ACTUAL_VOLUME:-<none>}"
 
   if [ "${ACTUAL_VOLUME}" = "${MONGO_VOLUME}" ]; then
     success "Mongo volume identity verified"
+    MONGO_VOLUME_OK="true"
   else
-    failure "Mongo volume mismatch"
-    OVERALL_OK="false"
+    failure "Mongo volume identity mismatch"
   fi
 
   if container_running; then
     success "Mongo container running"
+    MONGO_RUNNING="true"
 
     if mongo_ping; then
       success "Mongo ping OK"
 
       ADMIN_COUNT="$(mongo_admin_count)"
 
-      if printf '%s' "${ADMIN_COUNT}" | grep -Eq '^[0-9]+$' &&
+      if printf '%s' "${ADMIN_COUNT}" |
+         grep -Eq '^[0-9]+$' &&
          [ "${ADMIN_COUNT}" -ge 1 ]; then
+
         success "Database identity OK: ${ADMIN_COUNT} admin user(s)"
+        DB_OK="true"
       else
-        failure "Database identity check failed"
-        OVERALL_OK="false"
+        failure "Database identity verification failed"
       fi
     else
       failure "Mongo ping failed"
-      OVERALL_OK="false"
     fi
   else
-    failure "Mongo container is stopped"
-    OVERALL_OK="false"
+    info "Mongo container is safely stopped"
   fi
+else
+  failure "Expected Mongo container is missing"
 fi
 
 section "BACKEND"
@@ -73,17 +90,23 @@ BACKEND_PID="$(backend_pid)"
 
 if backend_running; then
   success "Backend process running"
+  BACKEND_RUNNING_OK="true"
+
   printf 'PID: %s\n' "${BACKEND_PID}"
-  ps -p "${BACKEND_PID}" -o pid,user,etime,cmd 2>/dev/null || true
+
+  ps -p "${BACKEND_PID}" \
+    -o pid,user,etime,cmd \
+    2>/dev/null ||
+    true
 else
-  failure "Backend process not running"
-  OVERALL_OK="false"
+  info "Backend is safely stopped"
 fi
 
 section "NETWORK"
 
 if port_listening "${MONGO_PORT}"; then
   success "Mongo port ${MONGO_PORT} is listening"
+  MONGO_PORT_OK="true"
 
   BIND_ADDRESS="$(mongo_bind_address)"
   printf 'Published as: %s\n' "${BIND_ADDRESS:-<unknown>}"
@@ -94,45 +117,79 @@ if port_listening "${MONGO_PORT}"; then
       ;;
     0.0.0.0:*|"[::]":*)
       warning "Mongo is exposed on all host interfaces"
-      warning "Operational now; hardening to localhost remains recommended"
+      warning "Localhost-only hardening remains recommended"
       ;;
   esac
 else
-  failure "Mongo port ${MONGO_PORT} is not listening"
-  OVERALL_OK="false"
+  info "Mongo port ${MONGO_PORT} is closed"
 fi
 
 if port_listening "${BACKEND_PORT}"; then
   success "Backend port ${BACKEND_PORT} is listening"
+  BACKEND_PORT_OK="true"
 else
-  failure "Backend port ${BACKEND_PORT} is not listening"
-  OVERALL_OK="false"
+  info "Backend port ${BACKEND_PORT} is closed"
 fi
 
 section "HEALTH"
 
-if backend_health; then
-  success "HTTP health endpoint OK"
-  curl --silent "${BACKEND_HEALTH_URL}"
-  printf '\n'
-else
-  failure "HTTP health endpoint failed"
-  OVERALL_OK="false"
-fi
+if [ "${BACKEND_RUNNING_OK}" = "true" ]; then
+  if backend_health; then
+    success "HTTP health endpoint OK"
+    HEALTH_OK="true"
 
-if backend_db_probe; then
-  success "Backend → Mongo → admin_users verification OK"
+    curl --silent "${BACKEND_HEALTH_URL}"
+    printf '\n'
+  else
+    failure "HTTP health endpoint failed"
+  fi
+
+  if declare -F backend_db_probe >/dev/null 2>&1; then
+    if backend_db_probe; then
+      success "Backend → Mongo verification OK"
+    else
+      failure "Backend database verification failed"
+      DB_OK="false"
+    fi
+  fi
 else
-  failure "Backend database verification failed"
-  OVERALL_OK="false"
+  info "Runtime health checks skipped while safely offline"
 fi
 
 section "FINAL VERDICT"
 
-if [ "${OVERALL_OK}" = "true" ]; then
-  echo "🏆 HEALTHY — SalonFlowAI is fully operational"
+if [ "${PROJECT_OK}" = "true" ] &&
+   [ "${MONGO_EXISTS}" = "true" ] &&
+   [ "${MONGO_VOLUME_OK}" = "true" ] &&
+   [ "${MONGO_RUNNING}" = "true" ] &&
+   [ "${MONGO_PORT_OK}" = "true" ] &&
+   [ "${BACKEND_RUNNING_OK}" = "true" ] &&
+   [ "${BACKEND_PORT_OK}" = "true" ] &&
+   [ "${HEALTH_OK}" = "true" ] &&
+   [ "${DB_OK}" = "true" ]; then
+
+  printf '%s🏆 HEALTHY — SalonFlowAI is fully operational%s\n' \
+    "${GHOSTSALON_GREEN}" \
+    "${GHOSTSALON_RESET}"
+
+elif [ "${PROJECT_OK}" = "true" ] &&
+     [ "${MONGO_EXISTS}" = "true" ] &&
+     [ "${MONGO_VOLUME_OK}" = "true" ] &&
+     [ "${MONGO_RUNNING}" = "false" ] &&
+     [ "${MONGO_PORT_OK}" = "false" ] &&
+     [ "${BACKEND_RUNNING_OK}" = "false" ] &&
+     [ "${BACKEND_PORT_OK}" = "false" ]; then
+
+  printf '%s⏸️  OFFLINE — GhostSalon is safely stopped%s\n' \
+    "${GHOSTSALON_BLUE}" \
+    "${GHOSTSALON_RESET}"
+
 else
-  echo "❌ UNHEALTHY — one or more safety checks failed"
+  printf '%s❌ UNHEALTHY — inconsistent runtime state detected%s\n' \
+    "${GHOSTSALON_RED}" \
+    "${GHOSTSALON_RESET}"
 fi
 
-echo "===================================================="
+printf '%s====================================================%s\n' \
+  "${GHOSTSALON_BLUE}" \
+  "${GHOSTSALON_RESET}"

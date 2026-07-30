@@ -68,3 +68,6 @@ ghostsalon.before-lifecycle-fix.*.bak
 # GhostSalon local runtime and backups
 .ghostsalon/
 scripts/*.backup_*
+
+# Runtime process artifacts
+nohup.out
