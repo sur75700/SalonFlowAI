@@ -2,6 +2,7 @@ from datetime import UTC, date, datetime, time
 from io import BytesIO
 from pathlib import Path
 
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from reportlab.lib import colors
@@ -181,13 +182,19 @@ def fmt_dt(value: str | None) -> str:
 async def export_daily_summary_pdf(
     date_str: str | None = Query(default=None, alias="date"),
     locale: str | None = Query(default="en"),
-    _: dict = Depends(require_auth),
+    auth: dict = Depends(require_auth),
 ):
     locale = normalize_locale(locale)
 
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
+
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    owner_query = {"owner_id": owner_id}
 
     try:
         report_date = (
@@ -205,12 +212,15 @@ async def export_daily_summary_pdf(
     end_iso = end_of_day.isoformat()
 
     appointments = await db.appointments.find(
-        {"starts_at": {"$gte": start_iso, "$lte": end_iso}}
+        {
+            "owner_id": owner_id,
+            "starts_at": {"$gte": start_iso, "$lte": end_iso},
+        }
     ).sort("starts_at", 1).to_list(length=500)
 
-    total_clients = await db.clients.count_documents({})
-    total_services = await db.services.count_documents({})
-    total_appointments = await db.appointments.count_documents({})
+    total_clients = await db.clients.count_documents(owner_query)
+    total_services = await db.services.count_documents(owner_query)
+    total_appointments = await db.appointments.count_documents(owner_query)
     today_appointments = len(appointments)
     scheduled_count = sum(1 for x in appointments if x.get("status") == "scheduled")
     completed_count = sum(1 for x in appointments if x.get("status") == "completed")
