@@ -40,8 +40,8 @@ class CountingCapacityProvider:
         )
 
 
-class CapacityPipelineTests(unittest.TestCase):
-    def test_complete_capacity_decision(self) -> None:
+class CapacityPipelineTests(unittest.IsolatedAsyncioTestCase):
+    async def test_complete_capacity_decision(self) -> None:
         provider = CountingCapacityProvider()
 
         builders = IntelligenceBuilders(
@@ -67,7 +67,7 @@ class CapacityPipelineTests(unittest.TestCase):
             ),
         )
 
-        decision = builders.create_pipeline().run(
+        decision = await builders.create_pipeline().run(
             context=IntelligenceContext(
                 owner_id="tenant-a"
             )
@@ -90,7 +90,7 @@ class CapacityPipelineTests(unittest.TestCase):
         )
         self.assertEqual(provider.calls, 1)
 
-    def test_pipeline_preserves_tenant_boundary(self) -> None:
+    async def test_pipeline_preserves_tenant_boundary(self) -> None:
         provider = CountingCapacityProvider()
 
         builders = IntelligenceBuilders(
@@ -116,7 +116,7 @@ class CapacityPipelineTests(unittest.TestCase):
             ),
         )
 
-        decision = builders.create_pipeline().run(
+        decision = await builders.create_pipeline().run(
             context=IntelligenceContext(
                 owner_id="tenant-cosmos"
             )

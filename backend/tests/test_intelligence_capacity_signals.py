@@ -51,8 +51,8 @@ class StaticCapacityProvider:
         return self.snapshot
 
 
-class CapacityClassificationTests(unittest.TestCase):
-    def test_idle_classification(self) -> None:
+class CapacityClassificationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_idle_classification(self) -> None:
         self.assertEqual(
             classify_capacity_utilization(
                 CAPACITY_IDLE_MAX_PERCENT
@@ -60,7 +60,7 @@ class CapacityClassificationTests(unittest.TestCase):
             "capacity.idle",
         )
 
-    def test_underutilized_classification(self) -> None:
+    async def test_underutilized_classification(self) -> None:
         self.assertEqual(
             classify_capacity_utilization(
                 CAPACITY_UNDERUTILIZED_MAX_PERCENT
@@ -68,7 +68,7 @@ class CapacityClassificationTests(unittest.TestCase):
             "capacity.underutilized",
         )
 
-    def test_healthy_classification(self) -> None:
+    async def test_healthy_classification(self) -> None:
         self.assertEqual(
             classify_capacity_utilization(
                 CAPACITY_HEALTHY_MAX_PERCENT
@@ -76,7 +76,7 @@ class CapacityClassificationTests(unittest.TestCase):
             "capacity.healthy",
         )
 
-    def test_near_limit_classification(self) -> None:
+    async def test_near_limit_classification(self) -> None:
         self.assertEqual(
             classify_capacity_utilization(
                 CAPACITY_NEAR_LIMIT_MAX_PERCENT
@@ -84,20 +84,20 @@ class CapacityClassificationTests(unittest.TestCase):
             "capacity.near_limit",
         )
 
-    def test_overloaded_classification(self) -> None:
+    async def test_overloaded_classification(self) -> None:
         self.assertEqual(
             classify_capacity_utilization(100.01),
             "capacity.overloaded",
         )
 
-    def test_rejects_negative_utilization(self) -> None:
+    async def test_rejects_negative_utilization(self) -> None:
         with self.assertRaisesRegex(
             ValueError,
             "cannot be negative",
         ):
             classify_capacity_utilization(-1)
 
-    def test_rejects_boolean_utilization(self) -> None:
+    async def test_rejects_boolean_utilization(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "must be a number",
@@ -105,8 +105,8 @@ class CapacityClassificationTests(unittest.TestCase):
             classify_capacity_utilization(True)
 
 
-class CapacitySignalTests(unittest.TestCase):
-    def test_builds_idle_signal(self) -> None:
+class CapacitySignalTests(unittest.IsolatedAsyncioTestCase):
+    async def test_builds_idle_signal(self) -> None:
         signal = build_capacity_signal(
             snapshot=make_snapshot(booked_slots=5)
         )
@@ -117,7 +117,7 @@ class CapacitySignalTests(unittest.TestCase):
             SignalSeverity.WARNING,
         )
 
-    def test_builds_underutilized_signal(self) -> None:
+    async def test_builds_underutilized_signal(self) -> None:
         signal = build_capacity_signal(
             snapshot=make_snapshot(booked_slots=35)
         )
@@ -131,7 +131,7 @@ class CapacitySignalTests(unittest.TestCase):
             SignalSeverity.OPPORTUNITY,
         )
 
-    def test_builds_healthy_signal(self) -> None:
+    async def test_builds_healthy_signal(self) -> None:
         signal = build_capacity_signal(
             snapshot=make_snapshot(booked_slots=70)
         )
@@ -145,7 +145,7 @@ class CapacitySignalTests(unittest.TestCase):
             SignalSeverity.INFO,
         )
 
-    def test_builds_near_limit_signal(self) -> None:
+    async def test_builds_near_limit_signal(self) -> None:
         signal = build_capacity_signal(
             snapshot=make_snapshot(booked_slots=95)
         )
@@ -159,7 +159,7 @@ class CapacitySignalTests(unittest.TestCase):
             SignalSeverity.WARNING,
         )
 
-    def test_builds_overloaded_signal(self) -> None:
+    async def test_builds_overloaded_signal(self) -> None:
         signal = build_capacity_signal(
             snapshot=make_snapshot(booked_slots=110)
         )
@@ -173,7 +173,7 @@ class CapacitySignalTests(unittest.TestCase):
             SignalSeverity.CRITICAL,
         )
 
-    def test_signal_contains_snapshot_evidence(self) -> None:
+    async def test_signal_contains_snapshot_evidence(self) -> None:
         snapshot = make_snapshot(booked_slots=75)
         signal = build_capacity_signal(snapshot=snapshot)
 
@@ -193,7 +193,7 @@ class CapacitySignalTests(unittest.TestCase):
             5,
         )
 
-    def test_collection_is_tuple(self) -> None:
+    async def test_collection_is_tuple(self) -> None:
         signals = build_capacity_signals(
             snapshot=make_snapshot()
         )
@@ -201,7 +201,7 @@ class CapacitySignalTests(unittest.TestCase):
         self.assertIsInstance(signals, tuple)
         self.assertEqual(len(signals), 1)
 
-    def test_rejects_invalid_snapshot(self) -> None:
+    async def test_rejects_invalid_snapshot(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "snapshot must be a CapacitySnapshot",
@@ -211,19 +211,19 @@ class CapacitySignalTests(unittest.TestCase):
             )
 
 
-class CapacitySignalBuilderTests(unittest.TestCase):
-    def test_builder_reads_provider_once(self) -> None:
+class CapacitySignalBuilderTests(unittest.IsolatedAsyncioTestCase):
+    async def test_builder_reads_provider_once(self) -> None:
         provider = StaticCapacityProvider(make_snapshot())
         builder = CapacitySignalBuilder(provider=provider)
 
-        signals = builder(
+        signals = await builder(
             IntelligenceContext(owner_id="tenant-a")
         )
 
         self.assertEqual(provider.calls, 1)
         self.assertEqual(len(signals), 1)
 
-    def test_builder_rejects_owner_mismatch(self) -> None:
+    async def test_builder_rejects_owner_mismatch(self) -> None:
         provider = StaticCapacityProvider(
             make_snapshot(owner_id="tenant-b")
         )
@@ -233,11 +233,11 @@ class CapacitySignalBuilderTests(unittest.TestCase):
             RuntimeError,
             "capacity snapshot owner does not match",
         ):
-            builder(
+            await builder(
                 IntelligenceContext(owner_id="tenant-a")
             )
 
-    def test_builder_rejects_invalid_context(self) -> None:
+    async def test_builder_rejects_invalid_context(self) -> None:
         provider = StaticCapacityProvider(make_snapshot())
         builder = CapacitySignalBuilder(provider=provider)
 
@@ -245,9 +245,9 @@ class CapacitySignalBuilderTests(unittest.TestCase):
             TypeError,
             "context must be an IntelligenceContext",
         ):
-            builder("tenant-a")  # type: ignore[arg-type]
+            await builder("tenant-a")  # type: ignore[arg-type]
 
-    def test_builder_rejects_invalid_provider(self) -> None:
+    async def test_builder_rejects_invalid_provider(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "provider must satisfy CapacityProvider",

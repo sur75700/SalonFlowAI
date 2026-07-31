@@ -126,3 +126,71 @@ class IntelligenceFoundationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class IntelligenceContextModelTests(unittest.TestCase):
+
+    def test_analysis_window_days(self) -> None:
+        from datetime import date
+
+        from app.intelligence.models import AnalysisWindow
+
+        window = AnalysisWindow(
+            start=date(2026, 8, 1),
+            end=date(2026, 8, 7),
+            label="weekly",
+        )
+
+        self.assertEqual(
+            window.days,
+            7,
+        )
+
+    def test_analysis_window_rejects_invalid_range(self) -> None:
+        from datetime import date
+
+        from app.intelligence.models import AnalysisWindow
+
+        with self.assertRaises(ValueError):
+            AnalysisWindow(
+                start=date(2026, 8, 10),
+                end=date(2026, 8, 1),
+            )
+
+    def test_business_state_utilization(self) -> None:
+        from app.intelligence.models import BusinessState
+
+        state = BusinessState(
+            open_slots=20,
+            booked_slots=80,
+        )
+
+        self.assertEqual(
+            state.utilization_rate,
+            0.8,
+        )
+
+    def test_business_state_rejects_negative_values(self) -> None:
+        from app.intelligence.models import BusinessState
+
+        with self.assertRaises(ValueError):
+            BusinessState(
+                revenue_minor=-1,
+            )
+
+    def test_context_default_flags(self) -> None:
+        from app.intelligence import IntelligenceContext
+
+        context = IntelligenceContext(
+            owner_id="tenant-cosmos",
+        )
+
+        self.assertTrue(
+            context.flags.recommendations_enabled
+        )
+        self.assertIsNone(
+            context.window
+        )
+        self.assertIsNone(
+            context.business
+        )

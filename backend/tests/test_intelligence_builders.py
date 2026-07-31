@@ -70,7 +70,7 @@ def build_confidence(
     return 0.81, "Builder inputs are consistent"
 
 
-class IntelligenceBuilderTests(unittest.TestCase):
+class IntelligenceBuilderTests(unittest.IsolatedAsyncioTestCase):
     def build_bundle(self) -> IntelligenceBuilders:
         return IntelligenceBuilders(
             signal_builder=build_signals,
@@ -80,10 +80,10 @@ class IntelligenceBuilderTests(unittest.TestCase):
             confidence_builder=build_confidence,
         )
 
-    def test_builder_bundle_creates_working_pipeline(self) -> None:
+    async def test_builder_bundle_creates_working_pipeline(self) -> None:
         pipeline = self.build_bundle().create_pipeline()
 
-        decision = pipeline.run(
+        decision = await pipeline.run(
             context=IntelligenceContext(owner_id="tenant-a")
         )
 
@@ -96,7 +96,7 @@ class IntelligenceBuilderTests(unittest.TestCase):
         )
         self.assertEqual(decision.confidence.score, 0.81)
 
-    def test_builder_bundle_is_immutable(self) -> None:
+    async def test_builder_bundle_is_immutable(self) -> None:
         builders = self.build_bundle()
 
         with self.assertRaises(
@@ -104,7 +104,7 @@ class IntelligenceBuilderTests(unittest.TestCase):
         ):
             builders.signal_builder = build_signals  # type: ignore[misc]
 
-    def test_non_callable_builder_is_rejected(self) -> None:
+    async def test_non_callable_builder_is_rejected(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "signal_builder must be callable",

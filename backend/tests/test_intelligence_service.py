@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 from app.intelligence import (
     Confidence,
@@ -10,7 +10,7 @@ from app.intelligence import (
 )
 
 
-class IntelligenceServiceTests(unittest.TestCase):
+class IntelligenceServiceTests(unittest.IsolatedAsyncioTestCase):
     def build_decision(
         self,
         *,
@@ -30,27 +30,29 @@ class IntelligenceServiceTests(unittest.TestCase):
             ),
         )
 
-    def test_service_delegates_to_pipeline(self) -> None:
+    async def test_service_delegates_to_pipeline(self) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
         decision = self.build_decision()
 
         pipeline = Mock()
-        pipeline.run.return_value = decision
+        pipeline.run = AsyncMock(return_value=decision)
 
         service = IntelligenceService(pipeline=pipeline)
 
-        result = service.analyze(context=context)
+        result = await service.analyze(context=context)
 
         pipeline.run.assert_called_once_with(context=context)
         self.assertIs(result, decision)
         self.assertEqual(result.owner_id, "tenant-a")
 
-    def test_service_rejects_cross_tenant_decision(self) -> None:
+    async def test_service_rejects_cross_tenant_decision(self) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
 
         pipeline = Mock()
-        pipeline.run.return_value = self.build_decision(
-            owner_id="tenant-b"
+        pipeline.run = AsyncMock(
+            return_value=self.build_decision(
+                owner_id="tenant-b"
+            )
         )
 
         service = IntelligenceService(pipeline=pipeline)
@@ -59,16 +61,18 @@ class IntelligenceServiceTests(unittest.TestCase):
             RuntimeError,
             "decision owner does not match context owner",
         ):
-            service.analyze(context=context)
+            await service.analyze(context=context)
 
         pipeline.run.assert_called_once_with(context=context)
 
-    def test_pipeline_exception_is_not_hidden(self) -> None:
+    async def test_pipeline_exception_is_not_hidden(self) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
 
         pipeline = Mock()
-        pipeline.run.side_effect = ValueError(
-            "invalid builder output"
+        pipeline.run = AsyncMock(
+            side_effect=ValueError(
+                "invalid builder output"
+            )
         )
 
         service = IntelligenceService(pipeline=pipeline)
@@ -77,7 +81,7 @@ class IntelligenceServiceTests(unittest.TestCase):
             ValueError,
             "invalid builder output",
         ):
-            service.analyze(context=context)
+            await service.analyze(context=context)
 
 
 if __name__ == "__main__":

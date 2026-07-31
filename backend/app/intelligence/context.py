@@ -2,6 +2,12 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+from app.intelligence.models import (
+    AnalysisWindow,
+    BusinessState,
+    IntelligenceFlags,
+)
+
 
 @dataclass(frozen=True, slots=True)
 class IntelligenceContext:
@@ -9,6 +15,11 @@ class IntelligenceContext:
     locale: str = "en"
     timezone: str = "UTC"
     currency: str = "USD"
+    window: AnalysisWindow | None = None
+    business: BusinessState | None = None
+    flags: IntelligenceFlags = field(
+        default_factory=IntelligenceFlags
+    )
     generated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, Any] = field(default_factory=dict)
 

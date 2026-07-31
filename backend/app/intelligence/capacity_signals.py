@@ -198,7 +198,7 @@ class CapacitySignalBuilder:
                 "provider must satisfy CapacityProvider"
             )
 
-    def __call__(
+    async def __call__(
         self,
         context: IntelligenceContext,
     ) -> tuple[Signal, ...]:
@@ -207,7 +207,7 @@ class CapacitySignalBuilder:
                 "context must be an IntelligenceContext"
             )
 
-        snapshot = get_execution_snapshot(
+        snapshot = await get_execution_snapshot(
             context=context,
             domain="capacity",
             provider=self.provider,

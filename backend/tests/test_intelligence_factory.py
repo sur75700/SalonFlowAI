@@ -72,7 +72,7 @@ def build_confidence(
     return 0.83, "Factory-composed inputs are consistent"
 
 
-class IntelligenceFactoryTests(unittest.TestCase):
+class IntelligenceFactoryTests(unittest.IsolatedAsyncioTestCase):
     def build_bundle(self) -> IntelligenceBuilders:
         return IntelligenceBuilders(
             signal_builder=build_signals,
@@ -82,14 +82,14 @@ class IntelligenceFactoryTests(unittest.TestCase):
             confidence_builder=build_confidence,
         )
 
-    def test_factory_creates_working_service(self) -> None:
+    async def test_factory_creates_working_service(self) -> None:
         service = create_intelligence_service(
             builders=self.build_bundle()
         )
 
         self.assertIsInstance(service, IntelligenceService)
 
-        decision = service.analyze(
+        decision = await service.analyze(
             context=IntelligenceContext(owner_id="tenant-a")
         )
 
@@ -102,7 +102,7 @@ class IntelligenceFactoryTests(unittest.TestCase):
         )
         self.assertEqual(decision.confidence.score, 0.83)
 
-    def test_factory_passes_custom_engine_to_pipeline(self) -> None:
+    async def test_factory_passes_custom_engine_to_pipeline(self) -> None:
         engine = Mock(spec=IntelligenceEngine)
 
         expected_decision = IntelligenceEngine().build_decision(
@@ -122,7 +122,7 @@ class IntelligenceFactoryTests(unittest.TestCase):
             engine=engine,
         )
 
-        result = service.analyze(
+        result = await service.analyze(
             context=IntelligenceContext(owner_id="tenant-a")
         )
 

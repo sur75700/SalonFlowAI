@@ -11,8 +11,8 @@ from app.intelligence import (
 )
 
 
-class IntelligencePipelineTests(unittest.TestCase):
-    def test_pipeline_orchestrates_builders_in_order(self) -> None:
+class IntelligencePipelineTests(unittest.IsolatedAsyncioTestCase):
+    async def test_pipeline_orchestrates_builders_in_order(self) -> None:
         calls: list[str] = []
 
         def build_signals(
@@ -98,7 +98,7 @@ class IntelligencePipelineTests(unittest.TestCase):
             confidence_builder=build_confidence,
         )
 
-        decision = pipeline.run(
+        decision = await pipeline.run(
             context=IntelligenceContext(
                 owner_id="tenant-a",
                 timezone="Asia/Yerevan",
@@ -133,7 +133,7 @@ class IntelligencePipelineTests(unittest.TestCase):
             ConfidenceLevel.HIGH,
         )
 
-    def test_pipeline_rejects_empty_summary_through_engine(self) -> None:
+    async def test_pipeline_rejects_empty_summary_through_engine(self) -> None:
         pipeline = IntelligencePipeline(
             signal_builder=lambda context: (),
             metric_builder=lambda context: (),
@@ -146,7 +146,7 @@ class IntelligencePipelineTests(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError):
-            pipeline.run(
+            await pipeline.run(
                 context=IntelligenceContext(owner_id="tenant-a"),
             )
 

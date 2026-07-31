@@ -13,12 +13,12 @@ class IntelligenceService:
     ) -> None:
         self._pipeline = pipeline
 
-    def analyze(
+    async def analyze(
         self,
         *,
         context: IntelligenceContext,
     ) -> IntelligenceDecision:
-        decision = self._pipeline.run(context=context)
+        decision = await self._pipeline.run(context=context)
 
         if decision.owner_id != context.owner_id:
             raise RuntimeError(

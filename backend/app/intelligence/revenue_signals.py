@@ -156,11 +156,11 @@ class RevenueSignalBuilder:
                 "provider must satisfy AnalyticsProvider"
             )
 
-    def __call__(
+    async def __call__(
         self,
         context: IntelligenceContext,
     ) -> tuple[Signal, ...]:
-        snapshot = get_execution_snapshot(
+        snapshot = await get_execution_snapshot(
             context=context,
             domain="revenue",
             provider=self.provider,

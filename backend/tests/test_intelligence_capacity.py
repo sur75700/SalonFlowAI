@@ -46,26 +46,26 @@ def make_snapshot(
     return CapacitySnapshot(**values)  # type: ignore[arg-type]
 
 
-class CapacitySnapshotTests(unittest.TestCase):
-    def test_snapshot_normalizes_owner_id(self) -> None:
+class CapacitySnapshotTests(unittest.IsolatedAsyncioTestCase):
+    async def test_snapshot_normalizes_owner_id(self) -> None:
         snapshot = make_snapshot(owner_id="  tenant-a  ")
 
         self.assertEqual(snapshot.owner_id, "tenant-a")
 
-    def test_snapshot_is_immutable(self) -> None:
+    async def test_snapshot_is_immutable(self) -> None:
         snapshot = make_snapshot()
 
         with self.assertRaises(AttributeError):
             snapshot.total_slots = 99  # type: ignore[misc]
 
-    def test_snapshot_rejects_empty_owner(self) -> None:
+    async def test_snapshot_rejects_empty_owner(self) -> None:
         with self.assertRaisesRegex(
             ValueError,
             "owner_id is required",
         ):
             make_snapshot(owner_id="   ")
 
-    def test_snapshot_rejects_invalid_period(self) -> None:
+    async def test_snapshot_rejects_invalid_period(self) -> None:
         start = datetime(2026, 7, 1, tzinfo=UTC)
 
         with self.assertRaisesRegex(
@@ -77,14 +77,14 @@ class CapacitySnapshotTests(unittest.TestCase):
                 period_end=start,
             )
 
-    def test_snapshot_rejects_negative_values(self) -> None:
+    async def test_snapshot_rejects_negative_values(self) -> None:
         with self.assertRaisesRegex(
             ValueError,
             "total_slots cannot be negative",
         ):
             make_snapshot(total_slots=-1)
 
-    def test_snapshot_rejects_boolean_integer_values(self) -> None:
+    async def test_snapshot_rejects_boolean_integer_values(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "booked_slots must be an integer",
@@ -92,8 +92,8 @@ class CapacitySnapshotTests(unittest.TestCase):
             make_snapshot(booked_slots=True)
 
 
-class CapacityCalculationTests(unittest.TestCase):
-    def test_utilization_percent(self) -> None:
+class CapacityCalculationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_utilization_percent(self) -> None:
         self.assertEqual(
             calculate_capacity_utilization_percent(
                 booked_slots=30,
@@ -102,7 +102,7 @@ class CapacityCalculationTests(unittest.TestCase):
             75.0,
         )
 
-    def test_utilization_supports_overbooking(self) -> None:
+    async def test_utilization_supports_overbooking(self) -> None:
         self.assertEqual(
             calculate_capacity_utilization_percent(
                 booked_slots=45,
@@ -111,7 +111,7 @@ class CapacityCalculationTests(unittest.TestCase):
             112.5,
         )
 
-    def test_zero_total_slots_returns_zero_utilization(self) -> None:
+    async def test_zero_total_slots_returns_zero_utilization(self) -> None:
         self.assertEqual(
             calculate_capacity_utilization_percent(
                 booked_slots=0,
@@ -120,7 +120,7 @@ class CapacityCalculationTests(unittest.TestCase):
             0.0,
         )
 
-    def test_staff_load_percent(self) -> None:
+    async def test_staff_load_percent(self) -> None:
         self.assertEqual(
             calculate_staff_load_percent(
                 booked_minutes=7_200,
@@ -129,7 +129,7 @@ class CapacityCalculationTests(unittest.TestCase):
             75.0,
         )
 
-    def test_zero_available_minutes_returns_zero_load(self) -> None:
+    async def test_zero_available_minutes_returns_zero_load(self) -> None:
         self.assertEqual(
             calculate_staff_load_percent(
                 booked_minutes=0,
@@ -139,8 +139,8 @@ class CapacityCalculationTests(unittest.TestCase):
         )
 
 
-class CapacityMetricTests(unittest.TestCase):
-    def test_builds_expected_metrics(self) -> None:
+class CapacityMetricTests(unittest.IsolatedAsyncioTestCase):
+    async def test_builds_expected_metrics(self) -> None:
         metrics = build_capacity_metrics(
             snapshot=make_snapshot()
         )
@@ -184,7 +184,7 @@ class CapacityMetricTests(unittest.TestCase):
             40.0,
         )
 
-    def test_overbooking_never_creates_negative_available_slots(
+    async def test_overbooking_never_creates_negative_available_slots(
         self,
     ) -> None:
         metrics = build_capacity_metrics(
@@ -202,7 +202,7 @@ class CapacityMetricTests(unittest.TestCase):
 
         self.assertEqual(available_slots.value, 0)
 
-    def test_overbooking_never_creates_negative_idle_hours(
+    async def test_overbooking_never_creates_negative_idle_hours(
         self,
     ) -> None:
         metrics = build_capacity_metrics(
@@ -221,19 +221,19 @@ class CapacityMetricTests(unittest.TestCase):
         self.assertEqual(idle_hours.value, 0.0)
 
 
-class CapacityMetricBuilderTests(unittest.TestCase):
-    def test_builder_reads_provider_once(self) -> None:
+class CapacityMetricBuilderTests(unittest.IsolatedAsyncioTestCase):
+    async def test_builder_reads_provider_once(self) -> None:
         provider = StaticCapacityProvider(make_snapshot())
         builder = CapacityMetricBuilder(provider=provider)
 
-        metrics = builder(
+        metrics = await builder(
             IntelligenceContext(owner_id="tenant-a")
         )
 
         self.assertEqual(provider.calls, 1)
         self.assertEqual(len(metrics), 5)
 
-    def test_builder_rejects_owner_mismatch(self) -> None:
+    async def test_builder_rejects_owner_mismatch(self) -> None:
         provider = StaticCapacityProvider(
             make_snapshot(owner_id="tenant-b")
         )
@@ -243,11 +243,11 @@ class CapacityMetricBuilderTests(unittest.TestCase):
             RuntimeError,
             "capacity snapshot owner does not match",
         ):
-            builder(
+            await builder(
                 IntelligenceContext(owner_id="tenant-a")
             )
 
-    def test_builder_rejects_invalid_context(self) -> None:
+    async def test_builder_rejects_invalid_context(self) -> None:
         provider = StaticCapacityProvider(make_snapshot())
         builder = CapacityMetricBuilder(provider=provider)
 
@@ -255,9 +255,9 @@ class CapacityMetricBuilderTests(unittest.TestCase):
             TypeError,
             "context must be an IntelligenceContext",
         ):
-            builder("tenant-a")  # type: ignore[arg-type]
+            await builder("tenant-a")  # type: ignore[arg-type]
 
-    def test_builder_rejects_invalid_provider(self) -> None:
+    async def test_builder_rejects_invalid_provider(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "provider must satisfy CapacityProvider",

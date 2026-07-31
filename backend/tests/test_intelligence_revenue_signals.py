@@ -30,7 +30,7 @@ class FakeAnalyticsProvider:
         return self.snapshot
 
 
-class IntelligenceRevenueSignalTests(unittest.TestCase):
+class IntelligenceRevenueSignalTests(unittest.IsolatedAsyncioTestCase):
     def build_snapshot(
         self,
         *,
@@ -56,7 +56,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             average_ticket_minor=30_000,
         )
 
-    def test_classifies_growth_as_opportunity(self) -> None:
+    async def test_classifies_growth_as_opportunity(self) -> None:
         self.assertIs(
             classify_revenue_growth(10.0),
             SignalSeverity.OPPORTUNITY,
@@ -66,7 +66,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.OPPORTUNITY,
         )
 
-    def test_classifies_small_change_as_info(self) -> None:
+    async def test_classifies_small_change_as_info(self) -> None:
         self.assertIs(
             classify_revenue_growth(9.99),
             SignalSeverity.INFO,
@@ -76,7 +76,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.INFO,
         )
 
-    def test_classifies_decline_as_warning(self) -> None:
+    async def test_classifies_decline_as_warning(self) -> None:
         self.assertIs(
             classify_revenue_growth(-10.0),
             SignalSeverity.WARNING,
@@ -86,7 +86,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.WARNING,
         )
 
-    def test_classifies_large_decline_as_critical(
+    async def test_classifies_large_decline_as_critical(
         self,
     ) -> None:
         self.assertIs(
@@ -98,7 +98,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.CRITICAL,
         )
 
-    def test_classification_rejects_invalid_value(
+    async def test_classification_rejects_invalid_value(
         self,
     ) -> None:
         with self.assertRaises(TypeError):
@@ -107,7 +107,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             classify_revenue_growth("10")  # type: ignore[arg-type]
 
-    def test_builds_growth_signal_with_evidence(
+    async def test_builds_growth_signal_with_evidence(
         self,
     ) -> None:
         snapshot = self.build_snapshot()
@@ -139,7 +139,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             "AMD",
         )
 
-    def test_builds_stable_signal(self) -> None:
+    async def test_builds_stable_signal(self) -> None:
         signal = build_revenue_signal(
             snapshot=self.build_snapshot(
                 current=357_000,
@@ -153,7 +153,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.INFO,
         )
 
-    def test_builds_warning_signal(self) -> None:
+    async def test_builds_warning_signal(self) -> None:
         signal = build_revenue_signal(
             snapshot=self.build_snapshot(
                 current=297_500,
@@ -167,7 +167,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.WARNING,
         )
 
-    def test_builds_critical_signal(self) -> None:
+    async def test_builds_critical_signal(self) -> None:
         signal = build_revenue_signal(
             snapshot=self.build_snapshot(
                 current=245_000,
@@ -184,7 +184,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             SignalSeverity.CRITICAL,
         )
 
-    def test_signal_collection_is_tuple(self) -> None:
+    async def test_signal_collection_is_tuple(self) -> None:
         signals = build_revenue_signals(
             snapshot=self.build_snapshot()
         )
@@ -192,7 +192,7 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
         self.assertIsInstance(signals, tuple)
         self.assertEqual(len(signals), 1)
 
-    def test_builder_reads_provider_once(self) -> None:
+    async def test_builder_reads_provider_once(self) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
         provider = FakeAnalyticsProvider(
             self.build_snapshot()
@@ -201,13 +201,13 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
         self.assertIsInstance(provider, AnalyticsProvider)
 
         builder = RevenueSignalBuilder(provider=provider)
-        signals = builder(context)
+        signals = await builder(context)
 
         self.assertEqual(provider.calls, [context])
         self.assertEqual(len(signals), 1)
         self.assertEqual(signals[0].code, "revenue.growth")
 
-    def test_builder_rejects_cross_tenant_snapshot(
+    async def test_builder_rejects_cross_tenant_snapshot(
         self,
     ) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
@@ -221,11 +221,11 @@ class IntelligenceRevenueSignalTests(unittest.TestCase):
             RuntimeError,
             "snapshot owner does not match context owner",
         ):
-            builder(context)
+            await builder(context)
 
         self.assertEqual(provider.calls, [context])
 
-    def test_builder_rejects_invalid_provider(self) -> None:
+    async def test_builder_rejects_invalid_provider(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "provider must satisfy AnalyticsProvider",

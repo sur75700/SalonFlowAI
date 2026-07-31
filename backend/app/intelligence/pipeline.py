@@ -1,3 +1,4 @@
+import inspect
 from collections.abc import Callable
 
 from app.intelligence.context import IntelligenceContext
@@ -9,6 +10,9 @@ from app.intelligence.contracts import (
 )
 from app.intelligence.engine import IntelligenceEngine
 from app.intelligence.execution import create_execution_context
+from app.intelligence.context_validation import (
+    validate_intelligence_context,
+)
 from app.intelligence.validators import (
     validate_confidence_input,
     validate_metrics,
@@ -39,6 +43,12 @@ ConfidenceBuilder = Callable[
 ]
 
 
+
+async def _resolve(value):
+    if inspect.isawaitable(value):
+        return await value
+    return value
+
 class IntelligencePipeline:
     def __init__(
         self,
@@ -57,44 +67,54 @@ class IntelligencePipeline:
         self._confidence_builder = confidence_builder
         self._engine = engine or IntelligenceEngine()
 
-    def run(
+    async def run(
         self,
         *,
         context: IntelligenceContext,
     ) -> IntelligenceDecision:
-        execution_context = create_execution_context(context)
+        context = validate_intelligence_context(
+            context
+        )
+
+        execution_context = create_execution_context(
+            context
+        )
 
         signals = validate_signals(
-            self._signal_builder(execution_context)
+            await _resolve(self._signal_builder(execution_context))
         )
         metrics = validate_metrics(
-            self._metric_builder(execution_context)
+            await _resolve(self._metric_builder(execution_context))
         )
 
         recommendations = validate_recommendations(
-            self._recommendation_builder(
+            await _resolve(self._recommendation_builder(
                 execution_context,
                 signals,
                 metrics,
             )
-        )
+        ))
 
         summary = validate_summary(
-            self._summary_builder(
+            await _resolve(self._summary_builder(
                 execution_context,
                 signals,
                 metrics,
+            )
+        ))
+
+        confidence_result = await _resolve(
+            self._confidence_builder(
+                execution_context,
+                signals,
+                metrics,
+                recommendations,
             )
         )
 
         confidence_score, confidence_explanation = (
             validate_confidence_input(
-                *self._confidence_builder(
-                    execution_context,
-                    signals,
-                    metrics,
-                    recommendations,
-                )
+                *confidence_result
             )
         )
 

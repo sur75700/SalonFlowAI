@@ -37,7 +37,7 @@ def valid_recommendation() -> Recommendation:
     )
 
 
-class IntelligencePipelineValidationTests(unittest.TestCase):
+class IntelligencePipelineValidationTests(unittest.IsolatedAsyncioTestCase):
     def build_pipeline(
         self,
         *,
@@ -73,8 +73,8 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             ),
         )
 
-    def test_valid_builder_outputs_reach_engine(self) -> None:
-        decision = self.build_pipeline().run(
+    async def test_valid_builder_outputs_reach_engine(self) -> None:
+        decision = await self.build_pipeline().run(
             context=IntelligenceContext(owner_id="tenant-a")
         )
 
@@ -87,7 +87,7 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
         )
         self.assertEqual(decision.confidence.score, 0.80)
 
-    def test_non_tuple_signals_are_rejected(self) -> None:
+    async def test_non_tuple_signals_are_rejected(self) -> None:
         pipeline = self.build_pipeline(
             signal_builder=lambda context: [valid_signal()],
         )
@@ -96,11 +96,11 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             TypeError,
             "signals must be a tuple",
         ):
-            pipeline.run(
+            await pipeline.run(
                 context=IntelligenceContext(owner_id="tenant-a")
             )
 
-    def test_duplicate_metrics_are_rejected(self) -> None:
+    async def test_duplicate_metrics_are_rejected(self) -> None:
         metric = valid_metric()
 
         pipeline = self.build_pipeline(
@@ -111,11 +111,11 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             ValueError,
             "duplicate metric key",
         ):
-            pipeline.run(
+            await pipeline.run(
                 context=IntelligenceContext(owner_id="tenant-a")
             )
 
-    def test_duplicate_recommendations_are_rejected(self) -> None:
+    async def test_duplicate_recommendations_are_rejected(self) -> None:
         recommendation = valid_recommendation()
 
         pipeline = self.build_pipeline(
@@ -131,11 +131,11 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             ValueError,
             "duplicate recommendation code",
         ):
-            pipeline.run(
+            await pipeline.run(
                 context=IntelligenceContext(owner_id="tenant-a")
             )
 
-    def test_summary_is_normalized_before_engine(self) -> None:
+    async def test_summary_is_normalized_before_engine(self) -> None:
         pipeline = self.build_pipeline(
             summary_builder=(
                 lambda context, signals, metrics: (
@@ -144,7 +144,7 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             ),
         )
 
-        decision = pipeline.run(
+        decision = await pipeline.run(
             context=IntelligenceContext(owner_id="tenant-a")
         )
 
@@ -153,7 +153,7 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             "Revenue opportunity detected",
         )
 
-    def test_invalid_confidence_is_rejected_before_engine(
+    async def test_invalid_confidence_is_rejected_before_engine(
         self,
     ) -> None:
         pipeline = self.build_pipeline(
@@ -169,11 +169,11 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             ValueError,
             "confidence score must be between",
         ):
-            pipeline.run(
+            await pipeline.run(
                 context=IntelligenceContext(owner_id="tenant-a")
             )
 
-    def test_confidence_explanation_is_normalized(self) -> None:
+    async def test_confidence_explanation_is_normalized(self) -> None:
         pipeline = self.build_pipeline(
             confidence_builder=(
                 lambda context, signals, metrics, recommendations: (
@@ -183,7 +183,7 @@ class IntelligencePipelineValidationTests(unittest.TestCase):
             ),
         )
 
-        decision = pipeline.run(
+        decision = await pipeline.run(
             context=IntelligenceContext(owner_id="tenant-a")
         )
 

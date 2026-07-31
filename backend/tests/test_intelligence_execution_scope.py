@@ -17,8 +17,8 @@ class CountingLoader:
         return object()
 
 
-class IntelligenceExecutionScopeTests(unittest.TestCase):
-    def test_original_context_metadata_is_not_mutated(self) -> None:
+class IntelligenceExecutionScopeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_original_context_metadata_is_not_mutated(self) -> None:
         context = IntelligenceContext(
             owner_id="owner-1",
             metadata={"request_id": "request-1"},
@@ -36,20 +36,20 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
             "request-1",
         )
 
-    def test_snapshot_is_reused_within_one_execution(self) -> None:
+    async def test_snapshot_is_reused_within_one_execution(self) -> None:
         provider = object()
         loader = CountingLoader()
         context = create_execution_context(
             IntelligenceContext(owner_id="owner-1")
         )
 
-        first = get_execution_snapshot(
+        first = await get_execution_snapshot(
             context=context,
             domain="revenue",
             provider=provider,
             loader=loader.load,
         )
-        second = get_execution_snapshot(
+        second = await get_execution_snapshot(
             context=context,
             domain="revenue",
             provider=provider,
@@ -59,18 +59,18 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
         self.assertIs(first, second)
         self.assertEqual(loader.calls, 1)
 
-    def test_snapshot_is_not_reused_across_executions(self) -> None:
+    async def test_snapshot_is_not_reused_across_executions(self) -> None:
         provider = object()
         loader = CountingLoader()
         source_context = IntelligenceContext(owner_id="owner-1")
 
-        first = get_execution_snapshot(
+        first = await get_execution_snapshot(
             context=create_execution_context(source_context),
             domain="revenue",
             provider=provider,
             loader=loader.load,
         )
-        second = get_execution_snapshot(
+        second = await get_execution_snapshot(
             context=create_execution_context(source_context),
             domain="revenue",
             provider=provider,
@@ -80,7 +80,7 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
         self.assertIsNot(first, second)
         self.assertEqual(loader.calls, 2)
 
-    def test_snapshot_is_not_shared_between_providers(self) -> None:
+    async def test_snapshot_is_not_shared_between_providers(self) -> None:
         first_provider = object()
         second_provider = object()
         loader = CountingLoader()
@@ -88,13 +88,13 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
             IntelligenceContext(owner_id="owner-1")
         )
 
-        first = get_execution_snapshot(
+        first = await get_execution_snapshot(
             context=context,
             domain="capacity",
             provider=first_provider,
             loader=loader.load,
         )
-        second = get_execution_snapshot(
+        second = await get_execution_snapshot(
             context=context,
             domain="capacity",
             provider=second_provider,
@@ -104,7 +104,7 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
         self.assertIsNot(first, second)
         self.assertEqual(loader.calls, 2)
 
-    def test_pipeline_uses_one_execution_context_per_run(self) -> None:
+    async def test_pipeline_uses_one_execution_context_per_run(self) -> None:
         source_context = IntelligenceContext(owner_id="owner-1")
         observed_contexts = []
 
@@ -141,7 +141,7 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
             confidence_builder=confidence_builder,
         )
 
-        decision = pipeline.run(context=source_context)
+        decision = await pipeline.run(context=source_context)
 
         self.assertEqual(decision.owner_id, source_context.owner_id)
         self.assertEqual(len(observed_contexts), 5)
@@ -156,13 +156,13 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
             )
         )
 
-    def test_pipeline_creates_fresh_scope_for_each_run(self) -> None:
+    async def test_pipeline_creates_fresh_scope_for_each_run(self) -> None:
         source_context = IntelligenceContext(owner_id="owner-1")
         provider = object()
         loader = CountingLoader()
 
-        def signal_builder(context):
-            get_execution_snapshot(
+        async def signal_builder(context):
+            await get_execution_snapshot(
                 context=context,
                 domain="revenue",
                 provider=provider,
@@ -170,8 +170,8 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
             )
             return ()
 
-        def metric_builder(context):
-            get_execution_snapshot(
+        async def metric_builder(context):
+            await get_execution_snapshot(
                 context=context,
                 domain="revenue",
                 provider=provider,
@@ -195,8 +195,8 @@ class IntelligenceExecutionScopeTests(unittest.TestCase):
             ),
         )
 
-        pipeline.run(context=source_context)
-        pipeline.run(context=source_context)
+        await pipeline.run(context=source_context)
+        await pipeline.run(context=source_context)
 
         self.assertEqual(loader.calls, 2)
 

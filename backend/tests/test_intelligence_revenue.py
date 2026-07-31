@@ -28,7 +28,7 @@ class FakeAnalyticsProvider:
         return self.snapshot
 
 
-class IntelligenceRevenueTests(unittest.TestCase):
+class IntelligenceRevenueTests(unittest.IsolatedAsyncioTestCase):
     def build_snapshot(
         self,
         *,
@@ -54,7 +54,7 @@ class IntelligenceRevenueTests(unittest.TestCase):
             average_ticket_minor=30_000,
         )
 
-    def test_growth_percent_for_increase(self) -> None:
+    async def test_growth_percent_for_increase(self) -> None:
         self.assertEqual(
             calculate_revenue_growth_percent(
                 current_revenue_minor=420_000,
@@ -63,7 +63,7 @@ class IntelligenceRevenueTests(unittest.TestCase):
             20.0,
         )
 
-    def test_growth_percent_for_decline(self) -> None:
+    async def test_growth_percent_for_decline(self) -> None:
         self.assertEqual(
             calculate_revenue_growth_percent(
                 current_revenue_minor=280_000,
@@ -72,7 +72,7 @@ class IntelligenceRevenueTests(unittest.TestCase):
             -20.0,
         )
 
-    def test_growth_percent_handles_zero_baseline(
+    async def test_growth_percent_handles_zero_baseline(
         self,
     ) -> None:
         self.assertEqual(
@@ -91,7 +91,7 @@ class IntelligenceRevenueTests(unittest.TestCase):
             100.0,
         )
 
-    def test_growth_rejects_invalid_values(self) -> None:
+    async def test_growth_rejects_invalid_values(self) -> None:
         with self.assertRaises(TypeError):
             calculate_revenue_growth_percent(
                 current_revenue_minor=True,
@@ -107,7 +107,7 @@ class IntelligenceRevenueTests(unittest.TestCase):
                 previous_revenue_minor=0,
             )
 
-    def test_snapshot_builds_expected_metrics(self) -> None:
+    async def test_snapshot_builds_expected_metrics(self) -> None:
         metrics = build_revenue_metrics(
             snapshot=self.build_snapshot()
         )
@@ -152,7 +152,7 @@ class IntelligenceRevenueTests(unittest.TestCase):
             "percent",
         )
 
-    def test_builder_reads_provider_once(self) -> None:
+    async def test_builder_reads_provider_once(self) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
         provider = FakeAnalyticsProvider(
             self.build_snapshot()
@@ -161,12 +161,12 @@ class IntelligenceRevenueTests(unittest.TestCase):
         self.assertIsInstance(provider, AnalyticsProvider)
 
         builder = RevenueMetricBuilder(provider=provider)
-        metrics = builder(context)
+        metrics = await builder(context)
 
         self.assertEqual(provider.calls, [context])
         self.assertEqual(len(metrics), 5)
 
-    def test_builder_rejects_cross_tenant_snapshot(
+    async def test_builder_rejects_cross_tenant_snapshot(
         self,
     ) -> None:
         context = IntelligenceContext(owner_id="tenant-a")
@@ -180,11 +180,11 @@ class IntelligenceRevenueTests(unittest.TestCase):
             RuntimeError,
             "snapshot owner does not match context owner",
         ):
-            builder(context)
+            await builder(context)
 
         self.assertEqual(provider.calls, [context])
 
-    def test_builder_rejects_invalid_provider(self) -> None:
+    async def test_builder_rejects_invalid_provider(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "provider must satisfy AnalyticsProvider",
