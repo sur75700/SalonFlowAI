@@ -1,5 +1,7 @@
 import unittest
+from collections.abc import Awaitable
 from datetime import UTC, datetime, timedelta
+from typing import get_args, get_origin, get_type_hints
 
 from app.intelligence import (
     AnalyticsProvider,
@@ -130,6 +132,36 @@ class IntelligenceProviderTests(unittest.TestCase):
         self.assertIs(result, snapshot)
         self.assertEqual(provider.calls, [context])
         self.assertEqual(result.owner_id, context.owner_id)
+
+    def test_provider_contract_declares_sync_or_async_result(
+        self,
+    ) -> None:
+        return_type = get_type_hints(
+            AnalyticsProvider.get_revenue_snapshot
+        )["return"]
+
+        union_members = get_args(return_type)
+
+        self.assertIn(
+            RevenueSnapshot,
+            union_members,
+        )
+
+        awaitable_members = tuple(
+            member
+            for member in union_members
+            if get_origin(member) is Awaitable
+        )
+
+        self.assertEqual(
+            len(awaitable_members),
+            1,
+        )
+
+        self.assertEqual(
+            get_args(awaitable_members[0]),
+            (RevenueSnapshot,),
+        )
 
 
 if __name__ == "__main__":

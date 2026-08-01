@@ -1,3 +1,4 @@
+from collections.abc import Awaitable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol, runtime_checkable
@@ -73,5 +74,5 @@ class AnalyticsProvider(Protocol):
         self,
         *,
         context: IntelligenceContext,
-    ) -> RevenueSnapshot:
+    ) -> RevenueSnapshot | Awaitable[RevenueSnapshot]:
         ...
