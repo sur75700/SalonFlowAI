@@ -124,7 +124,12 @@ from app.intelligence.capacity_baseline_source import (
     resolve_capacity_baseline,
 )
 
+from app.intelligence.decision_serializer import (
+    serialize_intelligence_decision,
+)
+
 __all__ = [
+    "serialize_intelligence_decision",
     "CallableCapacityBaselineSource",
     "CapacityBaselineLoader",
     "CapacityBaselineResult",
