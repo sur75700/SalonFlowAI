@@ -1,12 +1,19 @@
 import unittest
+from collections.abc import Awaitable
 from datetime import UTC, datetime, timedelta
+from typing import get_args, get_origin, get_type_hints
 
 from app.intelligence.capacity import (
+    CAPACITY_BASELINE_METADATA_KEY,
+    CapacityBaseline,
+    CapacityDataUnavailable,
     CapacityMetricBuilder,
+    CapacityProvider,
     CapacitySnapshot,
     build_capacity_metrics,
     calculate_capacity_utilization_percent,
     calculate_staff_load_percent,
+    require_capacity_baseline,
 )
 from app.intelligence.context import IntelligenceContext
 
@@ -44,6 +51,199 @@ def make_snapshot(
     values.update(overrides)
 
     return CapacitySnapshot(**values)  # type: ignore[arg-type]
+
+
+
+class CapacityBaselineTests(unittest.TestCase):
+    def make_baseline(
+        self,
+        **overrides: object,
+    ) -> CapacityBaseline:
+        period_start = datetime(
+            2026,
+            7,
+            1,
+            tzinfo=UTC,
+        )
+
+        values: dict[str, object] = {
+            "owner_id": "tenant-a",
+            "period_start": period_start,
+            "period_end": (
+                period_start + timedelta(days=7)
+            ),
+            "total_slots": 40,
+            "active_staff_count": 4,
+            "available_minutes": 9_600,
+            "source": "staff_schedule",
+        }
+        values.update(overrides)
+
+        return CapacityBaseline(
+            **values  # type: ignore[arg-type]
+        )
+
+    def test_baseline_normalizes_identity_and_source(
+        self,
+    ) -> None:
+        baseline = self.make_baseline(
+            owner_id="  tenant-a  ",
+            source="  staff_schedule  ",
+        )
+
+        self.assertEqual(
+            baseline.owner_id,
+            "tenant-a",
+        )
+        self.assertEqual(
+            baseline.source,
+            "staff_schedule",
+        )
+
+    def test_baseline_is_immutable(self) -> None:
+        baseline = self.make_baseline()
+
+        with self.assertRaises(AttributeError):
+            baseline.total_slots = 10  # type: ignore[misc]
+
+    def test_baseline_rejects_empty_source(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "source is required",
+        ):
+            self.make_baseline(source="   ")
+
+    def test_baseline_normalizes_naive_period_to_utc(
+        self,
+    ) -> None:
+        baseline = self.make_baseline(
+            period_start=datetime(2026, 7, 1),
+            period_end=datetime(2026, 7, 8),
+        )
+
+        self.assertEqual(
+            baseline.period_start.tzinfo,
+            UTC,
+        )
+        self.assertEqual(
+            baseline.period_end.tzinfo,
+            UTC,
+        )
+
+    def test_baseline_rejects_invalid_period(
+        self,
+    ) -> None:
+        instant = datetime(
+            2026,
+            7,
+            1,
+            tzinfo=UTC,
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "period_end must be later",
+        ):
+            self.make_baseline(
+                period_start=instant,
+                period_end=instant,
+            )
+
+    def test_baseline_rejects_negative_values(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "available_minutes cannot be negative",
+        ):
+            self.make_baseline(
+                available_minutes=-1
+            )
+
+    def test_baseline_rejects_boolean_values(self) -> None:
+        with self.assertRaisesRegex(
+            TypeError,
+            "total_slots must be an integer",
+        ):
+            self.make_baseline(
+                total_slots=True
+            )
+
+    def test_context_resolves_trusted_baseline(
+        self,
+    ) -> None:
+        baseline = self.make_baseline()
+
+        context = IntelligenceContext(
+            owner_id="tenant-a",
+            metadata={
+                CAPACITY_BASELINE_METADATA_KEY: (
+                    baseline
+                )
+            },
+        )
+
+        self.assertIs(
+            require_capacity_baseline(context),
+            baseline,
+        )
+
+    def test_missing_baseline_fails_closed(
+        self,
+    ) -> None:
+        context = IntelligenceContext(
+            owner_id="tenant-a"
+        )
+
+        with self.assertRaisesRegex(
+            CapacityDataUnavailable,
+            "trusted capacity baseline is unavailable",
+        ):
+            require_capacity_baseline(context)
+
+    def test_cross_tenant_baseline_is_rejected(
+        self,
+    ) -> None:
+        context = IntelligenceContext(
+            owner_id="tenant-a",
+            metadata={
+                CAPACITY_BASELINE_METADATA_KEY: (
+                    self.make_baseline(
+                        owner_id="tenant-b"
+                    )
+                )
+            },
+        )
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "baseline owner does not match",
+        ):
+            require_capacity_baseline(context)
+
+    def test_provider_contract_supports_async_results(
+        self,
+    ) -> None:
+        return_type = get_type_hints(
+            CapacityProvider.get_capacity_snapshot
+        )["return"]
+
+        members = get_args(return_type)
+
+        self.assertIn(
+            CapacitySnapshot,
+            members,
+        )
+
+        awaitables = tuple(
+            member
+            for member in members
+            if get_origin(member) is Awaitable
+        )
+
+        self.assertEqual(len(awaitables), 1)
+        self.assertEqual(
+            get_args(awaitables[0]),
+            (CapacitySnapshot,),
+        )
 
 
 class CapacitySnapshotTests(unittest.IsolatedAsyncioTestCase):

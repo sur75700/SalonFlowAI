@@ -1,5 +1,6 @@
+from collections.abc import Awaitable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
 
 from app.intelligence.context import IntelligenceContext
@@ -66,6 +67,145 @@ def calculate_staff_load_percent(
     )
 
 
+
+class CapacityDataUnavailable(RuntimeError):
+    """
+    Raised when trustworthy staffed-capacity facts are unavailable.
+
+    Capacity intelligence must fail closed instead of inventing
+    total slots, staffed minutes or staff coverage.
+    """
+
+
+@dataclass(frozen=True, slots=True)
+class CapacityBaseline:
+    """
+    Explicit staffed-capacity facts for one intelligence execution.
+
+    This baseline must be supplied from a trusted configuration,
+    schedule or availability source. It must never be inferred only
+    from observed appointments.
+    """
+
+    owner_id: str
+    period_start: datetime
+    period_end: datetime
+    total_slots: int
+    active_staff_count: int
+    available_minutes: int
+    source: str
+
+    def __post_init__(self) -> None:
+        owner_id = self.owner_id.strip()
+        source = self.source.strip()
+
+        if not owner_id:
+            raise ValueError(
+                "capacity baseline owner_id is required"
+            )
+
+        if not source:
+            raise ValueError(
+                "capacity baseline source is required"
+            )
+
+        period_start = self.period_start
+        period_end = self.period_end
+
+        if period_start.tzinfo is None:
+            period_start = period_start.replace(
+                tzinfo=UTC
+            )
+        else:
+            period_start = period_start.astimezone(
+                UTC
+            )
+
+        if period_end.tzinfo is None:
+            period_end = period_end.replace(
+                tzinfo=UTC
+            )
+        else:
+            period_end = period_end.astimezone(
+                UTC
+            )
+
+        if period_end <= period_start:
+            raise ValueError(
+                "capacity baseline period_end must be "
+                "later than period_start"
+            )
+
+        integer_fields = (
+            ("total_slots", self.total_slots),
+            (
+                "active_staff_count",
+                self.active_staff_count,
+            ),
+            (
+                "available_minutes",
+                self.available_minutes,
+            ),
+        )
+
+        for field_name, value in integer_fields:
+            _require_non_negative_integer(
+                field_name=field_name,
+                value=value,
+            )
+
+        object.__setattr__(self, "owner_id", owner_id)
+        object.__setattr__(
+            self,
+            "period_start",
+            period_start,
+        )
+        object.__setattr__(
+            self,
+            "period_end",
+            period_end,
+        )
+        object.__setattr__(self, "source", source)
+
+
+CAPACITY_BASELINE_METADATA_KEY = (
+    "capacity_baseline"
+)
+
+
+def require_capacity_baseline(
+    context: IntelligenceContext,
+) -> CapacityBaseline:
+    """
+    Return a trusted capacity baseline or fail closed.
+
+    Appointment history can prove demand and occupied time, but it
+    cannot prove total staffed availability by itself.
+    """
+
+    if not isinstance(context, IntelligenceContext):
+        raise TypeError(
+            "context must be an IntelligenceContext"
+        )
+
+    baseline = context.metadata.get(
+        CAPACITY_BASELINE_METADATA_KEY
+    )
+
+    if not isinstance(baseline, CapacityBaseline):
+        raise CapacityDataUnavailable(
+            "trusted capacity baseline is unavailable"
+        )
+
+    if baseline.owner_id != context.owner_id:
+        raise RuntimeError(
+            "capacity baseline owner does not match "
+            "context owner"
+        )
+
+    return baseline
+
+
 @dataclass(frozen=True, slots=True)
 class CapacitySnapshot:
     """Read-only operational capacity facts."""
@@ -120,7 +260,7 @@ class CapacityProvider(Protocol):
         self,
         *,
         context: IntelligenceContext,
-    ) -> CapacitySnapshot:
+    ) -> CapacitySnapshot | Awaitable[CapacitySnapshot]:
         ...
 
 
