@@ -76,7 +76,29 @@ from app.intelligence.capacity_signals import (
 )
 
 
+from app.intelligence.client_intelligence import (
+    ClientProvider,
+    ClientSnapshot,
+)
+from app.intelligence.service_intelligence import (
+    ServicePerformanceSnapshot,
+    ServiceProvider,
+    ServiceSnapshot,
+)
+
+
+from app.intelligence.provider_family import (
+    IntelligenceProviderFamily,
+)
+
+
 __all__ = [
+    "ClientProvider",
+    "ClientSnapshot",
+    "ServicePerformanceSnapshot",
+    "ServiceProvider",
+    "ServiceSnapshot",
+    "IntelligenceProviderFamily",
     "Confidence",
     "ConfidenceLevel",
     "Evidence",
