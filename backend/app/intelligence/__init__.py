@@ -13,7 +13,10 @@ from app.intelligence.contracts import (
     SignalSeverity,
 )
 from app.intelligence.engine import IntelligenceEngine
-from app.intelligence.factory import create_intelligence_service
+from app.intelligence.factory import (
+    create_intelligence_service,
+    create_provider_family_intelligence_service,
+)
 from app.intelligence.metrics import MetricRegistry
 from app.intelligence.pipeline import IntelligencePipeline
 from app.intelligence.provider import AnalyticsProvider, RevenueSnapshot
@@ -77,28 +80,56 @@ from app.intelligence.capacity_signals import (
 
 
 from app.intelligence.client_intelligence import (
+    ClientMetricBuilder,
     ClientProvider,
     ClientSnapshot,
+    build_client_metrics,
 )
 from app.intelligence.service_intelligence import (
+    ServiceMetricBuilder,
     ServicePerformanceSnapshot,
     ServiceProvider,
     ServiceSnapshot,
+    build_service_metrics,
 )
 
 
 from app.intelligence.provider_family import (
     IntelligenceProviderFamily,
 )
+from app.intelligence.provider_family_metrics import (
+    ProviderFamilyMetricBuilder,
+)
+from app.intelligence.provider_family_recommendations import (
+    ProviderFamilyRecommendationBuilder,
+)
+from app.intelligence.provider_family_signals import (
+    ProviderFamilySignalBuilder,
+)
+from app.intelligence.provider_family_runtime import (
+    ProviderFamilyConfidenceBuilder,
+    ProviderFamilySummaryBuilder,
+    create_provider_family_builders,
+)
 
 
 __all__ = [
+    "ClientMetricBuilder",
     "ClientProvider",
     "ClientSnapshot",
+    "build_client_metrics",
+    "ServiceMetricBuilder",
     "ServicePerformanceSnapshot",
     "ServiceProvider",
     "ServiceSnapshot",
+    "build_service_metrics",
     "IntelligenceProviderFamily",
+    "ProviderFamilyMetricBuilder",
+    "ProviderFamilyRecommendationBuilder",
+    "ProviderFamilySignalBuilder",
+    "ProviderFamilyConfidenceBuilder",
+    "ProviderFamilySummaryBuilder",
+    "create_provider_family_builders",
     "Confidence",
     "ConfidenceLevel",
     "Evidence",
@@ -117,6 +148,7 @@ __all__ = [
     "SignalSeverity",
     "build_confidence",
     "create_intelligence_service",
+    "create_provider_family_intelligence_service",
     "build_reasoning_notes",
     "confidence_level",
     "prioritize_recommendations",

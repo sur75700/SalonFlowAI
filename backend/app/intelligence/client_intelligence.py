@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
 
 from app.intelligence.context import IntelligenceContext
+from app.intelligence.contracts import Metric
+from app.intelligence.execution import get_execution_snapshot
 
 
 def _required_text(
@@ -235,3 +237,113 @@ class ClientProvider(Protocol):
         context: IntelligenceContext,
     ) -> ClientSnapshot | Awaitable[ClientSnapshot]:
         ...
+
+def build_client_metrics(
+    *,
+    snapshot: ClientSnapshot,
+) -> tuple[Metric, ...]:
+    """Convert trusted client facts into pipeline metrics."""
+
+    if not isinstance(snapshot, ClientSnapshot):
+        raise TypeError(
+            "snapshot must be a ClientSnapshot"
+        )
+
+    return (
+        Metric(
+            key="client.total_count",
+            label="Total clients",
+            value=snapshot.total_client_count,
+            unit="clients",
+        ),
+        Metric(
+            key="client.new_count",
+            label="New clients",
+            value=snapshot.new_client_count,
+            unit="clients",
+        ),
+        Metric(
+            key="client.active_count",
+            label="Active clients",
+            value=snapshot.active_client_count,
+            unit="clients",
+        ),
+        Metric(
+            key="client.returning_count",
+            label="Returning clients",
+            value=snapshot.returning_client_count,
+            unit="clients",
+        ),
+        Metric(
+            key="client.historically_active_count",
+            label="Historically active clients",
+            value=(
+                snapshot.historically_active_client_count
+            ),
+            unit="clients",
+        ),
+        Metric(
+            key="client.at_risk_count",
+            label="At-risk clients",
+            value=snapshot.at_risk_client_count,
+            unit="clients",
+        ),
+        Metric(
+            key="client.high_value_count",
+            label="High-value clients",
+            value=snapshot.high_value_client_count,
+            unit="clients",
+        ),
+        Metric(
+            key="client.completed_bookings",
+            label="Client completed bookings",
+            value=snapshot.completed_booking_count,
+            unit="bookings",
+        ),
+        Metric(
+            key="client.completed_revenue_minor",
+            label="Client completed revenue",
+            value=snapshot.completed_revenue_minor,
+            unit="minor_units",
+        ),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class ClientMetricBuilder:
+    """Provider-backed client metric builder."""
+
+    provider: ClientProvider
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.provider, ClientProvider):
+            raise TypeError(
+                "provider must satisfy ClientProvider"
+            )
+
+    async def __call__(
+        self,
+        context: IntelligenceContext,
+    ) -> tuple[Metric, ...]:
+        if not isinstance(context, IntelligenceContext):
+            raise TypeError(
+                "context must be an IntelligenceContext"
+            )
+
+        snapshot = await get_execution_snapshot(
+            context=context,
+            domain="client",
+            provider=self.provider,
+            loader=lambda: self.provider.get_client_snapshot(
+                context=context
+            ),
+        )
+
+        if not isinstance(snapshot, ClientSnapshot):
+            raise TypeError(
+                "provider must return ClientSnapshot"
+            )
+
+        return build_client_metrics(
+            snapshot=snapshot
+        )

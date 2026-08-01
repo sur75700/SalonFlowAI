@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
 
 from app.intelligence.context import IntelligenceContext
+from app.intelligence.contracts import Metric
+from app.intelligence.execution import get_execution_snapshot
 
 
 def _required_text(
@@ -312,3 +314,158 @@ class ServiceProvider(Protocol):
         context: IntelligenceContext,
     ) -> ServiceSnapshot | Awaitable[ServiceSnapshot]:
         ...
+
+def build_service_metrics(
+    *,
+    snapshot: ServiceSnapshot,
+) -> tuple[Metric, ...]:
+    """Aggregate trusted service facts into pipeline metrics."""
+
+    if not isinstance(snapshot, ServiceSnapshot):
+        raise TypeError(
+            "snapshot must be a ServiceSnapshot"
+        )
+
+    historical_only_count = sum(
+        1
+        for service in snapshot.services
+        if not service.catalog_present
+    )
+
+    completed_booking_count = sum(
+        service.completed_booking_count
+        for service in snapshot.services
+    )
+
+    scheduled_booking_count = sum(
+        service.scheduled_booking_count
+        for service in snapshot.services
+    )
+
+    cancelled_booking_count = sum(
+        service.cancelled_booking_count
+        for service in snapshot.services
+    )
+
+    other_booking_count = sum(
+        service.other_booking_count
+        for service in snapshot.services
+    )
+
+    completed_revenue_minor = sum(
+        service.completed_revenue_minor
+        for service in snapshot.services
+    )
+
+    scheduled_value_minor = sum(
+        service.scheduled_value_minor
+        for service in snapshot.services
+    )
+
+    cancelled_value_minor = sum(
+        service.cancelled_value_minor
+        for service in snapshot.services
+    )
+
+    return (
+        Metric(
+            key="service.total_count",
+            label="Total services",
+            value=snapshot.total_service_count,
+            unit="services",
+        ),
+        Metric(
+            key="service.active_count",
+            label="Active services",
+            value=snapshot.active_service_count,
+            unit="services",
+        ),
+        Metric(
+            key="service.historical_only_count",
+            label="Historical-only services",
+            value=historical_only_count,
+            unit="services",
+        ),
+        Metric(
+            key="service.completed_bookings",
+            label="Service completed bookings",
+            value=completed_booking_count,
+            unit="bookings",
+        ),
+        Metric(
+            key="service.scheduled_bookings",
+            label="Service scheduled bookings",
+            value=scheduled_booking_count,
+            unit="bookings",
+        ),
+        Metric(
+            key="service.cancelled_bookings",
+            label="Service cancelled bookings",
+            value=cancelled_booking_count,
+            unit="bookings",
+        ),
+        Metric(
+            key="service.other_bookings",
+            label="Other service bookings",
+            value=other_booking_count,
+            unit="bookings",
+        ),
+        Metric(
+            key="service.completed_revenue_minor",
+            label="Service completed revenue",
+            value=completed_revenue_minor,
+            unit="minor_units",
+        ),
+        Metric(
+            key="service.scheduled_value_minor",
+            label="Scheduled service value",
+            value=scheduled_value_minor,
+            unit="minor_units",
+        ),
+        Metric(
+            key="service.cancelled_value_minor",
+            label="Cancelled service value",
+            value=cancelled_value_minor,
+            unit="minor_units",
+        ),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceMetricBuilder:
+    """Provider-backed service metric builder."""
+
+    provider: ServiceProvider
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.provider, ServiceProvider):
+            raise TypeError(
+                "provider must satisfy ServiceProvider"
+            )
+
+    async def __call__(
+        self,
+        context: IntelligenceContext,
+    ) -> tuple[Metric, ...]:
+        if not isinstance(context, IntelligenceContext):
+            raise TypeError(
+                "context must be an IntelligenceContext"
+            )
+
+        snapshot = await get_execution_snapshot(
+            context=context,
+            domain="service",
+            provider=self.provider,
+            loader=lambda: self.provider.get_service_snapshot(
+                context=context
+            ),
+        )
+
+        if not isinstance(snapshot, ServiceSnapshot):
+            raise TypeError(
+                "provider must return ServiceSnapshot"
+            )
+
+        return build_service_metrics(
+            snapshot=snapshot
+        )
