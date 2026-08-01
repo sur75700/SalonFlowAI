@@ -113,7 +113,26 @@ from app.intelligence.provider_family_runtime import (
 )
 
 
+from app.intelligence.capacity_baseline_source import (
+    CallableCapacityBaselineSource,
+    CapacityBaselineLoader,
+    CapacityBaselineResult,
+    CapacityBaselineSource,
+    ExplicitCapacityBaselineSource,
+    attach_capacity_baseline,
+    prepare_capacity_context,
+    resolve_capacity_baseline,
+)
+
 __all__ = [
+    "CallableCapacityBaselineSource",
+    "CapacityBaselineLoader",
+    "CapacityBaselineResult",
+    "CapacityBaselineSource",
+    "ExplicitCapacityBaselineSource",
+    "attach_capacity_baseline",
+    "prepare_capacity_context",
+    "resolve_capacity_baseline",
     "ClientMetricBuilder",
     "ClientProvider",
     "ClientSnapshot",
