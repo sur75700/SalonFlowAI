@@ -27,6 +27,7 @@ export type AICommandCenterStatus =
   | 'loading'
   | 'refreshing'
   | 'success'
+  | 'not_entitled'
   | 'error';
 
 export interface AICommandCenterV2Props {
@@ -44,6 +45,8 @@ export interface AICommandCenterV2Props {
     refreshing: string;
     unavailable: string;
     retry: string;
+    locked: string;
+    upgrade: string;
   };
   healthLabel: string;
   aiScore: number; // 0–100
@@ -69,6 +72,7 @@ export interface AICommandCenterV2Props {
 
   status?: AICommandCenterStatus;
   onRetry?: () => void;
+  onUpgrade?: () => void;
 }
 
 const colors = {
@@ -179,6 +183,46 @@ function ForecastBars({ series, color }: { series: ForecastSeriesPoint[]; color:
  * no external packages, no SVG — the score dial is built from rotated
  * View ticks and the forecast chart from plain bars.
  */
+const entitlementLockStyles = StyleSheet.create({
+  shell: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(167, 139, 250, 0.42)',
+    backgroundColor: 'rgba(31, 18, 58, 0.88)',
+    paddingHorizontal: 22,
+    paddingVertical: 24,
+    gap: 12,
+  },
+  eyebrow: {
+    color: 'rgba(221, 214, 254, 0.78)',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  title: {
+    color: '#F5F3FF',
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 25,
+  },
+  button: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+  },
+  buttonPressed: {
+    opacity: 0.82,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+});
+
 function AICommandCenterV2({
   labels,
   healthLabel,
@@ -190,6 +234,7 @@ function AICommandCenterV2({
   forecast,
   status = 'success',
   onRetry,
+  onUpgrade,
 }: AICommandCenterV2Props) {
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
@@ -218,6 +263,36 @@ function AICommandCenterV2({
     status === 'refreshing'
       ? labels.refreshing
       : healthLabel;
+
+  if (status === 'not_entitled') {
+    return (
+      <View style={entitlementLockStyles.shell}>
+        <Text style={entitlementLockStyles.eyebrow}>
+          {labels.commandCenter}
+        </Text>
+        <Text style={entitlementLockStyles.title}>
+          {labels.locked}
+        </Text>
+        {onUpgrade ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={labels.upgrade}
+            onPress={onUpgrade}
+            style={({ pressed }) => [
+              entitlementLockStyles.button,
+              pressed
+                ? entitlementLockStyles.buttonPressed
+                : null,
+            ]}
+          >
+            <Text style={entitlementLockStyles.buttonText}>
+              {labels.upgrade}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+    );
+  }
 
   if (
     status === 'idle' ||

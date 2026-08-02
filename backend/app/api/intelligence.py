@@ -30,6 +30,11 @@ from app.intelligence.factory import (
 )
 from app.intelligence.models import AnalysisWindow
 from app.intelligence.service import IntelligenceService
+from app.services.entitlements import (
+    EntitlementSourceUnavailable,
+    FeatureNotEntitled,
+    require_feature_entitlement,
+)
 
 
 router = APIRouter()
@@ -210,6 +215,43 @@ def get_intelligence_service(
     )
 
 
+INTELLIGENCE_FEATURE = "advanced_ai"
+FEATURE_NOT_ENTITLED_CODE = "feature_not_entitled"
+ENTITLEMENT_SOURCE_UNAVAILABLE_CODE = (
+    "entitlement_source_unavailable"
+)
+
+
+async def require_advanced_ai_entitlement(
+    auth: dict = Depends(require_auth),
+) -> None:
+    owner_id = _authenticated_owner(auth)
+    database = get_database()
+
+    try:
+        await require_feature_entitlement(
+            database=database,
+            owner_id=owner_id,
+            feature=INTELLIGENCE_FEATURE,
+        )
+    except FeatureNotEntitled:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": FEATURE_NOT_ENTITLED_CODE,
+                "feature": INTELLIGENCE_FEATURE,
+            },
+        ) from None
+    except EntitlementSourceUnavailable:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": ENTITLEMENT_SOURCE_UNAVAILABLE_CODE,
+                "feature": INTELLIGENCE_FEATURE,
+            },
+        ) from None
+
+
 def _window_period(
     window: AnalysisWindow,
 ) -> tuple[datetime, datetime]:
@@ -285,6 +327,9 @@ def _runtime_http_exception(
 async def create_intelligence_decision(
     payload: IntelligenceDecisionRequest,
     auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(
+        require_advanced_ai_entitlement
+    ),
     service: IntelligenceService = Depends(
         get_intelligence_service
     ),

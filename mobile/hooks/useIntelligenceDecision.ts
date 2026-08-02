@@ -21,6 +21,7 @@ export type IntelligenceDecisionStatus =
   | "loading"
   | "refreshing"
   | "success"
+  | "not_entitled"
   | "error";
 
 export type IntelligenceDecisionState = Readonly<{
@@ -177,6 +178,21 @@ export function useIntelligenceDecision({
           controller.signal.aborted ||
           sequenceRef.current !== sequence
         ) {
+          return;
+        }
+
+        if (
+          error instanceof IntelligenceDecisionRequestError &&
+          error.kind === "not_entitled"
+        ) {
+          setState({
+            status: "not_entitled",
+            data: null,
+            error: null,
+            loading: false,
+            refreshing: false,
+            requestKey,
+          });
           return;
         }
 

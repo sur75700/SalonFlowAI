@@ -334,10 +334,17 @@ import {
           }
         }
 
+        export type IntelligenceDecisionRequestErrorKind =
+          | "auth"
+          | "not_entitled"
+          | "entitlement_unavailable"
+          | "request";
+
         export class IntelligenceDecisionRequestError extends Error {
           readonly authFailure: boolean;
           readonly status: number | null;
           readonly sourceError: unknown;
+          readonly kind: IntelligenceDecisionRequestErrorKind;
 
           constructor(
             message: string,
@@ -345,6 +352,7 @@ import {
               authFailure: boolean;
               status: number | null;
               sourceError: unknown;
+              kind: IntelligenceDecisionRequestErrorKind;
             }>,
           ) {
             super(message);
@@ -352,6 +360,7 @@ import {
             this.authFailure = options.authFailure;
             this.status = options.status;
             this.sourceError = options.sourceError;
+            this.kind = options.kind;
           }
         }
 
@@ -753,6 +762,45 @@ import {
             : null;
         }
 
+        function readIntelligenceServerErrorCode(
+          error: unknown,
+        ): string | null {
+          if (typeof error !== "object" || error === null) {
+            return null;
+          }
+
+          const response = (
+            error as {
+              response?: {
+                data?: unknown;
+              };
+            }
+          ).response;
+
+          const data = response?.data;
+          if (typeof data !== "object" || data === null) {
+            return null;
+          }
+
+          const detail = (
+            data as {
+              detail?: unknown;
+            }
+          ).detail;
+
+          if (typeof detail !== "object" || detail === null) {
+            return null;
+          }
+
+          const code = (
+            detail as {
+              code?: unknown;
+            }
+          ).code;
+
+          return typeof code === "string" ? code : null;
+        }
+
         export async function fetchIntelligenceDecision(
           token: string,
           request: IntelligenceDecisionRequest,
@@ -766,6 +814,7 @@ import {
                 authFailure: true,
                 status: 401,
                 sourceError: null,
+                kind: "auth",
               },
             );
           }
@@ -784,12 +833,48 @@ import {
             if (signal?.aborted) {
               throw error;
             }
+            const status = readHttpStatus(error);
+            const serverCode =
+              readIntelligenceServerErrorCode(error);
+
+            const entitlementDenied =
+              status === 403 &&
+              serverCode === "feature_not_entitled";
+            const entitlementUnavailable =
+              status === 503 &&
+              serverCode ===
+                "entitlement_source_unavailable";
+            const authFailure =
+              !entitlementDenied &&
+              !entitlementUnavailable &&
+              isAuthError(error);
+
+            const kind: IntelligenceDecisionRequestErrorKind =
+              entitlementDenied
+                ? "not_entitled"
+                : entitlementUnavailable
+                  ? "entitlement_unavailable"
+                  : authFailure
+                    ? "auth"
+                    : "request";
+
+            const message =
+              kind === "not_entitled"
+                ? "Intelligence access is not included"
+                : kind === "entitlement_unavailable"
+                  ? "Intelligence access could not be verified"
+                  : getErrorMessage(
+                      error,
+                      "Unable to load Intelligence decision",
+                    );
+
             throw new IntelligenceDecisionRequestError(
-              getErrorMessage(error, "Unable to load Intelligence decision"),
+              message,
               {
-                authFailure: isAuthError(error),
-                status: readHttpStatus(error),
+                authFailure,
+                status,
                 sourceError: error,
+                kind,
               },
             );
           }

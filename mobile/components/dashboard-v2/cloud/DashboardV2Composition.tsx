@@ -27,6 +27,7 @@ import { useAnalyticsData } from '../../../hooks/useDashboardData';
 import { useAppointmentsData } from '../../../hooks/useResourceData';
 import type { AppointmentItem } from '../../../types/models';
 import { useAppPreferences } from '../../../hooks/useAppPreferences';
+import { useBilling } from '../../../contexts/BillingContext';
 import { formatMoney } from '../../../utils/money';
 import type { AppCurrency } from '../../../lib/i18n/types';
 
@@ -726,6 +727,24 @@ function DashboardV2Composition() {
     analytics?.currency
   );
 
+  const {
+    billingStatus,
+    billingLoading,
+  } = useBilling();
+
+  const intelligenceBillingKnown =
+    billingStatus !== null && !billingLoading;
+
+  const intelligenceFeatureGranted =
+    billingStatus?.features?.includes('advanced_ai') === true;
+
+  const intelligenceKnownDenied =
+    intelligenceBillingKnown &&
+    (
+      billingStatus.status !== 'active' ||
+      !intelligenceFeatureGranted
+    );
+
   const intelligenceCurrency =
     analytics?.currency?.trim().toUpperCase();
 
@@ -756,6 +775,7 @@ function DashboardV2Composition() {
     enabled:
       !booting &&
       !loading &&
+      !intelligenceKnownDenied &&
       Boolean(token) &&
       intelligenceRequest !== null,
   });
@@ -1092,6 +1112,11 @@ function DashboardV2Composition() {
     />
   );
 
+  const intelligenceStatus =
+    intelligenceKnownDenied
+      ? 'not_entitled'
+      : intelligenceDecision.status;
+
   const intelligenceModel =
     buildAICommandCenterLiveModel(
       intelligenceDecision.data,
@@ -1138,6 +1163,11 @@ function DashboardV2Composition() {
         refreshing: dashboardCopy.common.syncing,
         unavailable: dashboardCopy.common.unavailable,
         retry: translate('Retry', locale),
+        locked: translate(
+          'Locked Feature Upgrade Note',
+          locale
+        ),
+        upgrade: translate('Pricing Packages', locale),
       }}
       healthLabel={intelligenceModel.healthLabel}
       aiScore={clampDashboardScore(
@@ -1157,8 +1187,11 @@ function DashboardV2Composition() {
       recommendations={
         intelligenceModel.recommendations
       }
-      status={intelligenceDecision.status}
+      status={intelligenceStatus}
       onRetry={intelligenceDecision.refresh}
+      onUpgrade={() =>
+        router.push('/(tabs)/explore' as Href)
+      }
     />
   );
 

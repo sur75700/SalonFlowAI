@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.deps import require_auth
+from app.api.intelligence import require_advanced_ai_entitlement
 from app.api.intelligence import (
     CAPACITY_SOURCE_LABEL,
     IntelligenceDecisionResponse,
@@ -86,6 +87,9 @@ class IntelligenceApiTests(unittest.TestCase):
         self.app.dependency_overrides[require_auth] = lambda: {
             "admin_id": OWNER
         }
+        self.app.dependency_overrides[
+            require_advanced_ai_entitlement
+        ] = lambda: None
         self.app.dependency_overrides[get_intelligence_service] = (
             lambda: self.service
         )
