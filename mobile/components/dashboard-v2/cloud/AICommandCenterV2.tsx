@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, ActivityIndicator, Pressable } from 'react-native';
 
 export type InsightTone = 'positive' | 'neutral' | 'warning' | 'danger';
 export type TrendDirection = 'up' | 'down' | 'flat';
@@ -22,6 +22,13 @@ export interface ForecastSeriesPoint {
   value: number;
 }
 
+export type AICommandCenterStatus =
+  | 'idle'
+  | 'loading'
+  | 'refreshing'
+  | 'success'
+  | 'error';
+
 export interface AICommandCenterV2Props {
   labels: {
     commandCenter: string;
@@ -33,6 +40,10 @@ export interface AICommandCenterV2Props {
     emptyFocus: string;
     emptyInsights: string;
     caughtUp: string;
+    loading: string;
+    refreshing: string;
+    unavailable: string;
+    retry: string;
   };
   healthLabel: string;
   aiScore: number; // 0–100
@@ -55,6 +66,9 @@ export interface AICommandCenterV2Props {
     trendDirection?: TrendDirection;
     series: ForecastSeriesPoint[];
   };
+
+  status?: AICommandCenterStatus;
+  onRetry?: () => void;
 }
 
 const colors = {
@@ -174,6 +188,8 @@ function AICommandCenterV2({
   recommendations,
   todaysFocus,
   forecast,
+  status = 'success',
+  onRetry,
 }: AICommandCenterV2Props) {
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
@@ -198,6 +214,83 @@ function AICommandCenterV2({
   const pulseOpacity = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0] });
   const scoreTone = getScoreTone(aiScore);
 
+  const stateHealthLabel =
+    status === 'refreshing'
+      ? labels.refreshing
+      : healthLabel;
+
+  if (
+    status === 'idle' ||
+    status === 'loading' ||
+    status === 'error'
+  ) {
+    const stateMessage =
+      status === 'error'
+        ? labels.unavailable
+        : labels.loading;
+
+    return (
+      <View style={styles.card}>
+        <View
+          style={{
+            minHeight: 260,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+            paddingVertical: 32,
+            gap: 16,
+          }}
+        >
+          {status === 'error' ? null : (
+            <ActivityIndicator size="small" color="#A78BFA" />
+          )}
+          <Text
+            style={{
+              color: '#F8FAFC',
+              fontSize: 15,
+              fontWeight: '700',
+              textAlign: 'center',
+              lineHeight: 22,
+            }}
+          >
+            {stateMessage}
+          </Text>
+          {status === 'error' && onRetry ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={labels.retry}
+              onPress={onRetry}
+              style={({ pressed }) => ({
+                minHeight: 42,
+                minWidth: 112,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: 'rgba(167, 139, 250, 0.52)',
+                backgroundColor: pressed
+                  ? 'rgba(124, 58, 237, 0.42)'
+                  : 'rgba(124, 58, 237, 0.26)',
+                paddingHorizontal: 18,
+                paddingVertical: 10,
+              })}
+            >
+              <Text
+                style={{
+                  color: '#F8FAFC',
+                  fontSize: 14,
+                  fontWeight: '800',
+                }}
+              >
+                {labels.retry}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.card}>
       {/* Header */}
@@ -213,7 +306,7 @@ function AICommandCenterV2({
         </View>
         <View style={[styles.healthPill, { backgroundColor: scoreTone.bg }]}>
           <Text style={[styles.healthLabel, { color: scoreTone.fg }]} numberOfLines={1}>
-            {healthLabel}
+            {stateHealthLabel}
           </Text>
         </View>
       </View>

@@ -7,6 +7,11 @@ import KPICardV2 from './KPICardV2';
 import RevenueAnalyticsV2 from './RevenueAnalyticsV2';
 import AppointmentAnalyticsV2 from './AppointmentAnalyticsV2';
 import AICommandCenterV2 from './AICommandCenterV2';
+import { useIntelligenceDecision } from '../../../hooks/useIntelligenceDecision';
+import {
+  buildAICommandCenterLiveModel,
+  buildIntelligenceDecisionRequest,
+} from './ai-command-center-live-model';
 import QuickActionsV2 from './QuickActionsV2';
 import CalendarSnapshotV2 from './CalendarSnapshotV2';
 import RoyalCosmosBackground from '../../ui/RoyalCosmosBackground';
@@ -16,6 +21,7 @@ import { useAppLanguage } from '../../../contexts/LanguageContext';
 import {
   languageLabels,
   type AppLanguage,
+  t as translate,
 } from '../../../lib/i18n';
 import { useAnalyticsData } from '../../../hooks/useDashboardData';
 import { useAppointmentsData } from '../../../hooks/useResourceData';
@@ -452,6 +458,11 @@ function DashboardV2Composition() {
     if (!original) return undefined;
 
     const normalized = original.toLowerCase();
+    const dictionaryTranslation = translate(original, language);
+
+    if (dictionaryTranslation !== original) {
+      return dictionaryTranslation;
+    }
 
     if (normalized.includes('capture growth opportunity')) {
       return dashboardCopy.ai.captureGrowthOpportunity;
@@ -516,7 +527,7 @@ function DashboardV2Composition() {
       return dashboardCopy.ai.upsellBaseline;
     }
 
-    return original;
+    return language === 'en' ? original : undefined;
   };
 
   const { locale } = useAppPreferences();
@@ -540,6 +551,7 @@ function DashboardV2Composition() {
   const handleDashboardRefresh = () => {
     refresh();
     refreshAppointments();
+    intelligenceDecision.refresh();
   };
   const { width } = useWindowDimensions();
 
@@ -713,6 +725,40 @@ function DashboardV2Composition() {
   const revenueCurrency = normalizeRevenueCurrency(
     analytics?.currency
   );
+
+  const intelligenceCurrency =
+    analytics?.currency?.trim().toUpperCase();
+
+  const intelligenceCurrencyReady =
+    SUPPORTED_REVENUE_CURRENCIES.includes(
+      intelligenceCurrency as AppCurrency
+    );
+
+  const intelligenceRequest = React.useMemo(
+    () =>
+      intelligenceCurrencyReady
+        ? buildIntelligenceDecisionRequest(
+            revenuePeriod,
+            intelligenceCurrency as AppCurrency
+          )
+        : null,
+    [
+      intelligenceCurrency,
+      intelligenceCurrencyReady,
+      revenuePeriod,
+    ]
+  );
+
+  const intelligenceDecision = useIntelligenceDecision({
+    token: token ?? '',
+    clearToken,
+    request: token ? intelligenceRequest : null,
+    enabled:
+      !booting &&
+      !loading &&
+      Boolean(token) &&
+      intelligenceRequest !== null,
+  });
 
   const revenuePeriodDays =
     revenuePeriod === '7d'
@@ -1046,182 +1092,35 @@ function DashboardV2Composition() {
     />
   );
 
-  const aiScore = clampDashboardScore(
-    analytics?.benchmark_center?.benchmark_score ??
-      analytics?.ai_reasoning?.decision_score ??
-      analytics?.growth_summary?.growth_score ??
-      analytics?.ai_data_quality?.score
-  );
-
-  const rawAIHealthLabel =
-    analytics?.benchmark_center?.salon_tier ||
-    analytics?.ai_mode ||
-    analytics?.growth_summary?.growth_level;
-
-  const aiHealthLabel = loading
-    ? dashboardCopy.common.syncing
-    : error
-      ? dashboardCopy.common.unavailable
-      : rawAIHealthLabel?.trim().toLowerCase() === 'elite'
-        ? dashboardCopy.ai.tierElite
-        : rawAIHealthLabel || dashboardCopy.common.ready;
-
-  const aiConfidenceValue =
-    analytics?.forecast?.confidence ??
-    analytics?.ai_reasoning?.data_quality_score ??
-    analytics?.ai_data_quality?.score;
-
-  const aiConfidenceLabel =
-    typeof aiConfidenceValue === 'number' &&
-    Number.isFinite(aiConfidenceValue)
-      ? dashboardCopy.ai.confidencePercent.replace(
-          '{value}',
-          String(Math.round(aiConfidenceValue))
-        )
-      : loading
-        ? 'Analyzing business data…'
-        : error
-          ? 'AI analytics unavailable.'
-          : 'Confidence data unavailable.';
-
-  const aiTodaysFocus = (
-    analytics?.mission_control ?? []
-  )
-    .slice()
-    .sort(
-      (first, second) =>
-        Number(first.priority ?? 0) -
-        Number(second.priority ?? 0)
-    )
-    .slice(0, 3)
-    .map((mission) => ({
-      label:
-        translateRuntimeAIText(
-          mission.title?.trim() ||
-          mission.action_label?.trim() ||
-          mission.action?.trim()
-        ) ||
-        dashboardCopy.ai.businessPriority,
-      detail:
-        translateRuntimeAIText(
-          mission.expected_result?.trim() ||
-          mission.execution_playbook?.trim() ||
-          mission.action?.trim()
-        ),
-      tone: mapDashboardAITone(
-        mission.urgency ||
-        (
-          typeof mission.priority === 'number' &&
-          mission.priority <= 1
-            ? 'warning'
-            : 'neutral'
-        )
-      ),
-    }));
-
-  const realForecast = analytics?.forecast;
-
-  const hasRevenueForecast =
-    realForecast !== null &&
-    realForecast !== undefined &&
-    (
-      Number(realForecast.revenue_7_days) > 0 ||
-      Number(realForecast.revenue_30_days) > 0
-    );
-
-  const aiForecastSeries = hasRevenueForecast && realForecast
-    ? [
-        {
-          label: dashboardCopy.ai.sevenDays,
-          value: Number(realForecast.revenue_7_days),
+  const intelligenceModel =
+    buildAICommandCenterLiveModel(
+      intelligenceDecision.data,
+      {
+        translateText: translateRuntimeAIText,
+        mapTone: mapDashboardAITone,
+        confidenceLabels: {
+          low: translate('Low', locale),
+          medium: translate('Medium', locale),
+          high: translate('High', locale),
         },
-        {
-          label: dashboardCopy.ai.thirtyDays,
-          value: Number(realForecast.revenue_30_days),
+        fallbacks: {
+          insightTitle: dashboardCopy.ai.businessInsight,
+          insightDescription: dashboardCopy.ai.noInsightDetail,
+          recommendationTitle:
+            dashboardCopy.ai.businessPriority,
+          recommendationDescription:
+            dashboardCopy.ai.noInsightDetail,
+          forecastHeadline: dashboardCopy.ai.forecast,
+          forecastDescription:
+            dashboardCopy.ai.noInsightDetail,
+          forecastLabel: dashboardCopy.ai.forecast,
         },
-      ]
-    : [];
-
-  const aiForecastHeadline = loading
-    ? 'Building revenue forecast…'
-    : error
-      ? 'Revenue forecast unavailable.'
-      : hasRevenueForecast && realForecast
-        ? dashboardCopy.ai.projectedRevenue7Days.replace(
-            '{amount}',
-            formatMoney(
-              realForecast.revenue_7_days,
-              revenueCurrency,
-              locale
-            )
-          )
-        : dashboardCopy.revenue.moreHistoryRequired;
-
-  const aiForecastHelper =
-    hasRevenueForecast && realForecast
-      ? dashboardCopy.ai.projection30Days.replace(
-          '{amount}',
-          formatMoney(
-            realForecast.revenue_30_days,
-            revenueCurrency,
-            locale
-          )
-        )
-      : undefined;
-
-  const aiInsights = (
-    analytics?.insights ?? []
-  )
-    .slice(0, 3)
-    .map((insight) => ({
-      title:
-        translateRuntimeAIText(
-          insight.title?.trim() ||
-          insight.code?.trim()
-        ) ||
-        dashboardCopy.ai.businessInsight,
-      description:
-        translateRuntimeAIText(
-          insight.message?.trim()
-        ) ||
-        dashboardCopy.ai.noInsightDetail,
-      tone: mapDashboardAITone(insight.tone),
-    }));
-
-  const aiRecommendations = (
-    analytics?.decision_priority?.ranked_actions ?? []
-  )
-    .slice(0, 3)
-    .map(
-      (item) =>
-        translateRuntimeAIText(
-          item.label?.trim() ||
-          item.action?.trim()
-        )
-    )
-    .filter(
-      (item): item is string =>
-        typeof item === 'string' &&
-        item.length > 0
+        forecastLabels: {
+          sevenDays: dashboardCopy.ai.sevenDays,
+          thirtyDays: dashboardCopy.ai.thirtyDays,
+        },
+      }
     );
-
-  const fallbackRecommendations =
-    aiRecommendations.length > 0
-      ? aiRecommendations
-      : (analytics?.mission_control ?? [])
-          .slice(0, 3)
-          .map(
-            (mission) =>
-              translateRuntimeAIText(
-                mission.action_label?.trim() ||
-                mission.action?.trim()
-              )
-          )
-          .filter(
-            (item): item is string =>
-              typeof item === 'string' &&
-              item.length > 0
-          );
 
   const aiSection = (
     <AICommandCenterV2
@@ -1235,27 +1134,31 @@ function DashboardV2Composition() {
         emptyFocus: dashboardCopy.ai.emptyFocus,
         emptyInsights: dashboardCopy.ai.emptyInsights,
         caughtUp: dashboardCopy.ai.caughtUp,
+        loading: dashboardCopy.common.syncing,
+        refreshing: dashboardCopy.common.syncing,
+        unavailable: dashboardCopy.common.unavailable,
+        retry: translate('Retry', locale),
       }}
-      healthLabel={aiHealthLabel}
-      aiScore={aiScore}
-      confidenceLabel={aiConfidenceLabel}
-      todaysFocus={aiTodaysFocus}
+      healthLabel={intelligenceModel.healthLabel}
+      aiScore={clampDashboardScore(
+        intelligenceModel.aiScore
+      )}
+      confidenceLabel={
+        intelligenceModel.confidenceLabel
+      }
+      todaysFocus={intelligenceModel.todaysFocus}
       forecast={{
-        headline: aiForecastHeadline,
-        helperText: aiForecastHelper,
-        trendLabel:
-          hasRevenueForecast && realForecast?.trend
-            ? realForecast.trend
-            : undefined,
+        ...intelligenceModel.forecast,
         trendDirection: mapDashboardTrend(
-          hasRevenueForecast
-            ? realForecast?.trend
-            : undefined
+          intelligenceModel.forecast.trendDirection
         ),
-        series: aiForecastSeries,
       }}
-      insights={aiInsights}
-      recommendations={fallbackRecommendations}
+      insights={intelligenceModel.insights}
+      recommendations={
+        intelligenceModel.recommendations
+      }
+      status={intelligenceDecision.status}
+      onRetry={intelligenceDecision.refresh}
     />
   );
 
