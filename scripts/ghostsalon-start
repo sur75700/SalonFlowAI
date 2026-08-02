@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${SCRIPT_PATH}")" && pwd)"
+source "${SCRIPT_DIR}/ghostsalon-common"
+
+banner "👻 GHOSTSALON — SAFE START"
+
+section "PROJECT IDENTITY"
+
+if [ ! -d "${PROJECT_ROOT}/.git" ]; then
+  failure "SalonFlowAI repository not found: ${PROJECT_ROOT}"
+  return 1 2>/dev/null || true
+fi
+
+success "Project root verified: ${PROJECT_ROOT}"
+
+section "MONGO CONTAINER IDENTITY"
+
+if ! container_exists; then
+  failure "Expected container does not exist: ${MONGO_CONTAINER}"
+  warning "No container or volume was created automatically."
+  return 1 2>/dev/null || true
+fi
+
+ACTUAL_VOLUME="$(mongo_data_volume)"
+
+if [ "${ACTUAL_VOLUME}" != "${MONGO_VOLUME}" ]; then
+  failure "Mongo volume identity mismatch."
+  info "Expected: ${MONGO_VOLUME}"
+  info "Actual:   ${ACTUAL_VOLUME:-<none>}"
+  warning "Startup aborted to protect database integrity."
+  return 1 2>/dev/null || true
+fi
+
+success "Mongo volume verified: ${ACTUAL_VOLUME}"
+
+section "PORT OWNERSHIP"
+
+PORT_OWNER="$(mongo_port_owner)"
+
+if [ -n "${PORT_OWNER}" ] && [ "${PORT_OWNER}" != "${MONGO_CONTAINER}" ]; then
+  failure "Mongo port ${MONGO_PORT} is occupied by: ${PORT_OWNER}"
+  warning "No foreign project container was stopped automatically."
+  info "Stop the conflicting project first, then rerun GhostSalon-start."
+  return 1 2>/dev/null || true
+fi
+
+success "Mongo port ownership is safe"
+
+section "START MONGO"
+
+if container_running; then
+  success "${MONGO_CONTAINER} is already running"
+else
+  if docker start "${MONGO_CONTAINER}" >/dev/null 2>&1; then
+    success "${MONGO_CONTAINER} started"
+  else
+    failure "Could not start ${MONGO_CONTAINER}"
+    docker logs --tail 30 "${MONGO_CONTAINER}" 2>&1
+    return 1 2>/dev/null || true
+  fi
+fi
+
+section "WAIT FOR MONGO"
+
+MONGO_READY="false"
+
+for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+  if mongo_ping; then
+    MONGO_READY="true"
+    break
+  fi
+
+  info "Mongo readiness check ${attempt}/12"
+  sleep 2
+done
+
+if [ "${MONGO_READY}" != "true" ]; then
+  failure "Mongo did not become ready"
+  docker logs --tail 40 "${MONGO_CONTAINER}" 2>&1
+  return 1 2>/dev/null || true
+fi
+
+success "Mongo ping successful"
+
+ADMIN_COUNT="$(mongo_admin_count)"
+
+if ! printf '%s' "${ADMIN_COUNT}" | grep -Eq '^[0-9]+$'; then
+  failure "Could not verify admin_users collection"
+  return 1 2>/dev/null || true
+fi
+
+if [ "${ADMIN_COUNT}" -lt 1 ]; then
+  failure "Database identity guard failed: admin_users is empty"
+  warning "Backend startup aborted."
+  return 1 2>/dev/null || true
+fi
+
+success "Database identity verified: ${ADMIN_COUNT} admin user(s)"
+
+section "START BACKEND"
+
+if backend_running; then
+  success "Backend is already running"
+else
+  rm -f "${BACKEND_PID_FILE}"
+
+  (
+    cd "${BACKEND_DIR}" || return 1
+
+    nohup .venv/bin/uvicorn \
+      app.main:app \
+      --host "${BACKEND_HOST}" \
+      --port "${BACKEND_PORT}" \
+      >>"${BACKEND_LOG_FILE}" 2>&1 &
+
+    printf '%s\n' "$!" >"${BACKEND_PID_FILE}"
+  )
+
+  sleep 2
+fi
+
+BACKEND_READY="false"
+
+for attempt in 1 2 3 4 5 6 7 8 9 10; do
+  if backend_health && backend_db_probe; then
+    BACKEND_READY="true"
+    break
+  fi
+
+  info "Backend readiness check ${attempt}/10"
+  sleep 2
+done
+
+if [ "${BACKEND_READY}" != "true" ]; then
+  failure "Backend did not pass health + database verification"
+  tail -n 60 "${BACKEND_LOG_FILE}" 2>/dev/null
+  return 1 2>/dev/null || true
+fi
+
+success "Backend health verified"
+success "Backend database connection verified"
+
+echo
+echo "===================================================="
+echo "🏆 GHOSTSALON STARTED SAFELY"
+echo "Mongo:   ${MONGO_CONTAINER} / ${MONGO_VOLUME}"
+echo "Backend: ${BACKEND_HEALTH_URL}"
+echo "===================================================="

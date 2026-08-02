@@ -105,11 +105,14 @@ export function useAnalyticsData(
     try {
       setError("");
 
-      const [summaryRes, analyticsRes] = await Promise.all([
+      const [summaryRes, analyticsRes, insightsRes] = await Promise.all([
         api.get("/appointments/dashboard/summary", {
           headers: authHeaders(token),
         }),
         api.get("/analytics/dashboard", {
+          headers: authHeaders(token),
+        }),
+        api.get("/analytics/insights", {
           headers: authHeaders(token),
         }),
       ]);
@@ -145,6 +148,17 @@ export function useAnalyticsData(
           analyticsRes.data.top_performing_services ??
           analyticsRes.data.top_services ??
           [],
+        forecast: insightsRes.data?.forecast,
+        risk_summary: insightsRes.data?.risk_summary,
+        growth_summary: insightsRes.data?.growth_summary,
+        executive_decision: insightsRes.data?.executive_decision,
+        client_summary: insightsRes.data?.client_summary,
+        client_risk: insightsRes.data?.client_risk,
+        mission_control: insightsRes.data?.mission_control ?? [],
+        performance_center: insightsRes.data?.performance_center,
+        benchmark_center: insightsRes.data?.benchmark_center,
+        revenue_simulator: insightsRes.data?.revenue_simulator,
+        insights: insightsRes.data?.insights ?? [],
       });
     } catch (err: any) {
       if (isAuthError(err)) {

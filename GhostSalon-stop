@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd "$HOME/Projects/SalonFlowAI" || exit 1
+./ghostsalon stop

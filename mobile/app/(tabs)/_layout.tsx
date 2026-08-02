@@ -87,9 +87,18 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="reports"
         options={{
-          title: "Reports",
+          title: t("Pdf Reports", locale),
           tabBarIcon: ({ color }) => (
             <IconSymbol name="doc.text.fill" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: t("Settings", locale),
+          tabBarIcon: ({ color }) => (
+            <IconSymbol name="gearshape.fill" color={color} size={26} />
           ),
         }}
       />

@@ -9,13 +9,11 @@ from app.db.mongo import get_database
 
 router = APIRouter()
 
-
 class ClientCreate(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=5, max_length=32)
     email: EmailStr | None = None
     notes: str | None = None
-
 
 class ClientUpdate(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
@@ -23,14 +21,18 @@ class ClientUpdate(BaseModel):
     email: EmailStr | None = None
     notes: str | None = None
 
-
 @router.post("/", status_code=201)
-async def create_client(payload: ClientCreate, _: dict = Depends(require_auth)):
+async def create_client(payload: ClientCreate, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     doc = payload.model_dump()
+    doc["owner_id"] = owner_id
     doc["created_at"] = datetime.now(UTC).isoformat()
 
     result = await db.clients.insert_one(doc)
@@ -44,14 +46,17 @@ async def create_client(payload: ClientCreate, _: dict = Depends(require_auth)):
         "created_at": doc["created_at"],
     }
 
-
 @router.get("/")
-async def list_clients(_: dict = Depends(require_auth)):
+async def list_clients(auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
-    docs = await db.clients.find().sort("created_at", -1).to_list(length=100)
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    docs = await db.clients.find({"owner_id": owner_id}).sort("created_at", -1).to_list(length=100)
 
     items = []
     for doc in docs:
@@ -69,9 +74,8 @@ async def list_clients(_: dict = Depends(require_auth)):
 
     return {"items": items, "count": len(items)}
 
-
 @router.put("/{client_id}")
-async def update_client(client_id: str, payload: ClientUpdate, _: dict = Depends(require_auth)):
+async def update_client(client_id: str, payload: ClientUpdate, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
@@ -79,8 +83,12 @@ async def update_client(client_id: str, payload: ClientUpdate, _: dict = Depends
     if not ObjectId.is_valid(client_id):
         raise HTTPException(status_code=400, detail="Invalid client_id")
 
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     result = await db.clients.update_one(
-        {"_id": ObjectId(client_id)},
+        {"_id": ObjectId(client_id), "owner_id": owner_id},
         {
             "$set": {
                 "full_name": payload.full_name,
@@ -95,7 +103,7 @@ async def update_client(client_id: str, payload: ClientUpdate, _: dict = Depends
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Client not found")
 
-    doc = await db.clients.find_one({"_id": ObjectId(client_id)})
+    doc = await db.clients.find_one({"_id": ObjectId(client_id), "owner_id": owner_id})
 
     return {
         "id": str(doc["_id"]),
@@ -107,9 +115,8 @@ async def update_client(client_id: str, payload: ClientUpdate, _: dict = Depends
         "updated_at": doc.get("updated_at"),
     }
 
-
 @router.delete("/{client_id}")
-async def delete_client(client_id: str, _: dict = Depends(require_auth)):
+async def delete_client(client_id: str, auth: dict = Depends(require_auth)):
     db = get_database()
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
@@ -117,13 +124,17 @@ async def delete_client(client_id: str, _: dict = Depends(require_auth)):
     if not ObjectId.is_valid(client_id):
         raise HTTPException(status_code=400, detail="Invalid client_id")
 
+    owner_id = auth.get("admin_id")
+    if not owner_id or not ObjectId.is_valid(owner_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     client_obj_id = ObjectId(client_id)
 
-    linked_appointments = await db.appointments.count_documents({"client_id": client_obj_id})
+    linked_appointments = await db.appointments.count_documents({"client_id": client_obj_id, "owner_id": owner_id})
     if linked_appointments > 0:
         raise HTTPException(status_code=409, detail="Cannot delete client with linked appointments")
 
-    result = await db.clients.delete_one({"_id": client_obj_id})
+    result = await db.clients.delete_one({"_id": client_obj_id, "owner_id": owner_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Client not found")
 

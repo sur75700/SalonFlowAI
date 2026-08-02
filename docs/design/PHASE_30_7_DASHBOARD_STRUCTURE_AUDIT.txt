@@ -1,0 +1,101 @@
+29:function OverviewSkeleton() {
+33:        <View style={styles.hero}>
+40:        <View style={styles.statsGrid}>
+61:export default function OverviewScreen() {
+62:  const { width } = useWindowDimensions();
+63:  const layout = getResponsiveLayout(width);
+64:  const responsiveContentStyle = [
+68:  const responsiveCardStyle = layout.singleColumn
+72:  const { locale } = useAppPreferences();
+73:  const { token, booting, clearToken, sessionEmail } = useSession();
+74:  const { logout, loggingOut } = useLogout();
+75:  const { summary, loading, refreshing, error, reload, refresh } = useSummaryData(
+80:  const statCards = [
+83:    { label: t("Total Bookings", locale), value: summary?.total_appointments ?? 0 },
+84:    { label: t("Scheduled", locale), value: summary?.scheduled_appointments ?? 0 },
+85:    { label: t("Completed", locale), value: summary?.completed_appointments ?? 0 },
+86:    { label: t("Cancelled", locale), value: summary?.cancelled_appointments ?? 0 },
+87:    { label: t("Today", locale), value: summary?.today_appointments ?? 0 },
+90:  const hasNoSummaryActivity =
+91:    !!summary && statCards.every((card) => Number(card.value) === 0);
+118:        <View style={styles.hero}>
+119:          <View style={styles.heroTopRow}>
+120:            <View style={styles.heroBadge}>
+121:              <Text style={styles.heroBadgeText}>ROYAL COMMAND CENTER</Text>
+123:            <View style={styles.heroLivePill}>
+124:              <Text style={styles.heroLiveDot}>●</Text>
+125:              <Text style={styles.heroLiveText}>LIVE</Text>
+129:          <Text style={styles.heroOverline}>SALONFLOW AI</Text>
+130:          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">
+133:          <Text style={styles.heroText}>
+137:          <View style={styles.heroSignalRow}>
+138:            <Text style={styles.heroSignalText}>{summary?.total_appointments ?? 0} {t("Total Bookings", locale)}</Text>
+139:            <Text style={styles.heroSignalDivider}>•</Text>
+140:            <Text style={styles.heroSignalText}>{summary?.completed_appointments ?? 0} {t("Completed", locale)}</Text>
+141:            <Text style={styles.heroSignalDivider}>•</Text>
+142:            <Text style={styles.heroSignalText}>{summary?.today_appointments ?? 0} {t("Today", locale)}</Text>
+166:              subtitle="Create your first client, service, or appointment to activate the command center metrics."
+191:          <View style={styles.statsGrid}>
+192:            {statCards.slice(0, 4).map((card) => (
+193:              <View key={card.label} style={responsiveCardStyle}>
+194:                <StatCard label={card.label} value={card.value} />
+203:            <View style={styles.analyticsHeroGrid}>
+204:              <View style={styles.analyticsHeroPrimary}>
+205:                <Text style={styles.analyticsHeroLabel}>TOTAL REVENUE</Text>
+206:                <Text style={styles.analyticsHeroValue}>€12,450</Text>
+207:                <Text style={styles.analyticsHeroTrend}>↗ +18.6% vs yesterday</Text>
+209:                <View style={styles.analyticsHeroLine}>
+210:                  <View style={styles.analyticsHeroLineGlow} />
+214:              <View style={styles.analyticsHeroSide}>
+215:                <Text style={styles.analyticsHeroLabel}>AI SCORE</Text>
+216:                <Text style={styles.analyticsHeroScore}>94/100</Text>
+217:                <Text style={styles.analyticsHeroNote}>Excellent operating signal</Text>
+226:            <View style={styles.commandTilesGrid}>
+232:                onPress={() => router.navigate("/(tabs)/analytics")}
+239:                onPress={() => router.navigate("/(tabs)/appointments")}
+263:          <View style={styles.statsGrid}>
+264:            {statCards.slice(4).map((card) => (
+265:              <View key={card.label} style={responsiveCardStyle}>
+266:                <StatCard label={card.label} value={card.value} variant="accent" />
+280:                subtitle={`${summary?.completed_appointments ?? 0} completed · ${summary?.cancelled_appointments ?? 0} needs attention`}
+285:                value={summary?.total_appointments ?? 0}
+286:                subtitle={`${summary?.scheduled_appointments ?? 0} scheduled · ${summary?.today_appointments ?? 0} today`}
+317:const dashboardTopStandard = {
+320:  cardGap: 12,
+336:const styles = StyleSheet.create({
+339:  hero: {
+340:    boxShadow: UI.depth.hero,
+343:    borderRadius: UI.radius.hero,
+351:  heroTopRow: {
+358:  heroBadge: {
+366:  heroBadgeText: {
+372:  heroLivePill: {
+383:  heroLiveDot: {
+387:  heroLiveText: {
+393:  heroSignalRow: {
+401:  heroSignalText: {
+406:  heroSignalDivider: {
+411:  heroOverline: {
+418:  heroTitle: {
+426:  heroText: {
+444:    boxShadow: UI.depth.card,
+471:  analyticsHeroGrid: {
+474:    gap: dashboardTopStandard.cardGap,
+476:  analyticsHeroPrimary: {
+486:  analyticsHeroSide: {
+496:  analyticsHeroLabel: {
+503:  analyticsHeroValue: {
+509:  analyticsHeroTrend: {
+515:  analyticsHeroLine: {
+521:  analyticsHeroLineGlow: {
+529:  analyticsHeroScore: {
+535:  analyticsHeroNote: {
+563:  statsGrid: {
+566:    gap: dashboardTopStandard.cardGap,
+594:  commandTilesGrid: {
+597:    gap: dashboardTopStandard.cardGap,
+599:  commandTile: {
+626:    gap: dashboardTopStandard.cardGap,
+628:  metricRow: {
+637:  metricLabel: {
+644:  metricValue: {

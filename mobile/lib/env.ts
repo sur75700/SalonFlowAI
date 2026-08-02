@@ -4,12 +4,18 @@ import { Platform } from "react-native";
 declare const process: {
   env?: {
     EXPO_PUBLIC_API_URL?: string;
+    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?: string;
+    EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?: string;
+    EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?: string;
   };
 };
 
 type ExtraConfig = {
   apiBaseUrlWeb?: string;
   apiBaseUrlNative?: string;
+  googleWebClientId?: string;
+  googleAndroidClientId?: string;
+  googleIosClientId?: string;
 };
 
 function getExtra(): ExtraConfig {
@@ -44,4 +50,35 @@ export function getApiBaseUrl(): string {
   }
 
   return nativeDefault;
+}
+
+
+export function getGoogleClientIds() {
+  const extra = getExtra();
+
+  const webClientId =
+    process.env?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ||
+    extra.googleWebClientId?.trim() ||
+    "";
+
+  const androidClientId =
+    process.env?.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim() ||
+    extra.googleAndroidClientId?.trim() ||
+    "";
+
+  const iosClientId =
+    process.env?.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() ||
+    extra.googleIosClientId?.trim() ||
+    "";
+
+  return {
+    webClientId,
+    androidClientId,
+    iosClientId,
+  };
+}
+
+export function isGoogleAuthConfigured(): boolean {
+  const ids = getGoogleClientIds();
+  return Boolean(ids.webClientId || ids.androidClientId || ids.iosClientId);
 }

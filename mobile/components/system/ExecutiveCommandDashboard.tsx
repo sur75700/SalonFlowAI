@@ -1,0 +1,203 @@
+import { StyleSheet, Pressable, Text, View } from "react-native";
+
+import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { t } from "../../lib/i18n";
+import { UI } from "../../lib/theme/tokens";
+
+type ExecutiveMetric = {
+  labelKey: string;
+  valueKey: string;
+  statusKey: string;
+};
+
+
+type ExecutiveAction = {
+  labelKey: string;
+};
+
+
+const EXECUTIVE_ACTIONS: ExecutiveAction[] = [
+  { labelKey: "Action Manage Plan" },
+  { labelKey: "Action Configure Billing" },
+  { labelKey: "Action Invite Team Member" },
+  { labelKey: "Action Configure Security" },
+  { labelKey: "Action Connect Integration" },
+  { labelKey: "Action Edit Workspace Brand" },
+];
+
+const EXECUTIVE_METRICS: ExecutiveMetric[] = [
+  {
+    labelKey: "Executive Workspace Health",
+    valueKey: "Executive Workspace Health Value",
+    statusKey: "Executive Workspace Health Status",
+  },
+  {
+    labelKey: "Executive Security Score",
+    valueKey: "Executive Security Score Value",
+    statusKey: "Executive Security Score Status",
+  },
+  {
+    labelKey: "Executive AI Status",
+    valueKey: "Executive AI Status Value",
+    statusKey: "Executive AI Status Detail",
+  },
+  {
+    labelKey: "Executive Revenue Status",
+    valueKey: "Executive Revenue Status Value",
+    statusKey: "Executive Revenue Status Detail",
+  },
+  {
+    labelKey: "Executive Team Members",
+    valueKey: "Executive Team Members Value",
+    statusKey: "Executive Team Members Detail",
+  },
+  {
+    labelKey: "Executive Integrations",
+    valueKey: "Executive Integrations Value",
+    statusKey: "Executive Integrations Detail",
+  },
+];
+
+type Props = {
+  onAction?: (section: string) => void;
+};
+
+export default function ExecutiveCommandDashboard({ onAction }: Props) {
+  const { locale } = useAppPreferences();
+
+  const ACTION_MAP: Record<string, string> = {
+    "Action Manage Plan": "subscription",
+    "Action Configure Billing": "subscription",
+    "Action Invite Team Member": "enterprise",
+    "Action Configure Security": "enterprise",
+    "Action Connect Integration": "enterprise",
+    "Action Edit Workspace Brand": "core",
+  };
+
+  const handleExecutiveAction = (actionKey: string) => {
+    const section = ACTION_MAP[actionKey];
+    if (!section) return;
+    onAction?.(section);
+  };
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.overline}>SALONFLOW AI</Text>
+      <Text style={styles.title}>👑 {t("Executive Command Dashboard", locale)}</Text>
+      <Text style={styles.subtitle}>{t("Executive Command Dashboard Subtitle", locale)}</Text>
+
+      <View style={styles.grid}>
+        {EXECUTIVE_METRICS.map((metric) => (
+          <View key={metric.labelKey} style={styles.metricCard}>
+            <Text style={styles.metricLabel}>{t(metric.labelKey, locale)}</Text>
+            <Text style={styles.metricValue}>{t(metric.valueKey, locale)}</Text>
+            <Text style={styles.metricStatus}>{t(metric.statusKey, locale)}</Text>
+          </View>
+        ))}
+      </View>
+
+
+      <View style={styles.actionGrid}>
+        {EXECUTIVE_ACTIONS.map((action) => (
+          <Pressable key={action.labelKey} style={styles.actionButton} onPress={() => handleExecutiveAction(action.labelKey)}>
+            <Text style={styles.actionText}>{t(action.labelKey, locale)}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <Text style={styles.note}>{t("Executive Command Dashboard Note", locale)}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "rgba(15,23,42,0.88)",
+    borderRadius: UI.radius.xl,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#f2d17a",
+  },
+  overline: {
+    color: "#f2d17a",
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 1.4,
+    marginBottom: 6,
+  },
+  title: {
+    color: "#ffffff",
+    fontSize: 24,
+    fontWeight: "900",
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: "#cbd5e1",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  metricCard: {
+    width: "48%",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#334155",
+  },
+  metricLabel: {
+    color: "#94a3b8",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+  },
+  metricValue: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+    marginTop: 7,
+  },
+  metricStatus: {
+    color: "#22c55e",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 5,
+  },
+  actionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 14,
+  },
+  actionButton: {
+    width: "48%",
+    backgroundColor: "rgba(242,209,122,0.12)",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(242,209,122,0.55)",
+  },
+  actionText: {
+    color: "#f2d17a",
+    fontSize: 11,
+    fontWeight: "900",
+    textAlign: "center",
+    textTransform: "uppercase",
+  },
+  note: {
+    color: "#94a3b8",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
+    marginTop: 14,
+  },
+});

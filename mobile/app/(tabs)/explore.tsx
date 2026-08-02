@@ -1,14 +1,38 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
+import PricingPlansCard from "../../components/pricing/PricingPlansCard";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
+import AccountOverviewCard from "../../components/settings/AccountOverviewCard";
+import SecurityCard from "../../components/settings/SecurityCard";
+import SubscriptionStatusCard from "../../components/settings/SubscriptionStatusCard";
+import PackageCapabilityMatrix from "../../components/subscription/PackageCapabilityMatrix";
+import AIControlCenter from "../../components/subscription/AIControlCenter";
+import SystemStatusCenter from "../../components/system/SystemStatusCenter";
+import AuditLogsCenter from "../../components/system/AuditLogsCenter";
+import BillingCenter from "../../components/system/BillingCenter";
+import SubscriptionSyncCenter from "../../components/system/SubscriptionSyncCenter";
+import TeamRolesCenter from "../../components/system/TeamRolesCenter";
+import EnterpriseSecurityCenter from "../../components/system/EnterpriseSecurityCenter";
+import AIUsageAnalyticsCenter from "../../components/system/AIUsageAnalyticsCenter";
+import NotificationPreferencesCenter from "../../components/system/NotificationPreferencesCenter";
+import IntegrationCenter from "../../components/system/IntegrationCenter";
+import WorkspaceBrandCenter from "../../components/system/WorkspaceBrandCenter";
+import ExecutiveCommandDashboard from "../../components/system/ExecutiveCommandDashboard";
+import SmartNavigationBar, { SettingsSectionKey } from "../../components/system/SmartNavigationBar";
+import AccordionSection from "../../components/system/AccordionSection";
+
+const EXECUTIVE_MODE_ENABLED = false;
+const INTERNAL_TOOLS_ENABLED = false;
 
 type QuickLinkProps = {
   title: string;
   subtitle: string;
   onPress: () => void;
 };
+
 
 function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
   return (
@@ -21,6 +45,7 @@ function QuickLink({ title, subtitle, onPress }: QuickLinkProps) {
 
 export default function WorkspaceScreen() {
   const { locale } = useAppPreferences();
+  const [foundationExpanded, setFoundationExpanded] = useState(false);
   const openDocs = () => {
     Linking.openURL("https://salonflowai-backend.onrender.com/docs");
   };
@@ -29,85 +54,208 @@ export default function WorkspaceScreen() {
     Linking.openURL("https://salonflowai-backend.onrender.com/healthz");
   };
 
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [sectionOffsets, setSectionOffsets] = useState<
+    Partial<Record<SettingsSectionKey, number>>
+  >({});
+
+  const registerSection =
+    (key: SettingsSectionKey) =>
+    (event: { nativeEvent: { layout: { y: number } } }) => {
+      const y = event.nativeEvent.layout.y;
+      setSectionOffsets((current) => {
+        if (current[key] === y) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [key]: y,
+        };
+      });
+    };
+
+  const scrollToSection = (key: SettingsSectionKey) => {
+    const targetY = sectionOffsets[key] ?? 0;
+    scrollViewRef.current?.scrollTo({
+      y: Math.max(targetY - 10, 0),
+      animated: true,
+    });
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.content} style={styles.container}>
-      <View style={styles.hero}>
+    <RoyalCosmosBackground style={styles.container}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.content}>
+        <View style={styles.hero}>
         <Text style={styles.overline}>SALONFLOW AI</Text>
-        <Text style={styles.title}>{t("Workspace", locale)}</Text>
+        <Text style={styles.title}>{t("Settings Center", locale)}</Text>
         <Text style={styles.subtitle}>
-          {t("WorkspaceHeroSubtitle", locale)}
+          {t("Settings Center Subtitle", locale)}
         </Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Quick Navigation", locale)}</Text>
+      {EXECUTIVE_MODE_ENABLED ? (
+        <ExecutiveCommandDashboard onAction={(section) => scrollToSection(section as any)} />
+      ) : null}
 
-        <QuickLink
-          title={t("Open Dashboard", locale)}
-          subtitle={t("Open DashboardSubtitle", locale)}
-          onPress={() => router.navigate("/(tabs)")}
-        />
-        <QuickLink
-          title={t("Open Bookings", locale)}
-          subtitle={t("Open Bookings Subtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/appointments")}
-        />
-        <QuickLink
-          title={t("Open Clients", locale)}
-          subtitle={t("Open ClientsSubtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/clients")}
-        />
-        <QuickLink
-          title={t("Open Service Catalog", locale)}
-          subtitle={t("Open Service Catalog Subtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/services")}
-        />
-        <QuickLink
-          title={t("Open Insights", locale)}
-          subtitle={t("Open Insights Subtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/analytics")}
-        />
-        <QuickLink
-          title={t("Open Pdf Reports", locale)}
-          subtitle={t("Open Pdf ReportsSubtitle", locale)}
-          onPress={() => router.navigate("/(tabs)/reports")}
-        />
+      {EXECUTIVE_MODE_ENABLED ? (
+        <SmartNavigationBar onNavigate={(key) => {
+          scrollToSection(key);
+        }} />
+      ) : null}
+
+      <View onLayout={registerSection("core")}>
+        <AccordionSection
+          title={t("Settings Group Core", locale)}
+          subtitle={t("Settings Group Core Subtitle", locale)}
+          defaultExpanded
+        >
+          <AccountOverviewCard />
+
+          <SecurityCard />
+
+          <WorkspaceBrandCenter />
+        </AccordionSection>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Backend Access", locale)}</Text>
+      <View onLayout={registerSection("subscription")}>
+        <AccordionSection
+          title={t("Settings Group Subscription", locale)}
+          subtitle={t("Settings Group Subscription Subtitle", locale)}
+        >
+          <SubscriptionStatusCard />
 
-        <QuickLink
-          title={t("Open Api Docs", locale)}
-          subtitle={t("Open Api DocsSubtitle", locale)}
-          onPress={openDocs}
-        />
-        <QuickLink
-          title={t("Check Backend Health", locale)}
-          subtitle={t("Check Backend Health Subtitle", locale)}
-          onPress={openBackend}
-        />
+          <PackageCapabilityMatrix />
+
+          <BillingCenter />
+
+          <SubscriptionSyncCenter />
+
+          <PricingPlansCard />
+        </AccordionSection>
       </View>
 
+      <View onLayout={registerSection("ai")}>
+        <AccordionSection
+          title={t("Settings Group AI", locale)}
+          subtitle={t("Settings Group AI Subtitle", locale)}
+        >
+          <AIControlCenter />
+
+          <AIUsageAnalyticsCenter />
+        </AccordionSection>
+      </View>
+
+      <View onLayout={registerSection("operations")}>
+        <AccordionSection
+          title={t("Settings Group Operations", locale)}
+          subtitle={t("Settings Group Operations Subtitle", locale)}
+        >
+          <SystemStatusCenter />
+
+          <AuditLogsCenter />
+
+          <NotificationPreferencesCenter />
+        </AccordionSection>
+      </View>
+
+      <View onLayout={registerSection("enterprise")}>
+        <AccordionSection
+          title={t("Settings Group Enterprise", locale)}
+          subtitle={t("Settings Group Enterprise Subtitle", locale)}
+        >
+          <TeamRolesCenter />
+
+          <EnterpriseSecurityCenter />
+
+          <IntegrationCenter />
+        </AccordionSection>
+      </View>
+
+      {INTERNAL_TOOLS_ENABLED ? (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("App Navigation", locale)}</Text>
+
+            <QuickLink
+              title={t("Open Dashboard", locale)}
+              subtitle={t("Open DashboardSubtitle", locale)}
+              onPress={() => router.navigate("/(tabs)")}
+            />
+            <QuickLink
+              title={t("Open Bookings", locale)}
+              subtitle={t("Open Bookings Subtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/appointments")}
+            />
+            <QuickLink
+              title={t("Open Clients", locale)}
+              subtitle={t("Open ClientsSubtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/clients")}
+            />
+            <QuickLink
+              title={t("Open Service Catalog", locale)}
+              subtitle={t("Open Service Catalog Subtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/services")}
+            />
+            <QuickLink
+              title={t("Open Insights", locale)}
+              subtitle={t("Open Insights Subtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/analytics")}
+            />
+            <QuickLink
+              title={t("Open Pdf Reports", locale)}
+              subtitle={t("Open Pdf ReportsSubtitle", locale)}
+              onPress={() => router.navigate("/(tabs)/reports")}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("System Tools", locale)}</Text>
+
+            <QuickLink
+              title={t("Open API Console", locale)}
+              subtitle={t("Open API Console Subtitle", locale)}
+              onPress={openDocs}
+            />
+            <QuickLink
+              title={t("Check System Health", locale)}
+              subtitle={t("Check System Health Subtitle", locale)}
+              onPress={openBackend}
+            />
+          </View>
+        </>
+      ) : null}
+
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("Operator Notes", locale)}</Text>
-        <View style={styles.noteCard}>
-          <Text style={styles.noteText}>
-            {t("Operator Notes Line One", locale)}
+        <Text style={styles.sectionTitle}>{t("Support Notes", locale)}</Text>
+        <Pressable
+          style={styles.foundationCard}
+          onPress={() => setFoundationExpanded((current) => !current)}
+        >
+          <Text style={styles.foundationKicker}>
+            {foundationExpanded ? "▼" : "▶"} {t("Ghoststage Foundation Kicker", locale)}
           </Text>
-          <Text style={styles.noteText}>
-            {t("Operator NotesLineTwo", locale)}
+          <Text style={styles.foundationLead}>
+            {t("Ghoststage Foundation Lead", locale)}
           </Text>
-        </View>
+
+          {foundationExpanded ? (
+            <View style={styles.foundationDetails}>
+              <Text style={styles.foundationText}>{t("Operator Notes Line One", locale)}</Text>
+              <Text style={styles.foundationText}>{t("Operator NotesLineTwo", locale)}</Text>
+              <Text style={styles.foundationSignature}>{t("Ghoststage Foundation Signature", locale)}</Text>
+            </View>
+          ) : null}
+        </Pressable>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </RoyalCosmosBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0b0d12",
   },
   content: {
     padding: 20,
@@ -133,6 +281,24 @@ const styles = StyleSheet.create({
     color: "#b7adbf",
     fontSize: 15,
     lineHeight: 23,
+  },
+  groupHeader: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  groupTitle: {
+    color: "#f2d17a",
+    fontSize: 13,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  groupSubtitle: {
+    color: "#b7adbf",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 5,
   },
   section: {
     backgroundColor: "#0f1118",
@@ -167,6 +333,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  foundationCard: {
+    backgroundColor: "rgba(15,23,42,0.86)",
+    borderWidth: 1,
+    borderColor: "rgba(242,209,122,0.45)",
+    borderRadius: 18,
+    padding: 16,
+    gap: 8,
+  },
+  foundationKicker: {
+    color: "#f2d17a",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  foundationLead: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+  foundationDetails: {
+    marginTop: 8,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(242,209,122,0.22)",
+    paddingTop: 12,
+  },
+  foundationText: {
+    color: "#d7d2de",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  foundationSignature: {
+    color: "#f2d17a",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    marginTop: 4,
+  },
+
   noteCard: {
     backgroundColor: "#11131a",
     borderWidth: 1,

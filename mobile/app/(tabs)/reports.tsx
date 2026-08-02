@@ -1,10 +1,10 @@
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
 import React, { useState } from "react";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import {
   Platform,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -31,7 +31,7 @@ import { UI } from "../../lib/theme/tokens";
 
 function ReportsSkeleton() {
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
           <LoadingSkeleton height={12} width={110} style={{ marginBottom: 12 }} />
@@ -59,7 +59,7 @@ function ReportsSkeleton() {
           <LoadingSkeleton height={56} width="100%" />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -203,7 +203,7 @@ export default function ReportsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <RoyalCosmosBackground style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -212,7 +212,7 @@ export default function ReportsScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle}>{t("Pdf Reports", locale)}</Text>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Pdf Reports", locale)}</Text>
           <Text style={styles.heroText}>
             {t("Reports Hero Subtitle", locale)}
           </Text>
@@ -339,7 +339,7 @@ export default function ReportsScreen() {
           </View>
         </SectionCard>
       </ScrollView>
-    </SafeAreaView>
+    </RoyalCosmosBackground>
   );
 }
 
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: "#ffffff",
-    fontSize: UI.font.hero,
+    fontSize: 28,
     fontWeight: "900",
     marginBottom: 8,
   },

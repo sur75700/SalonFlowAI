@@ -58,3 +58,16 @@ dump/
 
 # local audit logs
 royal_audit/
+backups/
+
+# Local GHOST backups
+mobile/.ghost-backups/
+backend/.ghost-backend.pid
+backend/.ghost-backend.log
+ghostsalon.before-lifecycle-fix.*.bak
+# GhostSalon local runtime and backups
+.ghostsalon/
+scripts/*.backup_*
+
+# Runtime process artifacts
+nohup.out
