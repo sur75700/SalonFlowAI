@@ -1,3 +1,7 @@
+from app.intelligence.authoritative_capacity_source import (
+    AUTHORITATIVE_CAPACITY_SOURCE,
+    AuthoritativeCapacitySource,
+)
 from app.intelligence.builders import IntelligenceBuilders
 from app.intelligence.confidence import build_confidence, confidence_level
 from app.intelligence.context import IntelligenceContext
@@ -39,7 +43,10 @@ from app.intelligence.revenue_recommendations import (
     build_revenue_recommendation,
     build_revenue_recommendations,
 )
-from app.intelligence.reasoning import build_reasoning_notes, prioritize_signals
+from app.intelligence.reasoning import (
+    build_reasoning_notes,
+    prioritize_signals,
+)
 from app.intelligence.service import IntelligenceService
 from app.intelligence.recommendations import (
     prioritize_recommendations,
@@ -129,6 +136,8 @@ from app.intelligence.decision_serializer import (
 )
 
 __all__ = [
+    "AUTHORITATIVE_CAPACITY_SOURCE",
+    "AuthoritativeCapacitySource",
     "serialize_intelligence_decision",
     "CallableCapacityBaselineSource",
     "CapacityBaselineLoader",

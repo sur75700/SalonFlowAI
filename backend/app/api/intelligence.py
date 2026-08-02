@@ -12,12 +12,13 @@ from pydantic import (
 )
 
 from app.api.deps import require_auth
-from app.intelligence.capacity import (
-    CapacityBaseline,
-    CapacityDataUnavailable,
+from app.db.mongo import get_database
+from app.intelligence.capacity import CapacityDataUnavailable
+from app.intelligence.authoritative_capacity_source import (
+    AUTHORITATIVE_CAPACITY_SOURCE,
+    AuthoritativeCapacitySource,
 )
 from app.intelligence.capacity_baseline_source import (
-    ExplicitCapacityBaselineSource,
     prepare_capacity_context,
 )
 from app.intelligence.context import IntelligenceContext
@@ -33,9 +34,7 @@ from app.intelligence.service import IntelligenceService
 
 router = APIRouter()
 
-CAPACITY_SOURCE_LABEL = (
-    "authenticated_request_capacity"
-)
+CAPACITY_SOURCE_LABEL = AUTHORITATIVE_CAPACITY_SOURCE
 
 
 class AnalysisWindowRequest(BaseModel):
@@ -76,14 +75,6 @@ class AnalysisWindowRequest(BaseModel):
         return self
 
 
-class CapacityBaselineRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    total_slots: int = Field(ge=0)
-    active_staff_count: int = Field(ge=0)
-    available_minutes: int = Field(ge=0)
-
-
 class IntelligenceDecisionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -94,7 +85,6 @@ class IntelligenceDecisionRequest(BaseModel):
     )
 
     window: AnalysisWindowRequest
-    capacity: CapacityBaselineRequest
 
     @field_validator("currency")
     @classmethod
@@ -320,26 +310,16 @@ async def create_intelligence_decision(
             _window_period(window)
         )
 
-        baseline = CapacityBaseline(
-            owner_id=owner_id,
-            period_start=period_start,
-            period_end=period_end,
-            total_slots=(
-                payload.capacity.total_slots
-            ),
-            active_staff_count=(
-                payload.capacity.active_staff_count
-            ),
-            available_minutes=(
-                payload.capacity.available_minutes
-            ),
-            source=CAPACITY_SOURCE_LABEL,
-        )
+        database = get_database()
+        if database is None:
+            raise RuntimeError("Database not connected")
 
         context = await prepare_capacity_context(
             context=context,
-            source=ExplicitCapacityBaselineSource(
-                baseline=baseline
+            source=AuthoritativeCapacitySource(
+                database=database,
+                period_start=period_start,
+                period_end=period_end,
             ),
         )
 

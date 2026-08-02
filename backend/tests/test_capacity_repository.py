@@ -8,6 +8,7 @@ import unittest
 from bson import ObjectId
 
 from app.capacity.repository import (
+    CapacityReadLimitExceeded,
     CapacityRepository,
     CapacityRevisionConflict,
 )
@@ -417,3 +418,91 @@ class CapacityServiceTests(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ResolutionCursor:
+    def __init__(self, documents):
+        self.documents = list(documents)
+        self.length = None
+
+    def sort(self, key, direction):
+        return self
+
+    async def to_list(self, *, length):
+        self.length = length
+        return self.documents[:length]
+
+
+class ResolutionCollection:
+    def __init__(self, documents):
+        self.documents = list(documents)
+        self.query = None
+        self.cursor = None
+
+    def find(self, query):
+        self.query = query
+        self.cursor = ResolutionCursor(self.documents)
+        return self.cursor
+
+
+class ResolutionDatabase:
+    def __init__(self, count=0):
+        documents = [{"_id": str(index)} for index in range(count)]
+        self.staff_members = ResolutionCollection(documents)
+        self.staff_schedule_profiles = ResolutionCollection(documents)
+        self.capacity_exceptions = ResolutionCollection(documents)
+
+
+class CapacityResolutionRepositoryTests(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_resolution_staff_max_plus_one(self):
+        database = ResolutionDatabase()
+        repository = CapacityRepository(database)
+        await repository.list_resolution_staff("tenant-a")
+        self.assertEqual(database.staff_members.cursor.length, 501)
+        self.assertEqual(
+            database.staff_members.query["owner_id"],
+            "tenant-a",
+        )
+
+    async def test_resolution_schedules_scoped(self):
+        database = ResolutionDatabase()
+        repository = CapacityRepository(database)
+        await repository.list_resolution_schedules(
+            "tenant-a",
+            ["staff-a"],
+        )
+        self.assertEqual(
+            database.staff_schedule_profiles.cursor.length,
+            501,
+        )
+        self.assertEqual(
+            database.staff_schedule_profiles.query["staff_id"],
+            {"$in": ["staff-a"]},
+        )
+
+    async def test_resolution_exceptions_scoped(self):
+        database = ResolutionDatabase()
+        repository = CapacityRepository(database)
+        start = datetime(2026, 7, 1, tzinfo=UTC)
+        end = datetime(2026, 7, 2, tzinfo=UTC)
+        await repository.list_resolution_exceptions(
+            "tenant-a",
+            start,
+            end,
+        )
+        self.assertEqual(
+            database.capacity_exceptions.cursor.length,
+            501,
+        )
+        self.assertEqual(
+            database.capacity_exceptions.query["status"],
+            "active",
+        )
+
+    async def test_resolution_overflow_fails_closed(self):
+        database = ResolutionDatabase(count=501)
+        repository = CapacityRepository(database)
+        with self.assertRaises(CapacityReadLimitExceeded):
+            await repository.list_resolution_staff("tenant-a")

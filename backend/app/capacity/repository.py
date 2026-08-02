@@ -24,6 +24,13 @@ class CapacityRevisionConflict(CapacityConflict):
     """Raised when optimistic concurrency validation fails."""
 
 
+class CapacityReadLimitExceeded(CapacityRepositoryError):
+    pass
+
+
+_RESOLUTION_RECORD_LIMIT = 500
+
+
 class CapacityRepository:
     def __init__(self, database: Any) -> None:
         if database is None:
@@ -467,3 +474,70 @@ class CapacityRepository:
             values={"status": "cancelled"},
             expected_revision=expected_revision,
         )
+
+    async def list_resolution_staff(
+        self,
+        owner_id: str,
+    ) -> list[dict[str, Any]]:
+        cursor = self._db.staff_members.find(
+            {
+                "owner_id": owner_id,
+                "is_active": True,
+                "capacity_enabled": True,
+            }
+        ).sort("_id", 1)
+        documents = await cursor.to_list(
+            length=_RESOLUTION_RECORD_LIMIT + 1
+        )
+        if len(documents) > _RESOLUTION_RECORD_LIMIT:
+            raise CapacityReadLimitExceeded(
+                "capacity staff read limit exceeded"
+            )
+        return documents
+
+    async def list_resolution_schedules(
+        self,
+        owner_id: str,
+        staff_ids: list[str],
+    ) -> list[dict[str, Any]]:
+        if not staff_ids:
+            return []
+        cursor = self._db.staff_schedule_profiles.find(
+            {
+                "owner_id": owner_id,
+                "staff_id": {"$in": staff_ids},
+            }
+        ).sort("staff_id", 1)
+        documents = await cursor.to_list(
+            length=_RESOLUTION_RECORD_LIMIT + 1
+        )
+        if len(documents) > _RESOLUTION_RECORD_LIMIT:
+            raise CapacityReadLimitExceeded(
+                "capacity schedule read limit exceeded"
+            )
+        return documents
+
+    async def list_resolution_exceptions(
+        self,
+        owner_id: str,
+        period_start: datetime,
+        period_end: datetime,
+    ) -> list[dict[str, Any]]:
+        query = {
+            "owner_id": owner_id,
+            "status": "active",
+            "starts_at_utc": {"$lt": period_end},
+            "ends_at_utc": {"$gt": period_start},
+        }
+        cursor = self._db.capacity_exceptions.find(query).sort(
+            "starts_at_utc",
+            1,
+        )
+        documents = await cursor.to_list(
+            length=_RESOLUTION_RECORD_LIMIT + 1
+        )
+        if len(documents) > _RESOLUTION_RECORD_LIMIT:
+            raise CapacityReadLimitExceeded(
+                "capacity exception read limit exceeded"
+            )
+        return documents

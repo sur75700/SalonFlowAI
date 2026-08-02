@@ -20,4 +20,19 @@ __all__ = [
     "CapacityRevisionConflict",
     "CapacityService",
     "CapacityValidationError",
+    "AuthoritativeCapacityResolver",
+    "AuthoritativeCapacityResult",
+    "CapacityConfigurationUnavailable",
+    "CapacityResolutionError",
+    "ResolvedInterval",
+    "ResolvedStaffCapacity",
 ]
+
+from app.capacity.resolver import (
+    AuthoritativeCapacityResolver,
+    AuthoritativeCapacityResult,
+    CapacityConfigurationUnavailable,
+    CapacityResolutionError,
+    ResolvedInterval,
+    ResolvedStaffCapacity,
+)
