@@ -420,6 +420,17 @@ else
   warn_check "Backend log file does not exist yet"
 fi
 
+
+# BEGIN PHASE 62C4A-P0 DIAGNOSE
+echo
+echo "── LOG ROTATION ──"
+_GS_DIAG_SCRIPT_DIR="$(
+  cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
+)"
+"${_GS_DIAG_SCRIPT_DIR}/ghostsalon-rotate-logs" --status || true
+unset _GS_DIAG_SCRIPT_DIR
+# END PHASE 62C4A-P0 DIAGNOSE
+
 section "FINAL VERDICT"
 
 TOTAL_CHECKS=$((PASS_COUNT + WARN_COUNT + FAIL_COUNT))

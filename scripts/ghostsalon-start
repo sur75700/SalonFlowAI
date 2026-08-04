@@ -99,6 +99,19 @@ fi
 
 success "Database identity verified: ${ADMIN_COUNT} admin user(s)"
 
+
+# BEGIN PHASE 62C4A-P0 START PREFLIGHT
+if [[ -z "${GHOSTSALON_SKIP_LOG_ROTATION:-}" ]]; then
+  echo
+  echo "── BACKEND LOG ROTATION PREFLIGHT ──"
+  _GS_START_SCRIPT_DIR="$(
+    cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
+  )"
+  "${_GS_START_SCRIPT_DIR}/ghostsalon-rotate-logs" --rotate-if-needed
+  unset _GS_START_SCRIPT_DIR
+fi
+# END PHASE 62C4A-P0 START PREFLIGHT
+
 section "START BACKEND"
 
 if backend_running; then

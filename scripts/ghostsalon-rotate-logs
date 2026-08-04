@@ -1,0 +1,272 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+export LC_ALL=C
+
+SCRIPT_DIR="$(
+  cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
+)"
+# shellcheck source=scripts/ghostsalon-common
+source "${SCRIPT_DIR}/ghostsalon-common"
+
+MODE="${1:---status}"
+
+say() {
+  printf '%s\n' "$*"
+}
+
+die() {
+  say "❌ $*" >&2
+  exit "${2:-1}"
+}
+
+validate_uint() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+validate_uint "$GHOSTSALON_LOG_ROTATE_BYTES" \
+  || die "Invalid rotation threshold"
+validate_uint "$GHOSTSALON_LOG_RETAIN_COUNT" \
+  || die "Invalid retain count"
+validate_uint "$GHOSTSALON_LOG_RETAIN_DAYS" \
+  || die "Invalid retain days"
+validate_uint "$GHOSTSALON_LOG_RETAIN_BYTES" \
+  || die "Invalid retain bytes"
+validate_uint "$GHOSTSALON_LOG_LOCK_WAIT" \
+  || die "Invalid lock wait"
+
+backend_openers() {
+  if [[ ! -f "$GHOSTSALON_BACKEND_LOG" ]] \
+    || ! command -v lsof >/dev/null 2>&1; then
+    return 0
+  fi
+
+  lsof -t -- "$GHOSTSALON_BACKEND_LOG" \
+    2>/dev/null \
+    | sort -u \
+    || true
+}
+
+write_state() {
+  local status="$1"
+  local archive="${2:-NONE}"
+  local original_bytes="${3:-0}"
+  local original_sha="${4:-NONE}"
+  local now tmp
+
+  mkdir -p "$GHOSTSALON_LOG_STATE_DIR"
+  chmod 700 "$GHOSTSALON_LOG_STATE_DIR"
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  tmp="${GHOSTSALON_LOG_ROTATION_STATE}.tmp.$$"
+
+  {
+    echo "LAST_STATUS=$status"
+    echo "LAST_ROTATED_AT=$now"
+    echo "LAST_ARCHIVE=$archive"
+    echo "LAST_ORIGINAL_BYTES=$original_bytes"
+    echo "LAST_ORIGINAL_SHA256=$original_sha"
+  } > "$tmp"
+
+  chmod 600 "$tmp"
+  mv -f "$tmp" "$GHOSTSALON_LOG_ROTATION_STATE"
+}
+
+apply_retention() {
+  local file total
+  local -a files=()
+
+  [[ -d "$GHOSTSALON_LOG_ARCHIVE_DIR" ]] || return 0
+
+  find "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+    -maxdepth 1 \
+    -type f \
+    -name 'backend-*.log.gz' \
+    -mtime "+${GHOSTSALON_LOG_RETAIN_DAYS}" \
+    -delete
+
+  mapfile -t files < <(
+    find "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+      -maxdepth 1 \
+      -type f \
+      -name 'backend-*.log.gz' \
+      -printf '%T@ %p\n' \
+      | sort -nr \
+      | cut -d' ' -f2-
+  )
+
+  if (( ${#files[@]} > GHOSTSALON_LOG_RETAIN_COUNT )); then
+    for file in "${files[@]:GHOSTSALON_LOG_RETAIN_COUNT}"; do
+      rm -f -- "$file"
+    done
+  fi
+
+  mapfile -t files < <(
+    find "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+      -maxdepth 1 \
+      -type f \
+      -name 'backend-*.log.gz' \
+      -printf '%T@ %p\n' \
+      | sort -nr \
+      | cut -d' ' -f2-
+  )
+
+  total="$(
+    for file in "${files[@]}"; do
+      stat -c '%s' "$file"
+    done | awk '{sum += $1} END {print sum + 0}'
+  )"
+
+  while (( total > GHOSTSALON_LOG_RETAIN_BYTES )) \
+    && (( ${#files[@]} > 1 )); do
+    file="${files[-1]}"
+    total=$((total - $(stat -c '%s' "$file")))
+    rm -f -- "$file"
+    unset 'files[-1]'
+    files=("${files[@]}")
+  done
+}
+
+show_status() {
+  ghostsalon_backend_log_rotation_status
+}
+
+rotate_if_needed() {
+  local force="${1:-NO}"
+  local bytes openers timestamp config state_file owner group
+  local expected_archive verified_archive original_sha archived_bytes archived_sha
+
+  command -v logrotate >/dev/null 2>&1 \
+    || die "logrotate is unavailable"
+  command -v gzip >/dev/null 2>&1 \
+    || die "gzip is unavailable"
+
+  mkdir -p \
+    "$GHOSTSALON_LOG_DIR" \
+    "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+    "$GHOSTSALON_LOG_STATE_DIR"
+  chmod 700 \
+    "$GHOSTSALON_LOG_DIR" \
+    "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+    "$GHOSTSALON_LOG_STATE_DIR"
+
+  touch "$GHOSTSALON_BACKEND_LOG"
+  chmod 600 "$GHOSTSALON_BACKEND_LOG"
+
+  exec 9>"$GHOSTSALON_LOG_ROTATION_LOCK"
+  flock -w "$GHOSTSALON_LOG_LOCK_WAIT" 9 \
+    || die "Another log rotation owns the lock" 75
+
+  bytes="$(ghostsalon_backend_log_bytes)"
+
+  if [[ "$force" != "YES" ]] \
+    && (( bytes < GHOSTSALON_LOG_ROTATE_BYTES )); then
+    say "ℹ️  Backend log is below rotation threshold."
+    say "Bytes: $bytes"
+    return 0
+  fi
+
+  openers="$(backend_openers | paste -sd ',' -)"
+  if [[ -n "$openers" ]]; then
+    write_state "BLOCKED_ACTIVE_WRITER" "NONE" "$bytes" "NONE"
+    die "Active writer detected ($openers). Stop GhostSalon before rotation." 23
+  fi
+
+  if (( bytes == 0 )); then
+    say "ℹ️  Backend log is empty; rotation not required."
+    return 0
+  fi
+
+  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  config="${GHOSTSALON_LOG_STATE_DIR}/backend-logrotate-${timestamp}-$$.conf"
+  state_file="${GHOSTSALON_LOG_STATE_DIR}/backend-logrotate.state"
+  owner="$(stat -c '%U' "$GHOSTSALON_BACKEND_LOG")"
+  group="$(stat -c '%G' "$GHOSTSALON_BACKEND_LOG")"
+  expected_archive="${GHOSTSALON_LOG_ARCHIVE_DIR}/backend.log-${timestamp}-$$"
+  verified_archive="${GHOSTSALON_LOG_ARCHIVE_DIR}/backend-${timestamp}-$$.log.gz"
+
+  original_sha="$(sha256sum "$GHOSTSALON_BACKEND_LOG" | awk '{print $1}')"
+
+  cat > "$config" <<LOGROTATE_CONFIG
+"$GHOSTSALON_BACKEND_LOG" {
+    size $GHOSTSALON_LOG_ROTATE_BYTES
+    rotate $GHOSTSALON_LOG_RETAIN_COUNT
+    maxage $GHOSTSALON_LOG_RETAIN_DAYS
+    olddir $GHOSTSALON_LOG_ARCHIVE_DIR
+    create 0600 $owner $group
+    nocompress
+    dateext
+    dateformat -$timestamp-$$
+    missingok
+    notifempty
+}
+LOGROTATE_CONFIG
+  chmod 600 "$config"
+
+  if ! logrotate --force --state "$state_file" "$config"; then
+    write_state "LOGROTATE_FAILED" "NONE" "$bytes" "$original_sha"
+    rm -f -- "$config"
+    die "Project-owned logrotate execution failed"
+  fi
+  rm -f -- "$config"
+
+  [[ -f "$expected_archive" ]] \
+    || {
+      write_state "ARCHIVE_MISSING" "NONE" "$bytes" "$original_sha"
+      die "Expected logrotate archive is missing: $expected_archive"
+    }
+
+  archived_bytes="$(stat -c '%s' "$expected_archive")"
+  archived_sha="$(sha256sum "$expected_archive" | awk '{print $1}')"
+
+  if [[ "$archived_bytes" != "$bytes" ]] \
+    || [[ "$archived_sha" != "$original_sha" ]]; then
+    write_state "VERIFY_FAILED" "$expected_archive" "$bytes" "$original_sha"
+    die "Logrotate archive verification failed; uncompressed archive retained."
+  fi
+
+  chmod 600 "$expected_archive"
+  gzip -6 "$expected_archive"
+  gzip -t "${expected_archive}.gz"
+  mv "${expected_archive}.gz" "$verified_archive"
+  chmod 600 "$verified_archive"
+
+  write_state "SUCCESS" "$verified_archive" "$bytes" "$original_sha"
+  apply_retention
+
+  say "✅ Backend log rotation completed"
+  say "Strategy:       PROJECT_OWNED_LOGROTATE_CONFIG"
+  say "Original bytes: $bytes"
+  say "Archive:        $verified_archive"
+  say "SHA256:        $original_sha"
+}
+
+case "$MODE" in
+  --status)
+    show_status
+    ;;
+  --check)
+    show_status
+    if ghostsalon_backend_log_rotation_required; then
+      exit 10
+    fi
+    ;;
+  --rotate-if-needed)
+    rotate_if_needed NO
+    ;;
+  --force)
+    rotate_if_needed YES
+    ;;
+  *)
+    cat >&2 <<'USAGE'
+Usage:
+  ghostsalon-rotate-logs --status
+  ghostsalon-rotate-logs --check
+  ghostsalon-rotate-logs --rotate-if-needed
+  ghostsalon-rotate-logs --force
+
+Rotation refuses active writers. Stop GhostSalon first or rely on the safe
+preflight rotation performed by GhostSalon-start.
+USAGE
+    exit 64
+    ;;
+esac

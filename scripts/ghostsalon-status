@@ -156,6 +156,17 @@ else
   info "Runtime health checks skipped while safely offline"
 fi
 
+
+# BEGIN PHASE 62C4A-P0 STATUS
+echo
+echo "── LOG ROTATION ──"
+_GS_STATUS_SCRIPT_DIR="$(
+  cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
+)"
+"${_GS_STATUS_SCRIPT_DIR}/ghostsalon-rotate-logs" --status || true
+unset _GS_STATUS_SCRIPT_DIR
+# END PHASE 62C4A-P0 STATUS
+
 section "FINAL VERDICT"
 
 if [ "${PROJECT_OK}" = "true" ] &&

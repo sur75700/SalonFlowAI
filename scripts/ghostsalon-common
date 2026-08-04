@@ -258,3 +258,102 @@ mongo_bind_address() {
   docker port "${MONGO_CONTAINER}" 27017/tcp 2>/dev/null |
     head -n 1
 }
+# BEGIN PHASE 62C4A-P0 LOG ROTATION
+# Bounded operational logging policy for GhostSalon backend output.
+_GS_ROTATION_SCRIPT_DIR="$(
+  cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
+)"
+GHOSTSALON_ROTATION_ROOT="$(
+  cd "${_GS_ROTATION_SCRIPT_DIR}/.." >/dev/null 2>&1 && pwd
+)"
+unset _GS_ROTATION_SCRIPT_DIR
+
+GHOSTSALON_LOG_DIR="${GHOSTSALON_LOG_DIR:-${GHOSTSALON_ROTATION_ROOT}/.ghostsalon/logs}"
+GHOSTSALON_BACKEND_LOG="${GHOSTSALON_BACKEND_LOG:-${GHOSTSALON_LOG_DIR}/backend.log}"
+GHOSTSALON_LOG_ARCHIVE_DIR="${GHOSTSALON_LOG_ARCHIVE_DIR:-${GHOSTSALON_LOG_DIR}/archive}"
+GHOSTSALON_LOG_STATE_DIR="${GHOSTSALON_LOG_STATE_DIR:-${GHOSTSALON_ROTATION_ROOT}/.ghostsalon/state}"
+GHOSTSALON_LOG_ROTATION_STATE="${GHOSTSALON_LOG_ROTATION_STATE:-${GHOSTSALON_LOG_STATE_DIR}/backend-log-rotation.env}"
+GHOSTSALON_LOG_ROTATION_LOCK="${GHOSTSALON_LOG_ROTATION_LOCK:-${GHOSTSALON_LOG_STATE_DIR}/backend-log-rotation.lock}"
+
+GHOSTSALON_LOG_ROTATE_BYTES="${GHOSTSALON_LOG_ROTATE_BYTES:-104857600}"
+GHOSTSALON_LOG_RETAIN_COUNT="${GHOSTSALON_LOG_RETAIN_COUNT:-7}"
+GHOSTSALON_LOG_RETAIN_DAYS="${GHOSTSALON_LOG_RETAIN_DAYS:-14}"
+GHOSTSALON_LOG_RETAIN_BYTES="${GHOSTSALON_LOG_RETAIN_BYTES:-1073741824}"
+GHOSTSALON_LOG_LOCK_WAIT="${GHOSTSALON_LOG_LOCK_WAIT:-30}"
+
+ghostsalon_backend_log_bytes() {
+  if [[ -f "$GHOSTSALON_BACKEND_LOG" ]]; then
+    stat -c '%s' "$GHOSTSALON_BACKEND_LOG" 2>/dev/null || echo 0
+  else
+    echo 0
+  fi
+}
+
+ghostsalon_backend_log_mib() {
+  local bytes
+  bytes="$(ghostsalon_backend_log_bytes)"
+  echo $((bytes / 1024 / 1024))
+}
+
+ghostsalon_backend_log_rotation_required() {
+  local bytes
+  bytes="$(ghostsalon_backend_log_bytes)"
+  (( bytes >= GHOSTSALON_LOG_ROTATE_BYTES ))
+}
+
+ghostsalon_backend_log_rotation_status() {
+  local bytes mib archives retained_bytes required last_status last_archive
+  bytes="$(ghostsalon_backend_log_bytes)"
+  mib=$((bytes / 1024 / 1024))
+  required=NO
+  (( bytes >= GHOSTSALON_LOG_ROTATE_BYTES )) && required=YES
+
+  archives=0
+  retained_bytes=0
+  if [[ -d "$GHOSTSALON_LOG_ARCHIVE_DIR" ]]; then
+    archives="$(
+      find "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+        -maxdepth 1 \
+        -type f \
+        -name 'backend-*.log.gz' \
+        -printf '.' \
+        2>/dev/null \
+        | wc -c \
+        | tr -d ' '
+    )"
+    retained_bytes="$(
+      find "$GHOSTSALON_LOG_ARCHIVE_DIR" \
+        -maxdepth 1 \
+        -type f \
+        -name 'backend-*.log.gz' \
+        -printf '%s\n' \
+        2>/dev/null \
+        | awk '{sum += $1} END {print sum + 0}'
+    )"
+  fi
+
+  last_status=NONE
+  last_archive=NONE
+  if [[ -r "$GHOSTSALON_LOG_ROTATION_STATE" ]]; then
+    last_status="$(
+      awk -F= '$1=="LAST_STATUS"{print substr($0,index($0,"=")+1)}' \
+        "$GHOSTSALON_LOG_ROTATION_STATE" \
+        | tail -n 1
+    )"
+    last_archive="$(
+      awk -F= '$1=="LAST_ARCHIVE"{print substr($0,index($0,"=")+1)}' \
+        "$GHOSTSALON_LOG_ROTATION_STATE" \
+        | tail -n 1
+    )"
+    [[ -n "$last_status" ]] || last_status=UNKNOWN
+    [[ -n "$last_archive" ]] || last_archive=NONE
+  fi
+
+  echo "Active log:       ${mib} MiB (${bytes} bytes)"
+  echo "Rotation needed:  $required"
+  echo "Archived logs:    $archives"
+  echo "Archived bytes:   $retained_bytes"
+  echo "Last status:      $last_status"
+  echo "Last archive:     $last_archive"
+}
+# END PHASE 62C4A-P0 LOG ROTATION
