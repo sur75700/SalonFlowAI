@@ -14,6 +14,7 @@ from app.api.reports import router as reports_router
 from app.api.services import router as services_router
 from app.core.config import settings
 from app.db.mongo import close_mongo_connection, connect_to_mongo
+from app.middleware.request_context import RequestContextMiddleware
 
 
 @asynccontextmanager
@@ -32,6 +33,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# BEGIN PHASE 62C4A OBSERVABILITY FOUNDATION
+app.add_middleware(RequestContextMiddleware)
+# END PHASE 62C4A OBSERVABILITY FOUNDATION
 
 
 @app.get("/healthz")

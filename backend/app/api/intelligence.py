@@ -35,6 +35,7 @@ from app.services.entitlements import (
     FeatureNotEntitled,
     require_feature_entitlement,
 )
+from app.observability.events import instrument_intelligence_decision
 
 
 router = APIRouter()
@@ -324,6 +325,7 @@ def _runtime_http_exception(
     "/decision",
     response_model=IntelligenceDecisionResponse,
 )
+@instrument_intelligence_decision
 async def create_intelligence_decision(
     payload: IntelligenceDecisionRequest,
     auth: dict = Depends(require_auth),
