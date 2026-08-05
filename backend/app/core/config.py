@@ -75,3 +75,32 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# PHASE_62C4B_METRICS_CONFIG
+import os as _observability_os
+
+_INTELLIGENCE_METRICS_TRUE_VALUES = frozenset(
+    {"1", "true", "yes", "on"}
+)
+_INTELLIGENCE_METRICS_EXPORTERS = frozenset(
+    {"none", "structured_log"}
+)
+
+
+def intelligence_metrics_enabled() -> bool:
+    raw = _observability_os.getenv(
+        "INTELLIGENCE_METRICS_ENABLED",
+        "false",
+    )
+    return raw.strip().lower() in _INTELLIGENCE_METRICS_TRUE_VALUES
+
+
+def intelligence_metrics_exporter() -> str:
+    raw = _observability_os.getenv(
+        "INTELLIGENCE_METRICS_EXPORTER",
+        "none",
+    )
+    normalized = raw.strip().lower()
+    if normalized not in _INTELLIGENCE_METRICS_EXPORTERS:
+        return "none"
+    return normalized

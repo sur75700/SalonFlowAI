@@ -72,3 +72,9 @@ export type IntelligenceDecisionResponse = Readonly<{
   readonly confidence: ConfidenceResponse;
   readonly generated_at: string;
 }>;
+
+
+// PHASE_62C4B_OBSERVABILITY_TYPES
+export type {
+  IntelligenceObservabilityMeta,
+} from "./observability";
