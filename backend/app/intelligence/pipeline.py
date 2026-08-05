@@ -1,3 +1,4 @@
+from app.observability.metrics import instrument_decision, instrument_pipeline_stage
 import inspect
 from collections.abc import Callable
 
@@ -44,6 +45,7 @@ ConfidenceBuilder = Callable[
 
 
 
+@instrument_pipeline_stage(stage="resolve")
 async def _resolve(value):
     if inspect.isawaitable(value):
         return await value
@@ -67,6 +69,7 @@ class IntelligencePipeline:
         self._confidence_builder = confidence_builder
         self._engine = engine or IntelligenceEngine()
 
+    @instrument_decision()
     async def run(
         self,
         *,

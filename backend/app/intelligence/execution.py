@@ -1,3 +1,4 @@
+from app.observability.metrics import instrument_execution
 from collections.abc import Callable
 import inspect
 from dataclasses import replace
@@ -32,6 +33,7 @@ def create_execution_context(
     )
 
 
+@instrument_execution(source_kind="trusted")
 async def get_execution_snapshot(
     *,
     context: IntelligenceContext,

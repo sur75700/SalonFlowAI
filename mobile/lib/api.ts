@@ -2,6 +2,7 @@ import axios from "axios";
 
 import { DEFAULTS, STORAGE_KEYS } from "./appConfig";
 import { getApiBaseUrl } from "./env";
+import type { AxiosRequestConfig, AxiosResponse } from "axios";
 
 export const API_BASE_URL = getApiBaseUrl();
 
@@ -254,4 +255,18 @@ export function writeStoredToken(token: string) {
 
 export function clearStoredToken() {
   getBrowserStorage()?.removeItem(STORAGE_KEYS.token);
+}
+
+
+// PHASE_62C4B_POST_WITH_RESPONSE
+export function postWithResponse<TResponse, TBody = unknown>(
+  url: string,
+  data?: TBody,
+  config?: AxiosRequestConfig<TBody>,
+): Promise<AxiosResponse<TResponse>> {
+  return api.post<TResponse, AxiosResponse<TResponse>, TBody>(
+    url,
+    data,
+    config,
+  );
 }

@@ -9,6 +9,8 @@ import {
           IntelligenceDecisionResponse,
           IntelligenceJsonValue,
         } from "../types/intelligence";
+import { postWithResponse } from "./api";
+import { rememberIntelligenceObservability } from "./observability";
 
         export const INTELLIGENCE_DECISION_ENDPOINT =
           "/intelligence/decision" as const;
@@ -820,7 +822,7 @@ import {
           }
 
           try {
-            const response = await api.post<unknown>(
+            const response = await postWithResponse<unknown>(
               INTELLIGENCE_DECISION_ENDPOINT,
               request,
               {
@@ -828,7 +830,7 @@ import {
                 signal,
               },
             );
-            return parseIntelligenceDecisionResponse(response.data);
+            return rememberIntelligenceObservability(parseIntelligenceDecisionResponse(response.data), response.headers);
           } catch (error) {
             if (signal?.aborted) {
               throw error;

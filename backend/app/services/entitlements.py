@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.observability.metrics import instrument_entitlement
 
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -62,6 +63,7 @@ def _not_entitled(
     )
 
 
+@instrument_entitlement()
 async def require_feature_entitlement(
     *,
     database: Any,

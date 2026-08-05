@@ -15,6 +15,7 @@ import type {
   IntelligenceDecisionRequest,
   IntelligenceDecisionResponse,
 } from "../types/intelligence";
+import { getIntelligenceObservability } from "../lib/observability";
 
 export type IntelligenceDecisionStatus =
   | "idle"
@@ -148,6 +149,8 @@ export function useIntelligenceDecision({
           loading: !isRefreshing,
           refreshing: isRefreshing,
           requestKey,
+
+          observability: getIntelligenceObservability(retainedData),
         };
       });
 
