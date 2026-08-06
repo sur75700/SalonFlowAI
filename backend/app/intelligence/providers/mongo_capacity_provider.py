@@ -282,4 +282,9 @@ class MongoCapacityProvider:
                 baseline.available_minutes
             ),
             booked_minutes=booked_minutes,
+            blocked_period_count=baseline.blocked_period_count,
+            holiday_closure_count=baseline.holiday_closure_count,
+            availability_override_count=(
+                baseline.availability_override_count
+            ),
         )

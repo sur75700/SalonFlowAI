@@ -142,8 +142,10 @@ async def resolve_capacity_baseline(
     Resolve and validate one trusted capacity baseline.
 
     Both synchronous and asynchronous source implementations are
-    supported. Window-period validation remains enforced by the capacity
-    provider when it consumes the prepared context.
+    supported. Authoritative blocked-period and holiday/closure evidence
+    remains attached to the immutable baseline. Window-period validation
+    remains enforced by the capacity provider when it consumes the
+    prepared context.
     """
 
     context = _require_context(context)
@@ -175,8 +177,9 @@ def attach_capacity_baseline(
     Return a new context containing a validated baseline.
 
     The original context and its metadata dictionary remain unchanged.
-    A different pre-existing baseline is rejected instead of silently
-    replacing trusted execution input.
+    A different pre-existing baseline, including different authoritative
+    fact counts, is rejected instead of silently replacing trusted
+    execution input.
     """
 
     context = _require_context(context)

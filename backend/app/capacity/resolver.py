@@ -10,6 +10,11 @@ from app.capacity.repository import (
     CapacityRepository,
     CapacityRepositoryError,
 )
+from app.capacity.validators import (
+    CapacityExceptionFact,
+    CapacityFactValidationError,
+    validate_capacity_exception_documents,
+)
 
 
 MAX_ANALYSIS_DAYS = 366
@@ -62,6 +67,9 @@ class AuthoritativeCapacityResult:
     available_minutes: int
     total_slots: int
     staff_capacity: tuple[ResolvedStaffCapacity, ...]
+    blocked_period_count: int = 0
+    holiday_closure_count: int = 0
+    availability_override_count: int = 0
 
     def __post_init__(self) -> None:
         owner = self.owner_id.strip()
@@ -76,6 +84,12 @@ class AuthoritativeCapacityResult:
             ("active_staff_count", self.active_staff_count),
             ("available_minutes", self.available_minutes),
             ("total_slots", self.total_slots),
+            ("blocked_period_count", self.blocked_period_count),
+            ("holiday_closure_count", self.holiday_closure_count),
+            (
+                "availability_override_count",
+                self.availability_override_count,
+            ),
         ):
             if isinstance(value, bool) or not isinstance(value, int):
                 raise TypeError(f"{name} must be an integer")
@@ -85,6 +99,11 @@ class AuthoritativeCapacityResult:
             raise ValueError("slot_duration_minutes must be positive")
         if not isinstance(self.staff_capacity, tuple):
             raise TypeError("staff_capacity must be a tuple")
+        if self.holiday_closure_count > self.blocked_period_count:
+            raise ValueError(
+                "holiday_closure_count cannot exceed "
+                "blocked_period_count"
+            )
         object.__setattr__(self, "owner_id", owner)
         object.__setattr__(self, "period_start", start)
         object.__setattr__(self, "period_end", end)
@@ -127,25 +146,6 @@ def _minute(value: Any, *, field_name: str) -> int:
             f"{field_name} must be between 0 and 1440"
         )
     return value
-
-
-def _parse_utc(value: Any, *, field_name: str) -> datetime:
-    if isinstance(value, str):
-        try:
-            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError as error:
-            raise CapacityConfigurationInvalid(
-                f"{field_name} must be an ISO datetime"
-            ) from error
-    if (
-        isinstance(value, datetime)
-        and (value.tzinfo is None or value.utcoffset() is None)
-    ):
-        value = value.replace(tzinfo=UTC)
-    try:
-        return _aware_utc(value, field_name=field_name)
-    except (TypeError, ValueError) as error:
-        raise CapacityConfigurationInvalid(str(error)) from error
 
 
 def _normalize(
@@ -373,7 +373,7 @@ def _expand_weekly(
 
 
 def _exception_intervals(
-    exceptions: Iterable[dict[str, Any]],
+    exceptions: Iterable[CapacityExceptionFact],
     *,
     scope: str,
     effect: str,
@@ -381,22 +381,14 @@ def _exception_intervals(
 ) -> tuple[ResolvedInterval, ...]:
     result: list[ResolvedInterval] = []
     for item in exceptions:
-        if item.get("status") != "active":
+        if item.scope != scope or item.effect != effect:
             continue
-        if item.get("scope") != scope or item.get("effect") != effect:
-            continue
-        if scope == "staff" and str(item.get("staff_id")) != staff_id:
+        if scope == "staff" and item.staff_id != staff_id:
             continue
         result.append(
             ResolvedInterval(
-                _parse_utc(
-                    item.get("starts_at_utc"),
-                    field_name="starts_at_utc",
-                ),
-                _parse_utc(
-                    item.get("ends_at_utc"),
-                    field_name="ends_at_utc",
-                ),
+                item.starts_at_utc,
+                item.ends_at_utc,
             )
         )
     return _normalize(result)
@@ -485,6 +477,44 @@ class AuthoritativeCapacityResolver:
         except CapacityRepositoryError as error:
             raise CapacityConfigurationUnavailable(str(error)) from error
 
+        try:
+            capacity_facts = validate_capacity_exception_documents(
+                exceptions,
+                owner_id=owner,
+            )
+        except CapacityFactValidationError as error:
+            raise CapacityConfigurationInvalid(str(error)) from error
+
+        known_staff_ids = set(staff_ids)
+        unknown_staff_ids = sorted(
+            {
+                fact.staff_id
+                for fact in capacity_facts
+                if (
+                    fact.scope == "staff"
+                    and fact.staff_id is not None
+                    and fact.staff_id not in known_staff_ids
+                )
+            }
+        )
+        if unknown_staff_ids:
+            raise CapacityConfigurationInvalid(
+                "capacity exception references unknown staff"
+            )
+
+        blocked_period_count = sum(
+            fact.is_blocked_period
+            for fact in capacity_facts
+        )
+        holiday_closure_count = sum(
+            fact.is_holiday_or_closure
+            for fact in capacity_facts
+        )
+        availability_override_count = sum(
+            fact.is_availability_override
+            for fact in capacity_facts
+        )
+
         schedule_by_staff: dict[str, dict[str, Any]] = {}
         for schedule in schedules:
             _schema_version(schedule, label="schedule")
@@ -508,7 +538,7 @@ class AuthoritativeCapacityResolver:
         )
         salon_available = _clip(
             _exception_intervals(
-                exceptions,
+                capacity_facts,
                 scope="salon",
                 effect="available",
             ),
@@ -517,7 +547,7 @@ class AuthoritativeCapacityResolver:
         )
         salon_unavailable = _clip(
             _exception_intervals(
-                exceptions,
+                capacity_facts,
                 scope="salon",
                 effect="unavailable",
             ),
@@ -556,7 +586,7 @@ class AuthoritativeCapacityResolver:
             staff_available = _intersect(
                 _clip(
                     _exception_intervals(
-                        exceptions,
+                        capacity_facts,
                         scope="staff",
                         effect="available",
                         staff_id=staff_id,
@@ -568,7 +598,7 @@ class AuthoritativeCapacityResolver:
             )
             staff_unavailable = _clip(
                 _exception_intervals(
-                    exceptions,
+                    capacity_facts,
                     scope="staff",
                     effect="unavailable",
                     staff_id=staff_id,
@@ -608,4 +638,9 @@ class AuthoritativeCapacityResolver:
             available_minutes=available_minutes,
             total_slots=total_slots,
             staff_capacity=tuple(resolved_staff),
+            blocked_period_count=blocked_period_count,
+            holiday_closure_count=holiday_closure_count,
+            availability_override_count=(
+                availability_override_count
+            ),
         )

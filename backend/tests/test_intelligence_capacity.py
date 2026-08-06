@@ -1,5 +1,6 @@
 import unittest
 from collections.abc import Awaitable
+from unittest.mock import patch
 from datetime import UTC, datetime, timedelta
 from typing import get_args, get_origin, get_type_hints
 
@@ -16,6 +17,26 @@ from app.intelligence.capacity import (
     require_capacity_baseline,
 )
 from app.intelligence.context import IntelligenceContext
+from app.intelligence.providers.mongo_capacity_provider import (
+    MongoCapacityProvider,
+)
+
+
+class EmptyAppointmentCursor:
+    def sort(self, *_args):
+        return self
+
+    async def to_list(self, *, length):
+        return []
+
+
+class EmptyAppointmentCollection:
+    def find(self, _query):
+        return EmptyAppointmentCursor()
+
+
+class EmptyAppointmentDatabase:
+    appointments = EmptyAppointmentCollection()
 
 
 class StaticCapacityProvider:
@@ -47,6 +68,9 @@ def make_snapshot(
         "active_staff_count": 4,
         "available_minutes": 9_600,
         "booked_minutes": 7_200,
+        "blocked_period_count": 2,
+        "holiday_closure_count": 1,
+        "availability_override_count": 1,
     }
     values.update(overrides)
 
@@ -76,6 +100,9 @@ class CapacityBaselineTests(unittest.TestCase):
             "active_staff_count": 4,
             "available_minutes": 9_600,
             "source": "staff_schedule",
+            "blocked_period_count": 2,
+            "holiday_closure_count": 1,
+            "availability_override_count": 1,
         }
         values.update(overrides)
 
@@ -165,6 +192,26 @@ class CapacityBaselineTests(unittest.TestCase):
         ):
             self.make_baseline(
                 total_slots=True
+            )
+
+    def test_baseline_preserves_authoritative_fact_counts(
+        self,
+    ) -> None:
+        baseline = self.make_baseline()
+        self.assertEqual(baseline.blocked_period_count, 2)
+        self.assertEqual(baseline.holiday_closure_count, 1)
+        self.assertEqual(baseline.availability_override_count, 1)
+
+    def test_holiday_count_cannot_exceed_blocked_count(
+        self,
+    ) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "cannot exceed",
+        ):
+            self.make_baseline(
+                blocked_period_count=0,
+                holiday_closure_count=1,
             )
 
     def test_context_resolves_trusted_baseline(
@@ -284,12 +331,54 @@ class CapacitySnapshotTests(unittest.IsolatedAsyncioTestCase):
         ):
             make_snapshot(total_slots=-1)
 
+    async def test_snapshot_preserves_fact_counts(self) -> None:
+        snapshot = make_snapshot()
+        self.assertEqual(snapshot.blocked_period_count, 2)
+        self.assertEqual(snapshot.holiday_closure_count, 1)
+        self.assertEqual(snapshot.availability_override_count, 1)
+
     async def test_snapshot_rejects_boolean_integer_values(self) -> None:
         with self.assertRaisesRegex(
             TypeError,
             "booked_slots must be an integer",
         ):
             make_snapshot(booked_slots=True)
+
+
+class MongoCapacityProviderFactTests(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_provider_preserves_authoritative_fact_counts(
+        self,
+    ) -> None:
+        baseline = CapacityBaselineTests().make_baseline()
+        context = IntelligenceContext(
+            owner_id="tenant-a",
+            metadata={
+                CAPACITY_BASELINE_METADATA_KEY: baseline,
+            },
+        )
+        with (
+            patch(
+                "app.intelligence.providers."
+                "mongo_capacity_provider.get_database",
+                return_value=EmptyAppointmentDatabase(),
+            ),
+            patch(
+                "app.intelligence.providers."
+                "mongo_capacity_provider._window_bounds",
+                return_value=(
+                    baseline.period_start,
+                    baseline.period_end,
+                ),
+            ),
+        ):
+            snapshot = await MongoCapacityProvider().get_capacity_snapshot(
+                context=context
+            )
+        self.assertEqual(snapshot.blocked_period_count, 2)
+        self.assertEqual(snapshot.holiday_closure_count, 1)
+        self.assertEqual(snapshot.availability_override_count, 1)
 
 
 class CapacityCalculationTests(unittest.IsolatedAsyncioTestCase):

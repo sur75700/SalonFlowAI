@@ -62,12 +62,15 @@ from app.intelligence.validators import (
 )
 
 from app.intelligence.capacity import (
+    CapacityBaseline,
+    CapacityDataUnavailable,
     CapacityMetricBuilder,
     CapacityProvider,
     CapacitySnapshot,
     build_capacity_metrics,
     calculate_capacity_utilization_percent,
     calculate_staff_load_percent,
+    require_capacity_baseline,
 )
 from app.intelligence.capacity_recommendations import (
     CapacityRecommendationBuilder,
@@ -211,6 +214,8 @@ __all__ = [
     "CAPACITY_IDLE_MAX_PERCENT",
     "CAPACITY_NEAR_LIMIT_MAX_PERCENT",
     "CAPACITY_UNDERUTILIZED_MAX_PERCENT",
+    "CapacityBaseline",
+    "CapacityDataUnavailable",
     "CapacityMetricBuilder",
     "CapacityProvider",
     "CapacityRecommendationBuilder",
@@ -223,5 +228,6 @@ __all__ = [
     "build_capacity_signals",
     "calculate_capacity_utilization_percent",
     "calculate_staff_load_percent",
+    "require_capacity_baseline",
     "classify_capacity_utilization",
 ]

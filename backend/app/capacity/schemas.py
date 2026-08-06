@@ -15,6 +15,30 @@ CapacityProfileStatus = Literal["draft", "active"]
 CapacityExceptionScope = Literal["salon", "staff"]
 CapacityExceptionEffect = Literal["unavailable", "available"]
 CapacityExceptionStatus = Literal["active", "cancelled"]
+CapacityAuthoritativeFact = Literal[
+    "blocked_periods",
+    "holidays_closures",
+]
+
+
+def capacity_authoritative_facts(
+    *,
+    scope: CapacityExceptionScope,
+    effect: CapacityExceptionEffect,
+) -> tuple[CapacityAuthoritativeFact, ...]:
+    """Name the authoritative facts represented by an exception."""
+
+    if scope not in ("salon", "staff"):
+        raise ValueError("capacity exception scope is invalid")
+    if effect not in ("unavailable", "available"):
+        raise ValueError("capacity exception effect is invalid")
+
+    facts: list[CapacityAuthoritativeFact] = []
+    if effect == "unavailable":
+        facts.append("blocked_periods")
+    if scope == "salon" and effect == "unavailable":
+        facts.append("holidays_closures")
+    return tuple(facts)
 
 
 class TimeInterval(BaseModel):
@@ -169,6 +193,15 @@ class CapacityExceptionCreateRequest(BaseModel):
             )
         return self
 
+    @property
+    def authoritative_facts(
+        self,
+    ) -> tuple[CapacityAuthoritativeFact, ...]:
+        return capacity_authoritative_facts(
+            scope=self.scope,
+            effect=self.effect,
+        )
+
 
 class CapacityExceptionUpdateRequest(
     CapacityExceptionCreateRequest,
@@ -245,6 +278,15 @@ class CapacityExceptionResponse(BaseModel):
     status: CapacityExceptionStatus
     created_at: datetime
     updated_at: datetime
+
+    @property
+    def authoritative_facts(
+        self,
+    ) -> tuple[CapacityAuthoritativeFact, ...]:
+        return capacity_authoritative_facts(
+            scope=self.scope,
+            effect=self.effect,
+        )
 
 
 class CapacityExceptionListResponse(BaseModel):

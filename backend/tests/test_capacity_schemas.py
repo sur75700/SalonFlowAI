@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from app.capacity.schemas import (
     CapacityExceptionCreateRequest,
     CapacityProfileUpsertRequest,
+    capacity_authoritative_facts,
     StaffCreateRequest,
     StaffScheduleUpsertRequest,
 )
@@ -100,6 +101,29 @@ class CapacitySchemaTests(unittest.TestCase):
                 timezone_snapshot="UTC",
             )
 
+    def test_authoritative_fact_names_are_deterministic(self) -> None:
+        self.assertEqual(
+            capacity_authoritative_facts(
+                scope="staff",
+                effect="unavailable",
+            ),
+            ("blocked_periods",),
+        )
+        self.assertEqual(
+            capacity_authoritative_facts(
+                scope="salon",
+                effect="unavailable",
+            ),
+            ("blocked_periods", "holidays_closures"),
+        )
+        self.assertEqual(
+            capacity_authoritative_facts(
+                scope="salon",
+                effect="available",
+            ),
+            (),
+        )
+
     def test_exception_requires_aware_datetimes(self) -> None:
         now = datetime.now()
         with self.assertRaises(ValidationError):
@@ -110,6 +134,20 @@ class CapacitySchemaTests(unittest.TestCase):
                 ends_at_utc=now + timedelta(hours=1),
                 timezone_snapshot="UTC",
             )
+
+    def test_exception_exposes_authoritative_facts(self) -> None:
+        now = datetime.now(UTC)
+        payload = CapacityExceptionCreateRequest(
+            scope="salon",
+            effect="unavailable",
+            starts_at_utc=now,
+            ends_at_utc=now + timedelta(hours=1),
+            timezone_snapshot="UTC",
+        )
+        self.assertEqual(
+            payload.authoritative_facts,
+            ("blocked_periods", "holidays_closures"),
+        )
 
 
 if __name__ == "__main__":

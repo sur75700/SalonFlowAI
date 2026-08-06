@@ -94,6 +94,9 @@ class CapacityBaseline:
     active_staff_count: int
     available_minutes: int
     source: str
+    blocked_period_count: int = 0
+    holiday_closure_count: int = 0
+    availability_override_count: int = 0
 
     def __post_init__(self) -> None:
         owner_id = self.owner_id.strip()
@@ -146,12 +149,30 @@ class CapacityBaseline:
                 "available_minutes",
                 self.available_minutes,
             ),
+            (
+                "blocked_period_count",
+                self.blocked_period_count,
+            ),
+            (
+                "holiday_closure_count",
+                self.holiday_closure_count,
+            ),
+            (
+                "availability_override_count",
+                self.availability_override_count,
+            ),
         )
 
         for field_name, value in integer_fields:
             _require_non_negative_integer(
                 field_name=field_name,
                 value=value,
+            )
+
+        if self.holiday_closure_count > self.blocked_period_count:
+            raise ValueError(
+                "holiday_closure_count cannot exceed "
+                "blocked_period_count"
             )
 
         object.__setattr__(self, "owner_id", owner_id)
@@ -219,6 +240,9 @@ class CapacitySnapshot:
     active_staff_count: int
     available_minutes: int
     booked_minutes: int
+    blocked_period_count: int = 0
+    holiday_closure_count: int = 0
+    availability_override_count: int = 0
 
     def __post_init__(self) -> None:
         owner_id = self.owner_id.strip()
@@ -241,12 +265,27 @@ class CapacitySnapshot:
             ("active_staff_count", self.active_staff_count),
             ("available_minutes", self.available_minutes),
             ("booked_minutes", self.booked_minutes),
+            ("blocked_period_count", self.blocked_period_count),
+            (
+                "holiday_closure_count",
+                self.holiday_closure_count,
+            ),
+            (
+                "availability_override_count",
+                self.availability_override_count,
+            ),
         )
 
         for field_name, value in integer_fields:
             _require_non_negative_integer(
                 field_name=field_name,
                 value=value,
+            )
+
+        if self.holiday_closure_count > self.blocked_period_count:
+            raise ValueError(
+                "holiday_closure_count cannot exceed "
+                "blocked_period_count"
             )
 
         object.__setattr__(self, "owner_id", owner_id)

@@ -31,6 +31,9 @@ def make_result(owner_id="tenant-a"):
         available_minutes=960,
         total_slots=32,
         staff_capacity=(),
+        blocked_period_count=3,
+        holiday_closure_count=1,
+        availability_override_count=2,
     )
 
 
@@ -69,6 +72,9 @@ class AuthoritativeCapacitySourceTests(
         self.assertEqual(baseline.owner_id, "tenant-a")
         self.assertEqual(baseline.period_start, START)
         self.assertEqual(baseline.period_end, END)
+        self.assertEqual(baseline.blocked_period_count, 3)
+        self.assertEqual(baseline.holiday_closure_count, 1)
+        self.assertEqual(baseline.availability_override_count, 2)
 
     async def test_resolver_called_once(self):
         mocked = AsyncMock(return_value=make_result())

@@ -73,6 +73,22 @@ def make_schedule(identifier="staff-1", **overrides):
     return value
 
 
+def make_exception(**overrides):
+    value = {
+        "owner_id": OWNER,
+        "schema_version": 1,
+        "status": "active",
+        "scope": "salon",
+        "staff_id": None,
+        "effect": "unavailable",
+        "starts_at_utc": START + timedelta(hours=9),
+        "ends_at_utc": START + timedelta(hours=17),
+        "timezone_snapshot": "UTC",
+    }
+    value.update(overrides)
+    return value
+
+
 class FakeRepository:
     def __init__(
         self,
@@ -270,48 +286,71 @@ class CapacityResolverTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.active_staff_count, 2)
 
     async def test_salon_unavailable_dominates(self):
-        exception = {
-            "status": "active",
-            "scope": "salon",
-            "effect": "unavailable",
-            "starts_at_utc": START + timedelta(hours=9),
-            "ends_at_utc": START + timedelta(hours=17),
-        }
         result = await resolve(
-            FakeRepository(exceptions=[exception])
+            FakeRepository(exceptions=[make_exception()])
         )
         self.assertEqual(result.available_minutes, 0)
+        self.assertEqual(result.blocked_period_count, 1)
+        self.assertEqual(result.holiday_closure_count, 1)
 
     async def test_naive_mongo_staff_unavailable_subtracts(self):
-        exception = {
-            "status": "active",
-            "scope": "staff",
-            "staff_id": "staff-1",
-            "effect": "unavailable",
-            "starts_at_utc": (
+        exception = make_exception(
+            scope="staff",
+            staff_id="staff-1",
+            starts_at_utc=(
                 START + timedelta(hours=12)
             ).replace(tzinfo=None),
-            "ends_at_utc": (
+            ends_at_utc=(
                 START + timedelta(hours=13)
             ).replace(tzinfo=None),
-        }
+        )
         result = await resolve(
             FakeRepository(exceptions=[exception])
         )
         self.assertEqual(result.available_minutes, 420)
+        self.assertEqual(result.blocked_period_count, 1)
+        self.assertEqual(result.holiday_closure_count, 0)
 
     async def test_cancelled_exception_is_ignored(self):
-        exception = {
-            "status": "cancelled",
-            "scope": "salon",
-            "effect": "unavailable",
-            "starts_at_utc": START + timedelta(hours=9),
-            "ends_at_utc": START + timedelta(hours=17),
-        }
         result = await resolve(
-            FakeRepository(exceptions=[exception])
+            FakeRepository(
+                exceptions=[
+                    make_exception(status="cancelled")
+                ]
+            )
         )
         self.assertEqual(result.available_minutes, 480)
+        self.assertEqual(result.blocked_period_count, 0)
+        self.assertEqual(result.holiday_closure_count, 0)
+
+    async def test_cross_tenant_exception_fails_closed(self):
+        with self.assertRaisesRegex(
+            CapacityConfigurationInvalid,
+            "owner does not match",
+        ):
+            await resolve(
+                FakeRepository(
+                    exceptions=[
+                        make_exception(owner_id="tenant-b")
+                    ]
+                )
+            )
+
+    async def test_unknown_staff_exception_fails_closed(self):
+        with self.assertRaisesRegex(
+            CapacityConfigurationInvalid,
+            "references unknown staff",
+        ):
+            await resolve(
+                FakeRepository(
+                    exceptions=[
+                        make_exception(
+                            scope="staff",
+                            staff_id="missing-staff",
+                        )
+                    ]
+                )
+            )
 
     async def test_active_staff_requires_capacity(self):
         result = await resolve(

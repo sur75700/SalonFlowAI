@@ -41,7 +41,9 @@ def create_provider_family_intelligence_service(
     only when IntelligenceService.analyze() executes.
 
     Capacity analysis remains fail-closed and requires a trusted
-    CapacityBaseline in IntelligenceContext.metadata.
+    CapacityBaseline in IntelligenceContext.metadata. The baseline keeps
+    authoritative blocked-period and holiday/closure evidence separate
+    from appointment occupancy.
     """
 
     selected_providers = (

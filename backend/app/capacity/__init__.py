@@ -10,6 +10,12 @@ from app.capacity.validation import (
     CapacityConfigurationInvalid,
     CapacityValidationError,
 )
+from app.capacity.validators import (
+    CapacityExceptionFact,
+    CapacityFactValidationError,
+    validate_capacity_exception_document,
+    validate_capacity_exception_documents,
+)
 
 __all__ = [
     "CapacityConfigurationInvalid",
@@ -20,6 +26,10 @@ __all__ = [
     "CapacityRevisionConflict",
     "CapacityService",
     "CapacityValidationError",
+    "CapacityExceptionFact",
+    "CapacityFactValidationError",
+    "validate_capacity_exception_document",
+    "validate_capacity_exception_documents",
     "AuthoritativeCapacityResolver",
     "AuthoritativeCapacityResult",
     "CapacityConfigurationUnavailable",

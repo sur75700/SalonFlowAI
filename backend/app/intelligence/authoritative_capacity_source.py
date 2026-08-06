@@ -58,4 +58,9 @@ class AuthoritativeCapacitySource:
             active_staff_count=result.active_staff_count,
             available_minutes=result.available_minutes,
             source=AUTHORITATIVE_CAPACITY_SOURCE,
+            blocked_period_count=result.blocked_period_count,
+            holiday_closure_count=result.holiday_closure_count,
+            availability_override_count=(
+                result.availability_override_count
+            ),
         )

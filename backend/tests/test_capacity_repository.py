@@ -496,10 +496,11 @@ class CapacityResolutionRepositoryTests(
             database.capacity_exceptions.cursor.length,
             501,
         )
-        self.assertEqual(
-            database.capacity_exceptions.query["status"],
-            "active",
-        )
+        query = database.capacity_exceptions.query
+        self.assertEqual(query["owner_id"], "tenant-a")
+        self.assertEqual(query["status"], "active")
+        self.assertEqual(query["ends_at_utc"], {"$gt": start})
+        self.assertEqual(query["starts_at_utc"], {"$lt": end})
 
     async def test_resolution_overflow_fails_closed(self):
         database = ResolutionDatabase(count=501)

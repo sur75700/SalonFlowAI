@@ -45,6 +45,9 @@ def make_baseline(
         active_staff_count=4,
         available_minutes=9_600,
         source="trusted_schedule_configuration",
+        blocked_period_count=2,
+        holiday_closure_count=1,
+        availability_override_count=1,
     )
 
 
@@ -100,6 +103,12 @@ class CapacityBaselineSourceTests(
         self.assertIs(
             require_capacity_baseline(prepared),
             baseline,
+        )
+        self.assertEqual(
+            require_capacity_baseline(
+                prepared
+            ).holiday_closure_count,
+            1,
         )
 
     async def test_callable_source_supports_async_loader(
@@ -236,6 +245,36 @@ class CapacityBaselineSourceTests(
             RuntimeError,
             "context already contains a different "
             "capacity baseline",
+        ):
+            attach_capacity_baseline(
+                context=context,
+                baseline=replacement,
+            )
+
+    def test_different_fact_counts_are_conflicting(
+        self,
+    ):
+        original = make_baseline()
+        replacement = CapacityBaseline(
+            owner_id=original.owner_id,
+            period_start=original.period_start,
+            period_end=original.period_end,
+            total_slots=original.total_slots,
+            active_staff_count=original.active_staff_count,
+            available_minutes=original.available_minutes,
+            source=original.source,
+            blocked_period_count=3,
+            holiday_closure_count=1,
+            availability_override_count=1,
+        )
+        context = make_context(
+            metadata={
+                CAPACITY_BASELINE_METADATA_KEY: original,
+            }
+        )
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "different capacity baseline",
         ):
             attach_capacity_baseline(
                 context=context,
