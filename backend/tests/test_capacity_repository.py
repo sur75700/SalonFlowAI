@@ -507,3 +507,77 @@ class CapacityResolutionRepositoryTests(
         repository = CapacityRepository(database)
         with self.assertRaises(CapacityReadLimitExceeded):
             await repository.list_resolution_staff("tenant-a")
+
+    async def test_resolution_schedules_normalizes_object_id_string_ids(self):
+        from bson import ObjectId
+        from app.capacity.repository import CapacityRepository
+
+        class _Phase62Cursor:
+            def sort(self, *args, **kwargs):
+                return self
+
+            def limit(self, *args, **kwargs):
+                return self
+
+            async def to_list(self, length=None):
+                return []
+
+            def __aiter__(self):
+                return self
+
+            async def __anext__(self):
+                raise StopAsyncIteration
+
+        class _Phase62Collection:
+            def __init__(self):
+                self.queries = []
+
+            def find(self, query):
+                self.queries.append(query)
+                return _Phase62Cursor()
+
+        class _Phase62Database:
+            def __init__(self):
+                self.staff_schedule_profiles = _Phase62Collection()
+
+        database = _Phase62Database()
+        repository = CapacityRepository(database)
+
+        staff_id = "64b64b64b64b64b64b64b64b"
+        result = await repository.list_resolution_schedules(
+            "owner-id-join-regression",
+            [staff_id],
+        )
+
+        self.assertEqual(result, [])
+        self.assertEqual(
+            len(database.staff_schedule_profiles.queries),
+            1,
+        )
+
+        query = database.staff_schedule_profiles.queries[0]
+        persisted_ids = query["staff_id"]["$in"]
+
+        self.assertEqual(len(persisted_ids), 2)
+        self.assertEqual(persisted_ids[0], staff_id)
+        self.assertIsInstance(persisted_ids[1], ObjectId)
+        self.assertEqual(str(persisted_ids[1]), staff_id)
+
+        database.staff_schedule_profiles.queries.clear()
+
+        invalid_staff_id = "not-a-valid-object-id"
+        invalid_result = await repository.list_resolution_schedules(
+            "owner-id-join-regression",
+            [invalid_staff_id],
+        )
+
+        self.assertEqual(invalid_result, [])
+        self.assertEqual(
+            len(database.staff_schedule_profiles.queries),
+            1,
+        )
+        invalid_query = database.staff_schedule_profiles.queries[0]
+        self.assertEqual(
+            invalid_query["staff_id"]["$in"],
+            [invalid_staff_id],
+        )

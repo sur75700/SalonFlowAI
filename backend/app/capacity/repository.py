@@ -502,10 +502,23 @@ class CapacityRepository:
     ) -> list[dict[str, Any]]:
         if not staff_ids:
             return []
+        persisted_staff_ids = []
+        seen_staff_ids = set()
+        for staff_id in staff_ids:
+            candidates = [staff_id]
+            if isinstance(staff_id, str) and ObjectId.is_valid(staff_id):
+                candidates.append(ObjectId(staff_id))
+            for candidate in candidates:
+                if candidate in seen_staff_ids:
+                    continue
+                seen_staff_ids.add(candidate)
+                persisted_staff_ids.append(candidate)
+        if not persisted_staff_ids:
+            return []
         cursor = self._db.staff_schedule_profiles.find(
             {
                 "owner_id": owner_id,
-                "staff_id": {"$in": staff_ids},
+                "staff_id": {"$in": persisted_staff_ids},
             }
         ).sort("staff_id", 1)
         documents = await cursor.to_list(
