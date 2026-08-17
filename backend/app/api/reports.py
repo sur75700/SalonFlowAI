@@ -1,200 +1,122 @@
-from datetime import UTC, date, datetime, time
+from datetime import UTC, datetime
 from io import BytesIO
-from pathlib import Path
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.pdfmetrics import stringWidth
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Spacer, Table, TableStyle, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 from app.api.deps import require_auth
 from app.db.mongo import get_database
+from app.reports import (
+    DailySummaryReport,
+    build_daily_summary_report,
+)
+from app.reports.renderers import (
+    render_daily_summary_csv,
+    render_daily_summary_docx,
+    render_daily_summary_pdf,
+    render_daily_summary_txt,
+    render_daily_summary_xlsx,
+)
+from app.services.entitlements import (
+    EntitlementSourceUnavailable,
+    FeatureNotEntitled,
+    require_feature_entitlement,
+)
 
 router = APIRouter()
 
+REPORT_FEATURE = "reports"
+FEATURE_NOT_ENTITLED_CODE = "feature_not_entitled"
+ENTITLEMENT_SOURCE_UNAVAILABLE_CODE = "entitlement_source_unavailable"
 
-PDF_TRANSLATIONS = {
-    "en": {
-        "title": "SalonFlow AI - Daily Summary Report",
-        "report_date": "Report date",
-        "generated_at": "Generated at",
-        "overview": "Overview",
-        "metric": "Metric",
-        "value": "Value",
-        "total_clients": "Total clients",
-        "total_services": "Total services",
-        "total_appointments": "Total appointments",
-        "appointments_on_date": "Appointments on report date",
-        "scheduled_on_date": "Scheduled on report date",
-        "completed_on_date": "Completed on report date",
-        "cancelled_on_date": "Cancelled on report date",
-        "appointments": "Appointments",
-        "no_appointments": "No appointments found for this date.",
-        "start": "Start",
-        "client": "Client",
-        "service": "Service",
-        "status": "Status",
-        "notes": "Notes",
-        "scheduled": "Scheduled",
-        "completed": "Completed",
-        "cancelled": "Cancelled",
-    },
-    "hy": {
-        "title": "SalonFlow AI - Օրական ամփոփ հաշվետվություն",
-        "report_date": "Հաշվետվության ամսաթիվ",
-        "generated_at": "Ստեղծվել է",
-        "overview": "Ամփոփում",
-        "metric": "Ցուցիչ",
-        "value": "Արժեք",
-        "total_clients": "Ընդհանուր հաճախորդներ",
-        "total_services": "Ընդհանուր ծառայություններ",
-        "total_appointments": "Ընդհանուր ամրագրումներ",
-        "appointments_on_date": "Ամրագրումներ ընտրված օրը",
-        "scheduled_on_date": "Պլանավորված ընտրված օրը",
-        "completed_on_date": "Ավարտված ընտրված օրը",
-        "cancelled_on_date": "Չեղարկված ընտրված օրը",
-        "appointments": "Ամրագրումներ",
-        "no_appointments": "Այս ամսաթվի համար ամրագրումներ չեն գտնվել։",
-        "start": "Սկիզբ",
-        "client": "Հաճախորդ",
-        "service": "Ծառայություն",
-        "status": "Կարգավիճակ",
-        "notes": "Նշումներ",
-        "scheduled": "Պլանավորված",
-        "completed": "Ավարտված",
-        "cancelled": "Չեղարկված",
-    },
-    "ru": {
-        "title": "SalonFlow AI - Ежедневный сводный отчет",
-        "report_date": "Дата отчета",
-        "generated_at": "Создано",
-        "overview": "Сводка",
-        "metric": "Показатель",
-        "value": "Значение",
-        "total_clients": "Всего клиентов",
-        "total_services": "Всего услуг",
-        "total_appointments": "Всего записей",
-        "appointments_on_date": "Записи на выбранную дату",
-        "scheduled_on_date": "Запланировано на дату",
-        "completed_on_date": "Завершено на дату",
-        "cancelled_on_date": "Отменено на дату",
-        "appointments": "Записи",
-        "no_appointments": "На эту дату записи не найдены.",
-        "start": "Начало",
-        "client": "Клиент",
-        "service": "Услуга",
-        "status": "Статус",
-        "notes": "Заметки",
-        "scheduled": "Запланировано",
-        "completed": "Завершено",
-        "cancelled": "Отменено",
-    },
-    "fr": {
-        "title": "SalonFlow AI - Rapport quotidien",
-        "report_date": "Date du rapport",
-        "generated_at": "Généré le",
-        "overview": "Vue d’ensemble",
-        "metric": "Indicateur",
-        "value": "Valeur",
-        "total_clients": "Total des clients",
-        "total_services": "Total des services",
-        "total_appointments": "Total des réservations",
-        "appointments_on_date": "Réservations à la date sélectionnée",
-        "scheduled_on_date": "Planifiées à cette date",
-        "completed_on_date": "Terminées à cette date",
-        "cancelled_on_date": "Annulées à cette date",
-        "appointments": "Réservations",
-        "no_appointments": "Aucune réservation trouvée pour cette date.",
-        "start": "Début",
-        "client": "Client",
-        "service": "Service",
-        "status": "Statut",
-        "notes": "Notes",
-        "scheduled": "Planifié",
-        "completed": "Terminé",
-        "cancelled": "Annulé",
-    },
+
+def _authenticated_owner(auth: object) -> str:
+    owner_id = (
+        auth.get("admin_id")
+        if isinstance(auth, dict)
+        else None
+    )
+    if (
+        not isinstance(owner_id, str)
+        or not ObjectId.is_valid(owner_id)
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token",
+        )
+    return owner_id
+
+
+async def require_reports_entitlement(
+    auth: dict = Depends(require_auth),
+) -> None:
+    owner_id = _authenticated_owner(auth)
+    database = get_database()
+
+    try:
+        await require_feature_entitlement(
+            database=database,
+            owner_id=owner_id,
+            feature=REPORT_FEATURE,
+        )
+    except FeatureNotEntitled:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": FEATURE_NOT_ENTITLED_CODE,
+                "feature": REPORT_FEATURE,
+            },
+        ) from None
+    except EntitlementSourceUnavailable:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": ENTITLEMENT_SOURCE_UNAVAILABLE_CODE,
+                "feature": REPORT_FEATURE,
+            },
+        ) from None
+
+
+
+REPORT_FORMATS = {
+    "pdf": (render_daily_summary_pdf, "application/pdf", "pdf"),
+    "txt": (render_daily_summary_txt, "text/plain", "txt"),
+    "csv": (render_daily_summary_csv, "text/csv", "csv"),
+    "xlsx": (
+        render_daily_summary_xlsx,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "xlsx",
+    ),
+    "docx": (
+        render_daily_summary_docx,
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "docx",
+    ),
 }
 
 
-def normalize_locale(value: str | None) -> str:
-    if value in {"en", "hy", "ru", "fr"}:
-        return value
-    return "en"
+def _report_responses(*, media_type: str, description: str) -> dict:
+    return {
+        200: {"description": description, "content": {media_type: {}}},
+        400: {"description": "Invalid report date"},
+        401: {"description": "Authentication required"},
+        403: {"description": "Reports feature not entitled"},
+        503: {"description": "Report entitlement source unavailable"},
+    }
 
 
-def pdf_text(locale: str, key: str) -> str:
-    return PDF_TRANSLATIONS.get(locale, PDF_TRANSLATIONS["en"]).get(
-        key,
-        PDF_TRANSLATIONS["en"].get(key, key),
-    )
-
-
-def pdf_status(locale: str, value: str | None) -> str:
-    status = (value or "").lower()
-    if status in {"scheduled", "completed", "cancelled"}:
-        return pdf_text(locale, status)
-    return value or "-"
-
-
-def resolve_pdf_fonts() -> tuple[str, str]:
-    candidates = [
-        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
-        Path("/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf"),
-    ]
-    bold_candidates = [
-        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
-        Path("/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf"),
-    ]
-
-    regular = next((item for item in candidates if item.exists()), None)
-    bold = next((item for item in bold_candidates if item.exists()), None)
-
-    if regular and bold:
-        try:
-            pdfmetrics.registerFont(TTFont("SalonFlowSans", str(regular)))
-            pdfmetrics.registerFont(TTFont("SalonFlowSansBold", str(bold)))
-            return "SalonFlowSans", "SalonFlowSansBold"
-        except Exception:
-            pass
-
-    return "Helvetica", "Helvetica-Bold"
-
-
-def fmt_dt(value: str | None) -> str:
-    if not value:
-        return "-"
-    try:
-        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        return dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M")
-    except Exception:
-        return value
-
-
-@router.get("/daily-summary/pdf")
-async def export_daily_summary_pdf(
-    date_str: str | None = Query(default=None, alias="date"),
-    locale: str | None = Query(default="en"),
-    auth: dict = Depends(require_auth),
-):
-    locale = normalize_locale(locale)
-
-    db = get_database()
-    if db is None:
+async def _build_daily_summary(
+    *,
+    date_str: str | None,
+    locale: str | None,
+    auth: dict,
+) -> DailySummaryReport:
+    database = get_database()
+    if database is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
-    owner_id = auth.get("admin_id")
-    if not owner_id or not ObjectId.is_valid(owner_id):
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    owner_query = {"owner_id": owner_id}
+    owner_id = _authenticated_owner(auth)
 
     try:
         report_date = (
@@ -203,212 +125,158 @@ async def export_daily_summary_pdf(
             else datetime.now(UTC).date()
         )
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid date format. Use YYYY-MM-DD",
+        ) from None
 
-    start_of_day = datetime.combine(report_date, time.min, tzinfo=UTC)
-    end_of_day = datetime.combine(report_date, time.max, tzinfo=UTC)
-
-    start_iso = start_of_day.isoformat()
-    end_iso = end_of_day.isoformat()
-
-    appointments = await db.appointments.find(
-        {
-            "owner_id": owner_id,
-            "starts_at": {"$gte": start_iso, "$lte": end_iso},
-        }
-    ).sort("starts_at", 1).to_list(length=500)
-
-    total_clients = await db.clients.count_documents(owner_query)
-    total_services = await db.services.count_documents(owner_query)
-    total_appointments = await db.appointments.count_documents(owner_query)
-    today_appointments = len(appointments)
-    scheduled_count = sum(1 for x in appointments if x.get("status") == "scheduled")
-    completed_count = sum(1 for x in appointments if x.get("status") == "completed")
-    cancelled_count = sum(1 for x in appointments if x.get("status") == "cancelled")
-
-    buffer = BytesIO()
-
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=18 * mm,
-        leftMargin=18 * mm,
-        topMargin=18 * mm,
-        bottomMargin=18 * mm,
+    return await build_daily_summary_report(
+        database=database,
+        owner_id=owner_id,
+        report_date=report_date,
+        locale=locale,
     )
 
-    regular_font, bold_font = resolve_pdf_fonts()
 
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        "TitleCustom",
-        parent=styles["Title"],
-        fontName=bold_font,
-        fontSize=22,
-        leading=28,
-        textColor=colors.HexColor("#111111"),
-        spaceAfter=10,
+def _stream_daily_summary(
+    *,
+    report: DailySummaryReport,
+    format_name: str,
+) -> StreamingResponse:
+    renderer, media_type, extension = REPORT_FORMATS[format_name]
+    payload = renderer(report)
+    filename = (
+        f"salonflow_daily_summary_{report.locale}_"
+        f"{report.report_date.isoformat()}.{extension}"
     )
-    meta_style = ParagraphStyle(
-        "MetaCustom",
-        parent=styles["Normal"],
-        fontName=regular_font,
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor("#555555"),
-        spaceAfter=6,
-    )
-    section_style = ParagraphStyle(
-        "SectionCustom",
-        parent=styles["Heading2"],
-        fontName=bold_font,
-        fontSize=14,
-        leading=18,
-        textColor=colors.HexColor("#222222"),
-        spaceBefore=8,
-        spaceAfter=8,
-    )
-    body_style = ParagraphStyle(
-        "BodyCustom",
-        parent=styles["Normal"],
-        fontName=regular_font,
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor("#222222"),
-    )
-    table_header_style = ParagraphStyle(
-        "TableHeaderCustom",
-        parent=styles["Normal"],
-        fontName=bold_font,
-        fontSize=9,
-        leading=12,
-        textColor=colors.white,
-    )
-    table_cell_style = ParagraphStyle(
-        "TableCellCustom",
-        parent=styles["Normal"],
-        fontName=regular_font,
-        fontSize=9,
-        leading=12,
-        textColor=colors.HexColor("#222222"),
+    headers = {
+        "Content-Disposition": f'attachment; filename="{filename}"'
+    }
+    return StreamingResponse(
+        BytesIO(payload),
+        media_type=media_type,
+        headers=headers,
     )
 
-    def table_cell(value: object, bold: bool = False) -> Paragraph:
-        return Paragraph(str(value), table_header_style if bold else table_cell_style)
 
-    story = []
-
-    story.append(Paragraph(pdf_text(locale, "title"), title_style))
-    story.append(
-        Paragraph(
-            f'{pdf_text(locale, "report_date")}: {report_date.isoformat()}',
-            meta_style,
-        )
+async def _export_daily_summary(
+    *,
+    date_str: str | None,
+    locale: str | None,
+    auth: dict,
+    format_name: str,
+) -> StreamingResponse:
+    report = await _build_daily_summary(
+        date_str=date_str,
+        locale=locale,
+        auth=auth,
     )
-    story.append(
-        Paragraph(
-            f'{pdf_text(locale, "generated_at")}: '
-            f"{datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
-            meta_style,
-        )
+    return _stream_daily_summary(
+        report=report,
+        format_name=format_name,
     )
-    story.append(Spacer(1, 6))
 
-    story.append(Paragraph(pdf_text(locale, "overview"), section_style))
 
-    overview_rows = [
-        [table_cell(pdf_text(locale, "metric"), True), table_cell(pdf_text(locale, "value"), True)],
-        [table_cell(pdf_text(locale, "total_clients")), table_cell(total_clients)],
-        [table_cell(pdf_text(locale, "total_services")), table_cell(total_services)],
-        [table_cell(pdf_text(locale, "total_appointments")), table_cell(total_appointments)],
-        [table_cell(pdf_text(locale, "appointments_on_date")), table_cell(today_appointments)],
-        [table_cell(pdf_text(locale, "scheduled_on_date")), table_cell(scheduled_count)],
-        [table_cell(pdf_text(locale, "completed_on_date")), table_cell(completed_count)],
-        [table_cell(pdf_text(locale, "cancelled_on_date")), table_cell(cancelled_count)],
-    ]
-
-    overview_table = Table(
-        overview_rows,
-        colWidths=[95 * mm, 55 * mm],
-        hAlign="LEFT",
+@router.get(
+    "/daily-summary/pdf",
+    responses=_report_responses(
+        media_type="application/pdf",
+        description="Daily summary PDF",
+    ),
+)
+async def export_daily_summary_pdf(
+    date_str: str | None = Query(default=None, alias="date"),
+    locale: str | None = Query(default="en"),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+):
+    return await _export_daily_summary(
+        date_str=date_str,
+        locale=locale,
+        auth=auth,
+        format_name="pdf",
     )
-    overview_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#111827")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), bold_font),
-                ("FONTNAME", (0, 1), (-1, -1), regular_font),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("LEADING", (0, 0), (-1, -1), 13),
-                ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#F8FAFC")),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#D1D5DB")),
-                ("ALIGN", (1, 1), (1, -1), "CENTER"),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 7),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-            ]
-        )
+
+
+@router.get(
+    "/daily-summary/txt",
+    responses=_report_responses(
+        media_type="text/plain",
+        description="Daily summary TXT",
+    ),
+)
+async def export_daily_summary_txt(
+    date_str: str | None = Query(default=None, alias="date"),
+    locale: str | None = Query(default="en"),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+):
+    return await _export_daily_summary(
+        date_str=date_str,
+        locale=locale,
+        auth=auth,
+        format_name="txt",
     )
-    story.append(overview_table)
-    story.append(Spacer(1, 12))
 
-    story.append(Paragraph(pdf_text(locale, "appointments"), section_style))
 
-    if not appointments:
-        story.append(Paragraph(pdf_text(locale, "no_appointments"), body_style))
-    else:
-        rows = [[
-            table_cell(pdf_text(locale, "start"), True),
-            table_cell(pdf_text(locale, "client"), True),
-            table_cell(pdf_text(locale, "service"), True),
-            table_cell(pdf_text(locale, "status"), True),
-            table_cell(pdf_text(locale, "notes"), True),
-        ]]
-        for item in appointments:
-            rows.append(
-                [
-                    table_cell(fmt_dt(item.get("starts_at"))),
-                    table_cell(item.get("client_name") or "-"),
-                    table_cell(item.get("service_name") or "-"),
-                    table_cell(pdf_status(locale, item.get("status"))),
-                    table_cell((item.get("notes") or "-")[:70]),
-                ]
-            )
+@router.get(
+    "/daily-summary/csv",
+    responses=_report_responses(
+        media_type="text/csv",
+        description="Daily summary CSV",
+    ),
+)
+async def export_daily_summary_csv(
+    date_str: str | None = Query(default=None, alias="date"),
+    locale: str | None = Query(default="en"),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+):
+    return await _export_daily_summary(
+        date_str=date_str,
+        locale=locale,
+        auth=auth,
+        format_name="csv",
+    )
 
-        appointments_table = Table(
-            rows,
-            colWidths=[28 * mm, 38 * mm, 42 * mm, 24 * mm, 48 * mm],
-            repeatRows=1,
-            hAlign="LEFT",
-        )
-        appointments_table.setStyle(
-            TableStyle(
-                [
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#7C3AED")),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                    ("FONTNAME", (0, 0), (-1, 0), bold_font),
-                    ("FONTNAME", (0, 1), (-1, -1), regular_font),
-                    ("FONTSIZE", (0, 0), (-1, -1), 9),
-                    ("LEADING", (0, 0), (-1, -1), 12),
-                    ("BACKGROUND", (0, 1), (-1, -1), colors.white),
-                    ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D1D5DB")),
-                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-                    ("TOPPADDING", (0, 0), (-1, -1), 6),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ]
-            )
-        )
-        story.append(appointments_table)
 
-    doc.build(story)
-    buffer.seek(0)
+@router.get(
+    "/daily-summary/xlsx",
+    responses=_report_responses(
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        description="Daily summary XLSX",
+    ),
+)
+async def export_daily_summary_xlsx(
+    date_str: str | None = Query(default=None, alias="date"),
+    locale: str | None = Query(default="en"),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+):
+    return await _export_daily_summary(
+        date_str=date_str,
+        locale=locale,
+        auth=auth,
+        format_name="xlsx",
+    )
 
-    filename = f"salonflow_daily_summary_{locale}_{report_date.isoformat()}.pdf"
-    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
 
-    return StreamingResponse(buffer, media_type="application/pdf", headers=headers)
+@router.get(
+    "/daily-summary/docx",
+    responses=_report_responses(
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        description="Daily summary DOCX",
+    ),
+)
+async def export_daily_summary_docx(
+    date_str: str | None = Query(default=None, alias="date"),
+    locale: str | None = Query(default="en"),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+):
+    return await _export_daily_summary(
+        date_str=date_str,
+        locale=locale,
+        auth=auth,
+        format_name="docx",
+    )
