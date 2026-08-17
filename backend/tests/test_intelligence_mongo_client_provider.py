@@ -744,5 +744,97 @@ class MongoClientProviderTests(
         )
 
 
+class Phase63DClientTimezoneQueryTests(unittest.IsolatedAsyncioTestCase):
+    async def test_yerevan_calendar_window_drives_exact_tenant_query(self):
+        from datetime import UTC, date, datetime
+        from unittest.mock import patch
+        from app.intelligence.context import IntelligenceContext
+        from app.intelligence.models import AnalysisWindow
+        from app.intelligence.providers.mongo_client_provider import (
+            MongoClientProvider,
+        )
+
+        class Cursor:
+            def __init__(self):
+                self.sort_args = None
+
+            def sort(self, key, direction):
+                self.sort_args = (key, direction)
+                return self
+
+            def limit(self, value):
+                return self
+
+            async def to_list(self, *, length):
+                return []
+
+        class Collection:
+            def __init__(self):
+                self.queries = []
+                self.cursor = None
+
+            def find(self, query):
+                self.queries.append(query)
+                self.cursor = Cursor()
+                return self.cursor
+
+            async def find_one(self, query):
+                self.queries.append(query)
+                return None
+
+            async def count_documents(self, query):
+                self.queries.append(query)
+                return 0
+
+        class DB:
+            def __init__(self):
+                self.appointments = Collection()
+                self.clients = Collection()
+                self.services = Collection()
+
+        db = DB()
+        context = IntelligenceContext(
+            owner_id="tenant-a",
+            currency="AMD",
+            generated_at=datetime(2026, 7, 8, 12, tzinfo=UTC),
+            timezone="Asia/Yerevan",
+            window=AnalysisWindow(
+                start=date(2026, 7, 1),
+                end=date(2026, 7, 7),
+                label="7d",
+            ),
+        )
+        with patch(
+            "app.intelligence.providers.mongo_client_provider.get_database",
+            return_value=db,
+        ):
+            snapshot = await MongoClientProvider().get_client_snapshot(
+                context=context
+            )
+
+        self.assertEqual(snapshot.owner_id, "tenant-a")
+        self.assertEqual(
+            snapshot.period_start,
+            datetime(2026, 6, 30, 20, tzinfo=UTC),
+        )
+        self.assertEqual(
+            snapshot.period_end,
+            datetime(2026, 7, 7, 20, tzinfo=UTC),
+        )
+        matches = [
+            query
+            for query in db.appointments.queries
+            if isinstance(query, dict) and "starts_at" in query
+        ]
+        self.assertEqual(len(matches), 1)
+        query = matches[0]
+        self.assertEqual(query.get("owner_id"), "tenant-a")
+        self.assertEqual(
+            query["starts_at"],
+            {
+                "$lt": "2026-07-07T20:00:00+00:00",
+            },
+        )
+
 if __name__ == "__main__":
     unittest.main()

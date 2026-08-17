@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, time, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any
 
 from app.db.mongo import get_database
 from app.intelligence.context import IntelligenceContext
+from app.intelligence.models.windows import resolve_local_date_window_utc
 from app.intelligence.service_intelligence import (
     ServicePerformanceSnapshot,
     ServiceSnapshot,
@@ -55,36 +56,19 @@ def _parse_timestamp(value: Any) -> datetime | None:
 def _window_bounds(
     context: IntelligenceContext,
 ) -> tuple[datetime, datetime]:
-    """
-    Return selected-period start and exclusive end boundaries.
-    """
-
+    """Return an aware UTC half-open period for service intelligence."""
     if context.window is not None:
-        period_start = datetime.combine(
-            context.window.start,
-            time.min,
-            tzinfo=UTC,
-        )
-
-        period_end = datetime.combine(
-            context.window.end + timedelta(days=1),
-            time.min,
-            tzinfo=UTC,
+        period_start, period_end = resolve_local_date_window_utc(
+            start=context.window.start,
+            end=context.window.end,
+            timezone_name=context.timezone,
         )
     else:
-        period_end = _normalize_utc(
-            context.generated_at
-        )
-
-        period_start = (
-            period_end
-            - timedelta(days=_DEFAULT_WINDOW_DAYS)
-        )
+        period_end = _normalize_utc(context.generated_at)
+        period_start = period_end - timedelta(days=_DEFAULT_WINDOW_DAYS)
 
     if period_end <= period_start:
-        raise ValueError(
-            "service analysis window must be positive"
-        )
+        raise ValueError("service analysis window must be positive")
 
     return period_start, period_end
 

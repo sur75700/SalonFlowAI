@@ -526,5 +526,93 @@ class MongoCapacityProviderTests(
         self.assertEqual(duration, 90)
 
 
+class Phase63DCapacityTimezoneQueryTests(unittest.IsolatedAsyncioTestCase):
+    async def test_yerevan_window_matches_baseline_and_exact_tenant_query(self):
+        from datetime import UTC, date, datetime
+        from unittest.mock import patch
+        from app.intelligence.capacity import (
+            CAPACITY_BASELINE_METADATA_KEY,
+            CapacityBaseline,
+        )
+        from app.intelligence.context import IntelligenceContext
+        from app.intelligence.models import AnalysisWindow
+        from app.intelligence.providers.mongo_capacity_provider import (
+            MongoCapacityProvider,
+        )
+
+        class Cursor:
+            def __init__(self):
+                self.sort_args = None
+
+            def sort(self, key, direction):
+                self.sort_args = (key, direction)
+                return self
+
+            async def to_list(self, *, length):
+                return []
+
+        class Collection:
+            def __init__(self):
+                self.query = None
+                self.find_calls = 0
+                self.cursor = None
+
+            def find(self, query):
+                self.query = query
+                self.find_calls += 1
+                self.cursor = Cursor()
+                return self.cursor
+
+        class DB:
+            def __init__(self):
+                self.appointments = Collection()
+
+        period_start = datetime(2026, 6, 30, 20, tzinfo=UTC)
+        period_end = datetime(2026, 7, 7, 20, tzinfo=UTC)
+        baseline = CapacityBaseline(
+            owner_id="tenant-a",
+            period_start=period_start,
+            period_end=period_end,
+            total_slots=10,
+            active_staff_count=2,
+            available_minutes=960,
+            source="staff_schedule",
+        )
+        context = IntelligenceContext(
+            owner_id="tenant-a",
+            generated_at=datetime(2026, 7, 8, 12, tzinfo=UTC),
+            timezone="Asia/Yerevan",
+            window=AnalysisWindow(
+                start=date(2026, 7, 1),
+                end=date(2026, 7, 7),
+                label="7d",
+            ),
+            metadata={CAPACITY_BASELINE_METADATA_KEY: baseline},
+        )
+        db = DB()
+        with patch(
+            "app.intelligence.providers.mongo_capacity_provider.get_database",
+            return_value=db,
+        ):
+            snapshot = await MongoCapacityProvider().get_capacity_snapshot(
+                context=context
+            )
+
+        self.assertEqual(snapshot.owner_id, "tenant-a")
+        self.assertEqual(snapshot.period_start, period_start)
+        self.assertEqual(snapshot.period_end, period_end)
+        self.assertEqual(db.appointments.find_calls, 1)
+        self.assertEqual(
+            db.appointments.query,
+            {
+                "owner_id": "tenant-a",
+                "status": {"$in": ["completed", "scheduled"]},
+                "starts_at": {
+                    "$gte": "2026-06-30T20:00:00+00:00",
+                    "$lt": "2026-07-07T20:00:00+00:00",
+                },
+            },
+        )
+
 if __name__ == "__main__":
     unittest.main()

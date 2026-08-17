@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, time, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any
 
 from app.db.mongo import get_database
 from app.intelligence.context import IntelligenceContext
+from app.intelligence.models.windows import resolve_local_date_window_utc
 from app.intelligence.provider import RevenueSnapshot
 
 
@@ -51,46 +52,51 @@ def _window_bounds(
     context: IntelligenceContext,
 ) -> tuple[datetime, datetime, datetime]:
     """
-    Return previous-period start, current-period start and
-    current-period end. End boundaries are exclusive.
+    Return previous-period start, current-period start and current-period
+    end as aware UTC instants. End boundaries are exclusive.
+
+    Explicit AnalysisWindow periods are calendar-date windows in the
+    authoritative owner timezone. The comparison period uses the same
+    number of preceding owner-local calendar days, so DST cannot skew the
+    business-period definition.
     """
-
     if context.window is not None:
-        current_start = datetime.combine(
-            context.window.start,
-            time.min,
-            tzinfo=UTC,
+        current_start, current_end = resolve_local_date_window_utc(
+            start=context.window.start,
+            end=context.window.end,
+            timezone_name=context.timezone,
         )
+        try:
+            previous_end_date = context.window.start - timedelta(days=1)
+            previous_start_date = previous_end_date - timedelta(
+                days=context.window.days - 1
+            )
+        except OverflowError as error:
+            raise ValueError(
+                "revenue previous analysis window is not representable"
+            ) from error
 
-        current_end = datetime.combine(
-            context.window.end + timedelta(days=1),
-            time.min,
-            tzinfo=UTC,
+        previous_start, previous_end = resolve_local_date_window_utc(
+            start=previous_start_date,
+            end=previous_end_date,
+            timezone_name=context.timezone,
         )
+        if previous_end != current_start:
+            raise ValueError(
+                "revenue comparison window must be contiguous"
+            )
     else:
-        current_end = _normalize_utc(
-            context.generated_at
-        )
+        current_end = _normalize_utc(context.generated_at)
+        current_start = current_end - timedelta(days=_DEFAULT_WINDOW_DAYS)
+        duration = current_end - current_start
+        if duration <= timedelta(0):
+            raise ValueError("revenue analysis window must be positive")
+        previous_start = current_start - duration
 
-        current_start = (
-            current_end
-            - timedelta(days=_DEFAULT_WINDOW_DAYS)
-        )
+    if current_end <= current_start or previous_start >= current_start:
+        raise ValueError("revenue analysis window must be positive")
 
-    duration = current_end - current_start
-
-    if duration <= timedelta(0):
-        raise ValueError(
-            "revenue analysis window must be positive"
-        )
-
-    previous_start = current_start - duration
-
-    return (
-        previous_start,
-        current_start,
-        current_end,
-    )
+    return previous_start, current_start, current_end
 
 
 def _currency_scale(currency: str) -> int:

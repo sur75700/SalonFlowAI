@@ -124,6 +124,138 @@ class IntelligenceFoundationTests(unittest.TestCase):
         )
 
 
+class Phase63DLocalDateWindowUtcTests(unittest.TestCase):
+    def resolve(self, start, end, timezone_name):
+        from app.intelligence.models.windows import (
+            resolve_local_date_window_utc,
+        )
+        return resolve_local_date_window_utc(
+            start=start,
+            end=end,
+            timezone_name=timezone_name,
+        )
+
+    def test_utc_single_day(self):
+        from datetime import UTC, date, datetime
+        start, end = self.resolve(date(2026, 7, 1), date(2026, 7, 1), "UTC")
+        self.assertEqual(start, datetime(2026, 7, 1, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 7, 2, tzinfo=UTC))
+
+    def test_asia_yerevan_single_day(self):
+        from datetime import UTC, date, datetime
+        start, end = self.resolve(date(2026, 7, 1), date(2026, 7, 1), "Asia/Yerevan")
+        self.assertEqual(start, datetime(2026, 6, 30, 20, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 7, 1, 20, tzinfo=UTC))
+
+    def test_negative_offset_timezone(self):
+        from datetime import UTC, date, datetime
+        start, end = self.resolve(
+            date(2026, 1, 15),
+            date(2026, 1, 15),
+            "America/Los_Angeles",
+        )
+        self.assertEqual(start, datetime(2026, 1, 15, 8, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 1, 16, 8, tzinfo=UTC))
+
+    def test_multi_day_month_boundary(self):
+        from datetime import UTC, date, datetime
+        start, end = self.resolve(date(2026, 1, 31), date(2026, 2, 2), "UTC")
+        self.assertEqual(start, datetime(2026, 1, 31, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 2, 3, tzinfo=UTC))
+
+    def test_year_boundary(self):
+        from datetime import UTC, date, datetime
+        start, end = self.resolve(date(2026, 12, 31), date(2027, 1, 1), "UTC")
+        self.assertEqual(start, datetime(2026, 12, 31, tzinfo=UTC))
+        self.assertEqual(end, datetime(2027, 1, 2, tzinfo=UTC))
+
+    def test_dst_spring_forward_is_23_hours(self):
+        from datetime import UTC, date, datetime, timedelta
+        start, end = self.resolve(
+            date(2026, 3, 8),
+            date(2026, 3, 8),
+            "America/New_York",
+        )
+        self.assertEqual(start, datetime(2026, 3, 8, 5, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 3, 9, 4, tzinfo=UTC))
+        self.assertEqual(end - start, timedelta(hours=23))
+
+    def test_dst_fall_back_is_25_hours(self):
+        from datetime import UTC, date, datetime, timedelta
+        start, end = self.resolve(
+            date(2026, 11, 1),
+            date(2026, 11, 1),
+            "America/New_York",
+        )
+        self.assertEqual(start, datetime(2026, 11, 1, 4, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 11, 2, 5, tzinfo=UTC))
+        self.assertEqual(end - start, timedelta(hours=25))
+
+    def test_invalid_timezone_fails_closed(self):
+        from datetime import date
+
+        for timezone_name in (
+            "Mars/Olympus",
+            "/etc/passwd",
+            "../UTC",
+            "UTC\x00invalid",
+        ):
+            with self.subTest(timezone_name=timezone_name):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "valid IANA timezone",
+                ):
+                    self.resolve(
+                        date(2026, 7, 1),
+                        date(2026, 7, 1),
+                        timezone_name,
+                    )
+
+    def test_midnight_gap_resolves_to_first_valid_instant(self):
+        from datetime import UTC, date, datetime, timedelta
+
+        start, end = self.resolve(
+            date(2026, 3, 8),
+            date(2026, 3, 8),
+            "America/Havana",
+        )
+        self.assertEqual(start, datetime(2026, 3, 8, 5, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 3, 9, 4, tzinfo=UTC))
+        self.assertEqual(end - start, timedelta(hours=23))
+
+    def test_midnight_fold_uses_first_occurrence(self):
+        from datetime import UTC, date, datetime, timedelta
+
+        start, end = self.resolve(
+            date(2026, 11, 1),
+            date(2026, 11, 1),
+            "America/Havana",
+        )
+        self.assertEqual(start, datetime(2026, 11, 1, 4, tzinfo=UTC))
+        self.assertEqual(end, datetime(2026, 11, 2, 5, tzinfo=UTC))
+        self.assertEqual(end - start, timedelta(hours=25))
+
+    def test_skipped_local_date_fails_closed(self):
+        from datetime import date
+
+        with self.assertRaisesRegex(ValueError, "positive period"):
+            self.resolve(
+                date(2011, 12, 30),
+                date(2011, 12, 30),
+                "Pacific/Apia",
+            )
+
+    def test_day_before_skipped_date_keeps_exact_boundary(self):
+        from datetime import UTC, date, datetime
+
+        start, end = self.resolve(
+            date(2011, 12, 29),
+            date(2011, 12, 29),
+            "Pacific/Apia",
+        )
+        self.assertEqual(start, datetime(2011, 12, 29, 10, tzinfo=UTC))
+        self.assertEqual(end, datetime(2011, 12, 30, 10, tzinfo=UTC))
+
 if __name__ == "__main__":
     unittest.main()
 
