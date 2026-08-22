@@ -177,21 +177,128 @@ const fr = {
       "Répartition des réservations planifiées, terminées et annulées.",
   },
   reports: {
-    title: "Rapports PDF",
-    heroSubtitle:
-      "Exportez des rapports PDF quotidiens soignés pour l’exploitation, la revue financière et la gestion.",
-    dailyPdfExport: "Export PDF quotidien",
-    dailyPdfExportSubtitle:
-      "Générez et téléchargez un résumé PDF soigné pour la date sélectionnée.",
-    reportingWorkflow: "Flux de reporting",
-    reportingWorkflowSubtitle:
-      "Flux simple d’export pour le reporting quotidien.",
-    stepPickDate: "1. Choisir une date",
-    stepPickDateSubtitle: "Utilisez le champ de saisie ou les boutons rapides pour sélectionner la date du rapport.",
-    stepExportSummary: "2. Exporter le résumé",
-    stepExportSummarySubtitle: "Le système télécharge un PDF généré par votre endpoint backend de rapports.",
-    stepReviewPerformance: "3. Revoir la performance du salon",
-    stepReviewPerformanceSubtitle: "Le rapport inclut les totaux et les réservations pour la date sélectionnée.",
+    "title": "Centre de rapports",
+    "heroSubtitle": "Transformez les données réelles du salon en vision claire, décisions sûres et rapports professionnels élégants.",
+    "dailyPdfExport": "Export PDF quotidien",
+    "dailyPdfExportSubtitle": "Générez et téléchargez un résumé PDF soigné pour la date sélectionnée.",
+    "reportingWorkflow": "Flux de reporting",
+    "reportingWorkflowSubtitle": "Flux simple d’export pour le reporting quotidien.",
+    "stepPickDate": "1. Choisir une date",
+    "stepPickDateSubtitle": "Utilisez le champ de saisie ou les boutons rapides pour sélectionner la date du rapport.",
+    "stepExportSummary": "2. Exporter le résumé",
+    "stepExportSummarySubtitle": "Le système télécharge un PDF généré par votre endpoint backend de rapports.",
+    "stepReviewPerformance": "3. Revoir la performance du salon",
+    "stepReviewPerformanceSubtitle": "Le rapport inclut les totaux et les réservations pour la date sélectionnée.",
+    "daily_summary": {
+      "title": "Résumé quotidien"
+    },
+    "appointments": {
+      "title": "Rendez-vous"
+    },
+    "revenue_summary": {
+      "title": "Résumé des revenus"
+    },
+    "client_summary": {
+      "title": "Résumé clients"
+    },
+    "service_performance": {
+      "title": "Performance des services"
+    },
+    "capacity_utilization": {
+      "title": "Utilisation de la capacité"
+    },
+    "commandCenter": {
+      "eyebrow": "ROYAL COSMOS · RAPPORTS",
+      "liveBadge": "DONNÉES SALON EN DIRECT",
+      "catalogTitle": "Catalogue des rapports",
+      "catalogSubtitle": "{count} rapports fiables · {formats} formats d’export",
+      "configureSubtitle": "Choisissez la période et uniquement les filtres disponibles pour ce rapport.",
+      "singleDay": "Une journée",
+      "dateRange": "Période",
+      "currencyRequired": "Devise requise",
+      "noCurrency": "Sans devise de reporting",
+      "reportDate": "Date du rapport",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "datePlaceholder": "AAAA-MM-JJ",
+      "dateHint": "Les dates suivent le fuseau horaire du salon. Laissez-les vides pour utiliser le réglage fiable du serveur.",
+      "status": "Statut",
+      "clients": "Clients",
+      "services": "Services",
+      "idPlaceholder": "ID séparés par des virgules",
+      "idHint": "Facultatif. Ajoutez un ou plusieurs identifiants séparés par des virgules.",
+      "currency": "Devise du rapport",
+      "currencyHint": "Le rapport conserve la devise d’origine sélectionnée. Aucune conversion automatique n’est appliquée.",
+      "loadPreview": "Charger l’aperçu fiable",
+      "loadingPreview": "Création de l’aperçu…",
+      "previewTitle": "Aperçu fiable",
+      "previewSubtitle": "Aperçu jusqu’à {preview} lignes · export jusqu’à {export} lignes",
+      "noPreviewTitle": "L’aperçu est prêt quand vous l’êtes",
+      "noPreviewSubtitle": "Choisissez les paramètres puis chargez l’aperçu fiable du serveur.",
+      "buildingTitle": "Création du rapport",
+      "buildingSubtitle": "SalonFlowAI prépare votre rapport fiable à partir des données réelles du salon.",
+      "totalRows": "Nombre total de lignes",
+      "timezone": "Fuseau horaire",
+      "period": "Période",
+      "metrics": "Indicateurs clés",
+      "warnings": "Attention",
+      "previewRows": "Lignes d’aperçu",
+      "emptyTitle": "Aucun résultat",
+      "emptySubtitle": "Le rapport est valide, mais aucun enregistrement ne correspond à la période et aux filtres choisis.",
+      "generated": "Généré",
+      "openExport": "Ouvrir le centre d’export",
+      "exportOverline": "EXPORT ROYAL COSMOS",
+      "exportSubtitle": "Choisissez un format de document rendu professionnellement.",
+      "close": "Fermer",
+      "downloadShare": "Télécharger / partager",
+      "preparingExport": "Préparation de l’export…",
+      "exportComplete": "Export terminé",
+      "dismiss": "Fermer",
+      "trustTitle": "Livraison fiable",
+      "trustSubtitle": "L’aperçu et l’export sont produits à partir des mêmes données fiables du salon.",
+      "serverGenerated": "Généré par le serveur",
+      "serverGeneratedValue": "Données fiables du salon",
+      "dateHandling": "Gestion des dates",
+      "dateHandlingValue": "Fuseau horaire du salon",
+      "currencyPolicy": "Politique de devise",
+      "currencyPolicyValue": "Aucune conversion automatique",
+      "historyPolicy": "Historique enregistré",
+      "historyPolicyValue": "Non stocké",
+      "loadingCatalogTitle": "Chargement des rapports",
+      "loadingCatalogSubtitle": "Lecture des rapports, filtres et possibilités d’export disponibles.",
+      "catalogUnavailableTitle": "Les rapports nécessitent votre attention",
+      "catalogUnavailableSubtitle": "Le catalogue des rapports n’a pas pu être chargé.",
+      "noCatalog": "Aucun catalogue de rapports n’est disponible.",
+      "accessDenied": "L’accès aux rapports n’est pas activé pour ce compte.",
+      "catalogLoadFailed": "Impossible de charger le catalogue des rapports.",
+      "chooseCurrency": "Choisissez une devise avant de charger l’aperçu.",
+      "capacityUnavailable": "Les données fiables de capacité sont indisponibles pour cette période.",
+      "previewFailed": "Impossible de charger l’aperçu du rapport.",
+      "previewRequired": "Chargez un aperçu fiable avant l’export.",
+      "exportFailed": "Échec de l’export du rapport.",
+      "shareReady": "{file} est prêt à être partagé.",
+      "exportSuccess": "{file} a été exporté avec succès.",
+      "statusValues": {
+        "scheduled": "Planifié",
+        "completed": "Terminé",
+        "cancelled": "Annulé"
+      },
+      "reportDescriptions": {
+        "daily_summary": "Une vue opérationnelle claire d’une journée du salon.",
+        "appointments": "Analysez l’activité des rendez-vous sur la période choisie.",
+        "revenue_summary": "Consultez les revenus fiables dans la devise sélectionnée.",
+        "client_summary": "Comprenez l’activité et la valeur des clients sur la période.",
+        "service_performance": "Comparez la demande et la performance financière des services.",
+        "capacity_utilization": "Mesurez l’utilisation réelle de la capacité disponible."
+      },
+      "formatDescriptions": {
+        "pdf": "Document soigné pour la lecture et le partage",
+        "txt": "Archive légère en texte brut",
+        "csv": "Données structurées pour l’analyse",
+        "xlsx": "Classeur pour la finance et les opérations",
+        "docx": "Document professionnel modifiable"
+      }
+    }
   },
 
   dashboardV2: {

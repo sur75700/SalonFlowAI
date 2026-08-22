@@ -177,21 +177,128 @@ const ru = {
       "Распределение запланированных, завершенных и отмененных записей.",
   },
   reports: {
-    title: "PDF отчеты",
-    heroSubtitle:
-      "Экспортируйте профессиональные ежедневные PDF-отчеты для операций, финансового обзора и управления.",
-    dailyPdfExport: "Ежедневный PDF экспорт",
-    dailyPdfExportSubtitle:
-      "Создайте и скачайте профессиональный PDF-отчет за выбранную дату.",
-    reportingWorkflow: "Процесс отчетности",
-    reportingWorkflowSubtitle:
-      "Простой процесс экспорта ежедневной отчетности.",
-    stepPickDate: "1. Выберите дату",
-    stepPickDateSubtitle: "Используйте поле ввода или быстрые кнопки для выбора даты отчета.",
-    stepExportSummary: "2. Экспортируйте сводку",
-    stepExportSummarySubtitle: "Система скачивает PDF, созданный вашим backend reports endpoint.",
-    stepReviewPerformance: "3. Оцените показатели салона",
-    stepReviewPerformanceSubtitle: "Отчет включает итоги и записи за выбранную дату.",
+    "title": "Центр отчетности",
+    "heroSubtitle": "Превращайте реальные данные салона в понятную картину бизнеса, уверенные решения и профессиональные отчеты.",
+    "dailyPdfExport": "Ежедневный PDF экспорт",
+    "dailyPdfExportSubtitle": "Создайте и скачайте профессиональный PDF-отчет за выбранную дату.",
+    "reportingWorkflow": "Процесс отчетности",
+    "reportingWorkflowSubtitle": "Простой процесс экспорта ежедневной отчетности.",
+    "stepPickDate": "1. Выберите дату",
+    "stepPickDateSubtitle": "Используйте поле ввода или быстрые кнопки для выбора даты отчета.",
+    "stepExportSummary": "2. Экспортируйте сводку",
+    "stepExportSummarySubtitle": "Система скачивает PDF, созданный backend отчетов.",
+    "stepReviewPerformance": "3. Оцените показатели салона",
+    "stepReviewPerformanceSubtitle": "Отчет включает итоги и записи за выбранную дату.",
+    "daily_summary": {
+      "title": "Ежедневная сводка"
+    },
+    "appointments": {
+      "title": "Записи"
+    },
+    "revenue_summary": {
+      "title": "Сводка по выручке"
+    },
+    "client_summary": {
+      "title": "Сводка по клиентам"
+    },
+    "service_performance": {
+      "title": "Эффективность услуг"
+    },
+    "capacity_utilization": {
+      "title": "Использование мощности"
+    },
+    "commandCenter": {
+      "eyebrow": "ROYAL COSMOS · ОТЧЕТЫ",
+      "liveBadge": "ЖИВЫЕ ДАННЫЕ САЛОНА",
+      "catalogTitle": "Каталог отчетов",
+      "catalogSubtitle": "{count} надежных отчетов · {formats} форматов экспорта",
+      "configureSubtitle": "Выберите период и только доступные для этого отчета фильтры.",
+      "singleDay": "Один день",
+      "dateRange": "Период",
+      "currencyRequired": "Требуется валюта",
+      "noCurrency": "Без отчетной валюты",
+      "reportDate": "Дата отчета",
+      "startDate": "Начальная дата",
+      "endDate": "Конечная дата",
+      "datePlaceholder": "ГГГГ-ММ-ДД",
+      "dateHint": "Даты рассчитываются по часовому поясу салона. Оставьте пустыми для надежного значения сервера по умолчанию.",
+      "status": "Статус",
+      "clients": "Клиенты",
+      "services": "Услуги",
+      "idPlaceholder": "ID через запятую",
+      "idHint": "Необязательно. Добавьте один или несколько идентификаторов через запятую.",
+      "currency": "Валюта отчета",
+      "currencyHint": "Отчет сохраняет выбранную исходную валюту. Автоматическая конвертация не выполняется.",
+      "loadPreview": "Загрузить надежный просмотр",
+      "loadingPreview": "Создается надежный просмотр…",
+      "previewTitle": "Надежный просмотр",
+      "previewSubtitle": "Просмотр до {preview} строк · экспорт до {export} строк",
+      "noPreviewTitle": "Просмотр готов к запуску",
+      "noPreviewSubtitle": "Выберите параметры отчета и загрузите надежный просмотр с сервера.",
+      "buildingTitle": "Формируется отчет",
+      "buildingSubtitle": "SalonFlowAI формирует надежный отчет из реальных данных салона.",
+      "totalRows": "Всего строк",
+      "timezone": "Часовой пояс",
+      "period": "Период",
+      "metrics": "Ключевые показатели",
+      "warnings": "Внимание",
+      "previewRows": "Строки просмотра",
+      "emptyTitle": "Нет подходящих данных",
+      "emptySubtitle": "Отчет корректен, но для выбранного периода и фильтров записи отсутствуют.",
+      "generated": "Создан",
+      "openExport": "Открыть центр экспорта",
+      "exportOverline": "ЭКСПОРТ ROYAL COSMOS",
+      "exportSubtitle": "Выберите профессионально подготовленный формат документа.",
+      "close": "Закрыть",
+      "downloadShare": "Скачать / поделиться",
+      "preparingExport": "Подготовка экспорта…",
+      "exportComplete": "Экспорт завершен",
+      "dismiss": "Закрыть",
+      "trustTitle": "Надежная выдача",
+      "trustSubtitle": "Просмотр и экспорт создаются из одних и тех же надежных данных салона.",
+      "serverGenerated": "Создано сервером",
+      "serverGeneratedValue": "Надежные данные салона",
+      "dateHandling": "Обработка дат",
+      "dateHandlingValue": "Часовой пояс салона",
+      "currencyPolicy": "Правило валюты",
+      "currencyPolicyValue": "Без автоматической конвертации",
+      "historyPolicy": "Сохраненная история",
+      "historyPolicyValue": "Не хранится",
+      "loadingCatalogTitle": "Загрузка отчетов",
+      "loadingCatalogSubtitle": "Загружаются доступные отчеты, фильтры и возможности экспорта.",
+      "catalogUnavailableTitle": "Отчеты требуют внимания",
+      "catalogUnavailableSubtitle": "Не удалось загрузить каталог отчетов.",
+      "noCatalog": "Каталог отчетов недоступен.",
+      "accessDenied": "Доступ к отчетам для этой учетной записи не включен.",
+      "catalogLoadFailed": "Не удалось загрузить каталог отчетов.",
+      "chooseCurrency": "Перед просмотром выберите валюту отчета.",
+      "capacityUnavailable": "Надежные данные мощности недоступны для этого периода.",
+      "previewFailed": "Не удалось загрузить просмотр отчета.",
+      "previewRequired": "Перед экспортом загрузите надежный просмотр.",
+      "exportFailed": "Не удалось экспортировать отчет.",
+      "shareReady": "{file} готов к отправке.",
+      "exportSuccess": "{file} успешно экспортирован.",
+      "statusValues": {
+        "scheduled": "Запланировано",
+        "completed": "Завершено",
+        "cancelled": "Отменено"
+      },
+      "reportDescriptions": {
+        "daily_summary": "Четкая операционная картина одного дня салона.",
+        "appointments": "Анализ активности записей за выбранный период.",
+        "revenue_summary": "Надежные суммы выручки в выбранной валюте.",
+        "client_summary": "Активность и ценность клиентов за выбранный период.",
+        "service_performance": "Сравнение спроса и финансовой эффективности услуг.",
+        "capacity_utilization": "Оценка фактического использования доступной мощности салона."
+      },
+      "formatDescriptions": {
+        "pdf": "Профессиональный документ для просмотра и отправки",
+        "txt": "Легкая текстовая версия",
+        "csv": "Структурированные данные для анализа",
+        "xlsx": "Таблица для финансов и операционной работы",
+        "docx": "Редактируемый профессиональный документ"
+      }
+    }
   },
 
   dashboardV2: {

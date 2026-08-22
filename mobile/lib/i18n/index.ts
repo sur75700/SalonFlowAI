@@ -2930,6 +2930,12 @@ export const translations = {
 };
 
 export function t(key: string, locale: AppLanguage = defaultLanguage): string {
+  const directNested = key.includes(".")
+    ? readNestedTranslation(locale, key)
+    : undefined;
+
+  if (directNested) return directNested;
+
   const bridgePath = bridgeMap[key];
   if (bridgePath) {
     const bridged = readNestedTranslation(locale, bridgePath);

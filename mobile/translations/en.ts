@@ -177,21 +177,128 @@ const en = {
       "Distribution of scheduled, completed, and cancelled bookings.",
   },
   reports: {
-    title: "PDF Reports",
-    heroSubtitle:
-      "Export polished daily PDF summaries for operations, finance review, and management reporting.",
-    dailyPdfExport: "Daily PDF Export",
-    dailyPdfExportSubtitle:
-      "Generate and download a polished PDF summary for the selected date.",
-    reportingWorkflow: "Reporting Workflow",
-    reportingWorkflowSubtitle:
-      "Simple export flow for daily reporting.",
-    stepPickDate: "1. Pick a date",
-    stepPickDateSubtitle: "Use the input field or quick buttons to select the report date.",
-    stepExportSummary: "2. Export the summary",
-    stepExportSummarySubtitle: "The system downloads a PDF generated from your backend reports endpoint.",
-    stepReviewPerformance: "3. Review salon performance",
-    stepReviewPerformanceSubtitle: "The report includes totals and appointments for the selected day.",
+    "title": "Reports Command Center",
+    "heroSubtitle": "Turn live salon activity into clear insight, confident decisions and beautifully prepared professional reports.",
+    "dailyPdfExport": "Daily PDF Export",
+    "dailyPdfExportSubtitle": "Generate and download a polished PDF summary for the selected date.",
+    "reportingWorkflow": "Reporting Workflow",
+    "reportingWorkflowSubtitle": "Simple export flow for daily reporting.",
+    "stepPickDate": "1. Pick a date",
+    "stepPickDateSubtitle": "Use the input field or quick buttons to select the report date.",
+    "stepExportSummary": "2. Export the summary",
+    "stepExportSummarySubtitle": "The system downloads a PDF generated from your backend reports endpoint.",
+    "stepReviewPerformance": "3. Review salon performance",
+    "stepReviewPerformanceSubtitle": "The report includes totals and appointments for the selected day.",
+    "daily_summary": {
+      "title": "Daily Summary"
+    },
+    "appointments": {
+      "title": "Appointments"
+    },
+    "revenue_summary": {
+      "title": "Revenue Summary"
+    },
+    "client_summary": {
+      "title": "Client Summary"
+    },
+    "service_performance": {
+      "title": "Service Performance"
+    },
+    "capacity_utilization": {
+      "title": "Capacity Utilization"
+    },
+    "commandCenter": {
+      "eyebrow": "ROYAL COSMOS · REPORTS",
+      "liveBadge": "LIVE SALON DATA",
+      "catalogTitle": "Report catalog",
+      "catalogSubtitle": "{count} trusted reports · {formats} export formats",
+      "configureSubtitle": "Choose the period and only the filters available for this report.",
+      "singleDay": "Single day",
+      "dateRange": "Date range",
+      "currencyRequired": "Currency required",
+      "noCurrency": "No reporting currency",
+      "reportDate": "Report date",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "datePlaceholder": "YYYY-MM-DD",
+      "dateHint": "Dates follow your salon timezone. Leave them empty to use the trusted server default.",
+      "status": "Status",
+      "clients": "Clients",
+      "services": "Services",
+      "idPlaceholder": "ID(s), separated by commas",
+      "idHint": "Optional. Add one or more identifiers separated by commas.",
+      "currency": "Reporting currency",
+      "currencyHint": "The report keeps the selected original currency. No automatic currency conversion is applied.",
+      "loadPreview": "Load trusted preview",
+      "loadingPreview": "Building trusted preview…",
+      "previewTitle": "Trusted preview",
+      "previewSubtitle": "Preview up to {preview} rows · export up to {export} rows",
+      "noPreviewTitle": "Preview ready when you are",
+      "noPreviewSubtitle": "Choose your report settings and load the trusted server preview.",
+      "buildingTitle": "Building your report",
+      "buildingSubtitle": "SalonFlowAI is preparing your trusted report from live salon data.",
+      "totalRows": "Total rows",
+      "timezone": "Timezone",
+      "period": "Period",
+      "metrics": "Key metrics",
+      "warnings": "Attention",
+      "previewRows": "Preview rows",
+      "emptyTitle": "No matching records",
+      "emptySubtitle": "The report is valid, but there are no records for the selected period and filters.",
+      "generated": "Generated",
+      "openExport": "Open export center",
+      "exportOverline": "ROYAL COSMOS EXPORT",
+      "exportSubtitle": "Choose a professionally rendered document format.",
+      "close": "Close",
+      "downloadShare": "Download / share",
+      "preparingExport": "Preparing export…",
+      "exportComplete": "Export complete",
+      "dismiss": "Dismiss",
+      "trustTitle": "Trusted delivery",
+      "trustSubtitle": "Preview and export are produced from the same trusted salon data.",
+      "serverGenerated": "Server generated",
+      "serverGeneratedValue": "Trusted salon data",
+      "dateHandling": "Date handling",
+      "dateHandlingValue": "Salon timezone",
+      "currencyPolicy": "Currency policy",
+      "currencyPolicyValue": "No automatic conversion",
+      "historyPolicy": "Saved history",
+      "historyPolicyValue": "Not stored",
+      "loadingCatalogTitle": "Loading reports",
+      "loadingCatalogSubtitle": "Reading available reports, filters and export capabilities.",
+      "catalogUnavailableTitle": "Reports need attention",
+      "catalogUnavailableSubtitle": "The report catalog could not be loaded.",
+      "noCatalog": "No report catalog is available.",
+      "accessDenied": "Reports access is not enabled for this account.",
+      "catalogLoadFailed": "Failed to load the report catalog.",
+      "chooseCurrency": "Choose a reporting currency before loading the preview.",
+      "capacityUnavailable": "Trusted capacity data is unavailable for this period.",
+      "previewFailed": "Failed to load the report preview.",
+      "previewRequired": "Load a trusted preview before exporting.",
+      "exportFailed": "Report export failed.",
+      "shareReady": "{file} is ready to share.",
+      "exportSuccess": "{file} exported successfully.",
+      "statusValues": {
+        "scheduled": "Scheduled",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "reportDescriptions": {
+        "daily_summary": "A clear operational snapshot of one salon day.",
+        "appointments": "Review booking activity across a selected period.",
+        "revenue_summary": "See trusted revenue totals in the selected currency.",
+        "client_summary": "Understand client activity and value across the period.",
+        "service_performance": "Compare service demand and financial performance.",
+        "capacity_utilization": "Measure how effectively available salon capacity is used."
+      },
+      "formatDescriptions": {
+        "pdf": "Polished document for review and sharing",
+        "txt": "Lightweight plain-text record",
+        "csv": "Structured data for analysis",
+        "xlsx": "Spreadsheet workbook for finance and operations",
+        "docx": "Editable professional document"
+      }
+    }
   },
 
   dashboardV2: {

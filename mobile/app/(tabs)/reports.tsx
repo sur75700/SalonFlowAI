@@ -1,62 +1,102 @@
-import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
-import React, { useState } from "react";
-import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
+import React, {
+  useState,
+} from "react";
+
 import {
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 
 import DevLoginCard from "../../components/auth/DevLoginCard";
-import SessionStatusBanner from "../../components/auth/SessionStatusBanner";
-import { useLogout } from "../../hooks/useLogout";
-import SessionActionBar from "../../components/auth/SessionActionBar";
-import SectionCard from "../../components/dashboard/SectionCard";
+import ReportsCommandCenterV2 from "../../components/reports/ReportsCommandCenterV2";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
-import { useSession } from "../../hooks/useSession";
-import { API_BASE_URL, isAuthError } from "../../lib/api";
-import { useAppPreferences } from "../../hooks/useAppPreferences";
-import { t } from "../../lib/i18n";
+import RoyalCosmosBackground from "../../components/ui/RoyalCosmosBackground";
+
 import {
-  todayDateInput,
-  yesterdayDateInput,
-} from "../../utils/formatters";
+  useAppPreferences,
+} from "../../hooks/useAppPreferences";
+
+import {
+  useSession,
+} from "../../hooks/useSession";
+
+import { t } from "../../lib/i18n";
+
+import type {
+  ReportLocale,
+} from "../../lib/reports/contracts";
+
 import { UI } from "../../lib/theme/tokens";
 
 function ReportsSkeleton() {
   return (
-    <RoyalCosmosBackground style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <RoyalCosmosBackground
+      style={styles.container}
+    >
+      <ScrollView
+        contentContainerStyle={
+          styles.content
+        }
+      >
         <View style={styles.hero}>
-          <LoadingSkeleton height={12} width={110} style={{ marginBottom: 12 }} />
-          <LoadingSkeleton height={36} width={130} style={{ marginBottom: 10 }} />
-          <LoadingSkeleton height={14} width="95%" style={{ marginBottom: 8 }} />
-          <LoadingSkeleton height={14} width="78%" />
+          <LoadingSkeleton
+            height={11}
+            width={130}
+            style={{
+              marginBottom: 14,
+            }}
+          />
+
+          <LoadingSkeleton
+            height={36}
+            width={250}
+            style={{
+              marginBottom: 10,
+            }}
+          />
+
+          <LoadingSkeleton
+            height={13}
+            width="90%"
+            style={{
+              marginBottom: 7,
+            }}
+          />
+
+          <LoadingSkeleton
+            height={13}
+            width="72%"
+          />
         </View>
 
-        <View style={styles.sectionSkeleton}>
-          <LoadingSkeleton height={20} width={150} style={{ marginBottom: 10 }} />
-          <LoadingSkeleton height={14} width="84%" style={{ marginBottom: 16 }} />
-          <LoadingSkeleton height={50} width="100%" style={{ marginBottom: 14 }} />
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 14 }}>
-            <LoadingSkeleton height={40} width={90} />
-            <LoadingSkeleton height={40} width={110} />
-          </View>
-          <LoadingSkeleton height={46} width={180} />
-        </View>
+        <View
+          style={
+            styles.sectionSkeleton
+          }
+        >
+          <LoadingSkeleton
+            height={18}
+            width={170}
+            style={{
+              marginBottom: 12,
+            }}
+          />
 
-        <View style={styles.sectionSkeleton}>
-          <LoadingSkeleton height={20} width={140} style={{ marginBottom: 10 }} />
-          <LoadingSkeleton height={14} width="75%" style={{ marginBottom: 14 }} />
-          <LoadingSkeleton height={56} width="100%" style={{ marginBottom: 10 }} />
-          <LoadingSkeleton height={56} width="100%" style={{ marginBottom: 10 }} />
-          <LoadingSkeleton height={56} width="100%" />
+          <LoadingSkeleton
+            height={100}
+            width="100%"
+            style={{
+              marginBottom: 10,
+            }}
+          />
+
+          <LoadingSkeleton
+            height={100}
+            width="100%"
+          />
         </View>
       </ScrollView>
     </RoyalCosmosBackground>
@@ -64,129 +104,38 @@ function ReportsSkeleton() {
 }
 
 export default function ReportsScreen() {
-  const { locale } = useAppPreferences();
-  const { token, booting, clearToken, sessionEmail } = useSession();
-  const { logout, loggingOut } = useLogout();
+  const { locale } =
+    useAppPreferences();
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [exportingPdf, setExportingPdf] = useState(false);
-  const [error, setError] = useState("");
-  const [reportDate, setReportDate] = useState(todayDateInput());
+  const {
+    token,
+    booting,
+    clearToken,
+  } = useSession();
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  const [
+    refreshKey,
+    setRefreshKey,
+  ] = useState(0);
 
   const onRefresh = () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 350);
-  };
 
-  const exportPdfReport = async () => {
-    if (!token) {
-      setError(t("Session Expired Sign In", locale));
-      return;
-    }
+    setRefreshKey(
+      (current) =>
+        current + 1,
+    );
 
-    const fileName = "salonflow_daily_summary_" + reportDate + ".pdf";
-    const url =
-      API_BASE_URL +
-      "/reports/daily-summary/pdf?date=" +
-      encodeURIComponent(reportDate) +
-      "&locale=" +
-      encodeURIComponent(locale);
-
-    try {
-      setExportingPdf(true);
-      setError("");
-
-      if (Platform.OS !== "web") {
-        const fileUri = (FileSystem.documentDirectory || "") + fileName;
-
-        const result = await FileSystem.downloadAsync(url, fileUri, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const fakeErr = {
-          response: {
-            status: result.status,
-            data: { detail: t("Failed To Export Pdf", locale) },
-          },
-        };
-
-        if (isAuthError(fakeErr)) {
-          clearToken();
-          return;
-        }
-
-        if (result.status < 200 || result.status >= 300) {
-          throw new Error(t("Failed To Export Pdf", locale));
-        }
-
-        const canShare = await Sharing.isAvailableAsync();
-
-        if (!canShare) {
-          throw new Error(t("Failed To Export Pdf", locale));
-        }
-
-        await Sharing.shareAsync(result.uri, {
-          mimeType: "application/pdf",
-          dialogTitle: "SalonFlow AI PDF Report",
-          UTI: "com.adobe.pdf",
-        });
-
-        return;
-      }
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        let payload: any = null;
-
-        try {
-          payload = await response.json();
-        } catch {
-          payload = null;
-        }
-
-        const fakeErr = {
-          response: {
-            status: response.status,
-            data: payload || { detail: await response.text() },
-          },
-        };
-
-        if (isAuthError(fakeErr)) {
-          clearToken();
-          return;
-        }
-
-        throw new Error(payload?.detail || t("Failed To Export Pdf", locale));
-      }
-
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err: any) {
-      if (isAuthError(err)) {
-        clearToken();
-        setError("");
-        return;
-      }
-
-      setError(err?.message || t("Failed To Export Pdf", locale));
-    } finally {
-      setExportingPdf(false);
-    }
+    setTimeout(
+      () =>
+        setRefreshing(false),
+      450,
+    );
   };
 
   if (booting) {
@@ -196,339 +145,291 @@ export default function ReportsScreen() {
   if (!token) {
     return (
       <DevLoginCard
-        title={t("Pdf Reports", locale)}
-        subtitle={t("Session Unavailable Subtitle", locale)}
+        title={t(
+          "reports.title",
+          locale,
+        )}
+        subtitle={t(
+          "Session Unavailable Subtitle",
+          locale,
+        )}
       />
     );
   }
 
   return (
-    <RoyalCosmosBackground style={styles.container}>
+    <RoyalCosmosBackground
+      style={styles.container}
+    >
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={
+          styles.content
+        }
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
         }
       >
         <View style={styles.hero}>
-          <Text style={styles.heroOverline}>SALONFLOW AI</Text>
-          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit ellipsizeMode="tail">{t("Pdf Reports", locale)}</Text>
+          <View style={styles.heroGlow} />
+          <View
+            style={styles.heroGlowSmall}
+          />
+
+          <View
+            style={styles.heroTopRow}
+          >
+            <Text
+              style={
+                styles.heroOverline
+              }
+            >
+              {t(
+                "reports.commandCenter.eyebrow",
+                locale,
+              )}
+            </Text>
+
+            <View
+              style={styles.liveBadge}
+            >
+              <View
+                style={styles.liveDot}
+              />
+
+              <Text
+                style={
+                  styles.liveBadgeText
+                }
+              >
+                {t(
+                  "reports.commandCenter.liveBadge",
+                  locale,
+                )}
+              </Text>
+            </View>
+          </View>
+
+          <View
+            style={styles.heroAccent}
+          />
+
+          <Text
+            style={styles.heroTitle}
+            numberOfLines={2}
+            adjustsFontSizeToFit
+          >
+            {t(
+              "reports.title",
+              locale,
+            )}
+          </Text>
+
           <Text style={styles.heroText}>
-            {t("Reports Hero Subtitle", locale)}
+            {t(
+              "reports.heroSubtitle",
+              locale,
+            )}
           </Text>
         </View>
 
-        <SessionActionBar
-          email={sessionEmail}
-          onLogout={logout}
-          loggingOut={loggingOut}
+        <ReportsCommandCenterV2
+          token={token}
+          locale={
+            locale as ReportLocale
+          }
+          refreshKey={refreshKey}
+          onAuthExpired={
+            clearToken
+          }
         />
-
-        <SessionStatusBanner
-          title={t("Reports Ready", locale)}
-          subtitle={t("Reports Ready Subtitle", locale)}
-        />
-
-        {error ? (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>{t("Report export needs attention", locale)}</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <View style={styles.errorActions}>
-              <TouchableOpacity
-                style={[styles.retryButton, exportingPdf && styles.disabledButton]}
-                onPress={exportPdfReport}
-                disabled={exportingPdf}
-              >
-                <Text style={styles.retryButtonText}>
-                  {exportingPdf ? t("Exporting", locale) : t("Retry", locale)}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={() => setError("")}
-              >
-                <Text style={styles.secondaryButtonText}>{t("Cancel", locale)}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : null}
-
-        <SectionCard
-          title={t("Daily Pdf Export", locale)}
-          subtitle={t("Daily Pdf Export Subtitle", locale)}
-        >
-          <TextInput
-            style={styles.input}
-            placeholder={t("Date Input Placeholder", locale)}
-            placeholderTextColor="#9a92a3"
-            value={reportDate}
-            onChangeText={setReportDate}
-            autoCapitalize="none"
-          />
-
-          <View style={styles.quickRow}>
-            <TouchableOpacity
-              style={styles.quickButton}
-              onPress={() => setReportDate(todayDateInput())}
-            >
-              <Text style={styles.quickButtonText}>{t("Today", locale)}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickButton}
-              onPress={() => setReportDate(yesterdayDateInput())}
-            >
-              <Text style={styles.quickButtonText}>{t("Yesterday", locale)}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={exportPdfReport}
-            disabled={exportingPdf}
-          >
-            <Text style={styles.primaryButtonText}>
-              {exportingPdf ? t("Exporting", locale) : t("Export Pdf Report", locale)}
-            </Text>
-          </TouchableOpacity>
-          <Text style={styles.exportLocaleHint}>
-            {t("Pdf Locale Export Hint", locale)}
-          </Text>
-        </SectionCard>
-
-        <SectionCard
-          title={t("Export Readiness", locale)}
-          subtitle={t("Export Readiness Subtitle", locale)}
-        >
-          <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t("Selected Date", locale)}</Text>
-            <Text style={styles.readinessValue}>{reportDate}</Text>
-          </View>
-
-          <View style={styles.readinessCard}>
-            <Text style={styles.readinessLabel}>{t("Export State", locale)}</Text>
-            <Text style={styles.readinessValue}>
-              {exportingPdf ? t("Generating Pdf", locale) : t("Ready To Export", locale)}
-            </Text>
-          </View>
-        </SectionCard>
-
-        <SectionCard
-          title={t("Reporting Workflow", locale)}
-          subtitle={t("Reporting WorkflowSubtitle", locale)}
-        >
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Pick Date Step Title", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("Pick Date Step Subtitle", locale)}
-            </Text>
-          </View>
-
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Export Summary Step Title", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("Export Summary Step Subtitle", locale)}
-            </Text>
-          </View>
-
-          <View style={styles.infoBlock}>
-            <Text style={styles.infoTitle}>{t("Review Performance Step Title", locale)}</Text>
-            <Text style={styles.infoText}>
-              {t("Review Performance Step Subtitle", locale)}
-            </Text>
-          </View>
-        </SectionCard>
       </ScrollView>
     </RoyalCosmosBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#040508" },
-  content: { padding: UI.spacing.screen, paddingBottom: UI.spacing.bottom },
-  hero: {
-    boxShadow: UI.depth.hero,
-    elevation: 12,
-    backgroundColor: "rgba(8, 10, 18, 0.92)",
-    borderRadius: UI.radius.hero,
-    padding: UI.spacing.xl,
-    marginBottom: UI.spacing.lg,
-    borderWidth: 1,
-    borderColor: "#27212c",
-  },
-  heroOverline: {
-    color: "#f2d17a",
-    fontSize: UI.font.overline,
-    fontWeight: "900",
-    letterSpacing: 2,
-    marginBottom: 10,
-  },
-  heroTitle: {
-    color: "#ffffff",
-    fontSize: 28,
-    fontWeight: "900",
-    marginBottom: 8,
-  },
-  heroText: {
-    color: "#b7adbf",
-    fontSize: UI.font.subtitle,
-    lineHeight: 23,
-  },
-  sectionSkeleton: {
-    backgroundColor: "#11131d",
-    borderWidth: 1,
-    borderColor: "#241f27",
-    borderRadius: UI.radius.xl,
-    padding: UI.spacing.lg,
-    marginBottom: UI.spacing.lg,
-  },
-  input: {
-    backgroundColor: "#141824",
-    color: "#ffffff",
-    borderRadius: UI.radius.md,
-    paddingHorizontal: UI.spacing.md,
-    paddingVertical: UI.spacing.md,
-    marginBottom: UI.spacing.sm,
-    borderWidth: 1,
-    borderColor: "#2e2631",
-  },
-  quickRow: {
-    flexDirection: "row",
-    gap: UI.spacing.sm,
-    marginBottom: UI.spacing.md,
-    flexWrap: "wrap",
-  },
-  quickButton: {
-    backgroundColor: "#161922",
-    borderWidth: 1,
-    borderColor: "#2b2f3b",
-    paddingHorizontal: UI.spacing.md,
-    paddingVertical: UI.spacing.sm,
-    borderRadius: UI.radius.md,
-  },
-  quickButtonText: {
-    color: "#ffffff",
-    fontSize: UI.font.overline,
-    fontWeight: "800",
-  },
-  primaryButton: {
-    backgroundColor: "#f2d17a",
-    borderRadius: UI.radius.md,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 6,
-  },
-  primaryButtonText: {
-    color: "#121212",
-    fontSize: 15,
-    fontWeight: "900",
-    letterSpacing: 0.3,
-  },
-  exportLocaleHint: {
-    color: "#b7adbf",
-    fontSize: UI.font.body,
-    lineHeight: 20,
-    marginTop: UI.spacing.sm,
-  },
-  infoBlock: {
-    backgroundColor: "#141824",
-    borderRadius: UI.radius.md,
-    padding: UI.spacing.md,
-    marginBottom: UI.spacing.sm,
-    boxShadow: UI.depth.soft,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: "#232834",
-  },
-  infoTitle: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "900",
-    marginBottom: 6,
-  },
-  infoText: {
-    color: "#c9c2cf",
-    fontSize: UI.font.body,
-    lineHeight: 21,
-  },
-  errorBox: {
-    backgroundColor: "#38161f",
-    padding: UI.spacing.md,
-    borderRadius: UI.radius.md,
-    marginBottom: UI.spacing.md,
-    borderWidth: 1,
-    borderColor: "#5a232e",
-  },
-  errorTitle: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "900",
-    marginBottom: 6,
-  },
-  errorText: {
-    color: "#ffcad3",
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  errorActions: {
-    marginTop: 14,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  retryButton: {
-    backgroundColor: "#78350f",
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-    borderRadius: UI.radius.md,
-    paddingHorizontal: UI.spacing.md,
-    paddingVertical: UI.spacing.sm,
-  },
-  retryButtonText: {
-    color: "#ffffff",
-    fontSize: 13,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  secondaryButton: {
-    backgroundColor: "#171b27",
-    borderWidth: 1,
-    borderColor: "#4b556d",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  secondaryButtonText: {
-    color: "#ffffff",
-    fontSize: 13,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  disabledButton: {
-    opacity: 0.55,
+  container: {
+    flex: 1,
+    backgroundColor: "#03040A",
   },
 
-  readinessCard: {
-    backgroundColor: "#141824",
+  content: {
+    width: "100%",
+    maxWidth: 1180,
+    alignSelf: "center",
+
+    padding: UI.spacing.screen,
+
+    paddingBottom:
+      UI.spacing.bottom,
+  },
+
+  hero: {
+    position: "relative",
+    overflow: "hidden",
+
+    backgroundColor:
+      "#191746",
+
+    borderRadius: 28,
+
+    paddingHorizontal: 24,
+    paddingVertical: 22,
+
+    marginBottom: 17,
+
     borderWidth: 1,
-    borderColor: "#2a3140",
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
+    borderColor:
+      "rgba(139,114,255,0.32)",
+
+    shadowColor: "#8B72FF",
+    shadowOpacity: 0.16,
+    shadowRadius: 26,
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+
+    elevation: 12,
   },
-  readinessLabel: {
-    color: "#c9c2cf",
-    fontSize: 12,
-    fontWeight: "800",
-    marginBottom: 6,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
+
+  heroGlow: {
+    position: "absolute",
+
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+
+    right: -105,
+    top: -135,
+
+    backgroundColor:
+      "rgba(78,111,255,0.13)",
   },
-  readinessValue: {
-    color: "#ffffff",
-    fontSize: 18,
+
+  heroGlowSmall: {
+    position: "absolute",
+
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+
+    left: -70,
+    bottom: -105,
+
+    backgroundColor:
+      "rgba(207,140,255,0.08)",
+  },
+
+  heroTopRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+
+    justifyContent:
+      "space-between",
+
+    alignItems: "center",
+
+    gap: 10,
+    marginBottom: 14,
+  },
+
+  heroOverline: {
+    color: "#F2D17A",
+
+    fontSize: 9,
     fontWeight: "900",
+
+    letterSpacing: 1.7,
+  },
+
+  liveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    gap: 7,
+
+    borderRadius: 999,
+
+    borderWidth: 1,
+    borderColor:
+      "rgba(114,224,168,0.28)",
+
+    backgroundColor:
+      "rgba(114,224,168,0.08)",
+
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+
+  liveDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+
+    backgroundColor: "#72E0A8",
+
+    shadowColor: "#72E0A8",
+    shadowOpacity: 0.70,
+    shadowRadius: 7,
+  },
+
+  liveBadgeText: {
+    color: "#C5F3D8",
+
+    fontSize: 8,
+    fontWeight: "900",
+
+    letterSpacing: 0.8,
+  },
+
+  heroAccent: {
+    width: 56,
+    height: 3,
+    borderRadius: 999,
+
+    backgroundColor: "#8B72FF",
+
+    marginBottom: 14,
+  },
+
+  heroTitle: {
+    color: "#FFFFFF",
+
+    fontSize: 31,
+    lineHeight: 38,
+    fontWeight: "900",
+
+    letterSpacing: -0.85,
+
+    maxWidth: 760,
+
+    marginBottom: 8,
+  },
+
+  heroText: {
+    color: "#C0BBCD",
+
+    fontSize: UI.font.subtitle,
+    lineHeight: 22,
+
+    maxWidth: 780,
+  },
+
+  sectionSkeleton: {
+    backgroundColor:
+      "rgba(9,12,38,0.60)",
+
+    borderWidth: 1,
+    borderColor:
+      "rgba(139,114,255,0.24)",
+
+    borderRadius: 26,
+
+    padding: 19,
+    marginBottom: 17,
   },
 });
