@@ -71,3 +71,54 @@ def render_daily_summary_docx(report: DailySummaryReport) -> bytes:
     buffer = BytesIO()
     document.save(buffer)
     return buffer.getvalue()
+
+# PHASE_63D_REPORT_DOCUMENT_RENDERER
+def render_report_document_docx(document: object) -> bytes:
+    from io import BytesIO
+
+    from docx import Document
+
+    from app.reports.contracts import ReportDocument
+
+    if not isinstance(document, ReportDocument):
+        raise TypeError("document must be a ReportDocument")
+
+    def safe(value: object) -> str:
+        text = "" if value is None else str(value)
+        return f"'{text}" if text.startswith(("=", "+", "-", "@")) else text
+
+    output = BytesIO()
+    report = Document()
+    report.core_properties.title = document.report_type
+    report.core_properties.author = "SalonFlowAI"
+    generated = document.generated_at.replace(tzinfo=None)
+    report.core_properties.created = generated
+    report.core_properties.modified = generated
+
+    report.add_heading(document.report_type, level=0)
+    report.add_paragraph(
+        (
+            f"{document.period.start_date.isoformat()} .. "
+            f"{document.period.end_date.isoformat()} "
+            f"({document.period.timezone})"
+        )
+    )
+    metrics = report.add_table(rows=1, cols=2)
+    metrics.rows[0].cells[0].text = "Metric"
+    metrics.rows[0].cells[1].text = "Value"
+    for key, value in document.metrics.items():
+        cells = metrics.add_row().cells
+        cells[0].text = safe(key)
+        cells[1].text = safe(value)
+
+    if document.columns:
+        table = report.add_table(rows=1, cols=len(document.columns))
+        for index, value in enumerate(document.columns):
+            table.rows[0].cells[index].text = safe(value)
+        for row in document.rows:
+            cells = table.add_row().cells
+            for index, value in enumerate(row):
+                cells[index].text = safe(value)
+
+    report.save(output)
+    return output.getvalue()

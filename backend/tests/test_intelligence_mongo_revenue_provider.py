@@ -171,6 +171,59 @@ class MongoRevenueProviderTests(
             ("starts_at", 1),
         )
 
+    async def test_appointment_limit_accepts_exact_limit(self):
+        database = FakeDatabase(
+            [{} for _ in range(5_000)]
+        )
+
+        with patch(
+            "app.intelligence.providers."
+            "mongo_revenue_provider.get_database",
+            return_value=database,
+        ):
+            snapshot = await (
+                MongoRevenueProvider()
+                .get_revenue_snapshot(
+                    context=self.build_context()
+                )
+            )
+
+        self.assertEqual(
+            snapshot.completed_booking_count,
+            0,
+        )
+        self.assertEqual(
+            database.appointments.cursor.limit,
+            5_001,
+        )
+
+    async def test_appointment_limit_fails_closed(self):
+        database = FakeDatabase(
+            [{} for _ in range(5_001)]
+        )
+
+        with patch(
+            "app.intelligence.providers."
+            "mongo_revenue_provider.get_database",
+            return_value=database,
+        ):
+            with self.assertRaisesRegex(
+                RuntimeError,
+                "revenue appointment history exceeds "
+                "supported intelligence limit",
+            ):
+                await (
+                    MongoRevenueProvider()
+                    .get_revenue_snapshot(
+                        context=self.build_context()
+                    )
+                )
+
+        self.assertEqual(
+            database.appointments.cursor.limit,
+            5_001,
+        )
+
     async def test_missing_database_fails_closed(self):
         with patch(
             "app.intelligence.providers."

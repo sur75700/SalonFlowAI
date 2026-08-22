@@ -11,6 +11,7 @@ from app.intelligence.provider import RevenueSnapshot
 
 
 _DEFAULT_WINDOW_DAYS = 30
+_MAX_APPOINTMENT_RECORDS = 5_000
 
 _ZERO_DECIMAL_CURRENCIES = frozenset(
     {
@@ -168,8 +169,16 @@ class MongoRevenueProvider:
             await db.appointments
             .find(query)
             .sort("starts_at", 1)
-            .to_list(length=5000)
+            .to_list(
+                length=_MAX_APPOINTMENT_RECORDS + 1
+            )
         )
+
+        if len(appointments) > _MAX_APPOINTMENT_RECORDS:
+            raise RuntimeError(
+                "revenue appointment history exceeds supported "
+                "intelligence limit"
+            )
 
         current_revenue_minor = 0
         previous_revenue_minor = 0

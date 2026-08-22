@@ -240,3 +240,95 @@ def render_daily_summary_pdf(report: DailySummaryReport) -> bytes:
 
     document.build(story)
     return buffer.getvalue()
+
+# PHASE_63D_REPORT_DOCUMENT_RENDERER
+def render_report_document_pdf(document: object) -> bytes:
+    from io import BytesIO
+    from xml.sax.saxutils import escape
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
+
+    from app.reports.contracts import ReportDocument
+
+    if not isinstance(document, ReportDocument):
+        raise TypeError("document must be a ReportDocument")
+
+    buffer = BytesIO()
+    pdf = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=18 * mm,
+        leftMargin=18 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm,
+        invariant=1,
+    )
+    regular_font, bold_font = _resolve_pdf_fonts()
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "ReportV2Title",
+        parent=styles["Title"],
+        fontName=bold_font,
+        fontSize=18,
+        leading=22,
+    )
+    body_style = ParagraphStyle(
+        "ReportV2Body",
+        parent=styles["Normal"],
+        fontName=regular_font,
+        fontSize=9,
+        leading=12,
+    )
+    header_style = ParagraphStyle(
+        "ReportV2Header",
+        parent=body_style,
+        fontName=bold_font,
+    )
+
+    story = [
+        Paragraph(escape(document.report_type), title_style),
+        Paragraph(
+            escape(
+                f"{document.period.start_date.isoformat()} .. "
+                f"{document.period.end_date.isoformat()} "
+                f"({document.period.timezone})"
+            ),
+            body_style,
+        ),
+        Spacer(1, 8),
+    ]
+    metric_rows = [
+        [
+            Paragraph(escape(str(key)), header_style),
+            Paragraph(escape(str(value)), body_style),
+        ]
+        for key, value in document.metrics.items()
+    ]
+    if metric_rows:
+        story.append(Table(metric_rows, repeatRows=0))
+        story.append(Spacer(1, 8))
+
+    if document.columns:
+        table_rows = [
+            [
+                Paragraph(escape(str(value)), header_style)
+                for value in document.columns
+            ]
+        ]
+        table_rows.extend(
+            [
+                Paragraph(
+                    escape("" if value is None else str(value)),
+                    body_style,
+                )
+                for value in row
+            ]
+            for row in document.rows
+        )
+        story.append(Table(table_rows, repeatRows=1))
+
+    pdf.build(story)
+    return buffer.getvalue()

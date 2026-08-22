@@ -280,3 +280,221 @@ async def export_daily_summary_docx(
         auth=auth,
         format_name="docx",
     )
+
+# PHASE_63D_BACKEND_REPORT_CONTRACT_V2
+
+from fastapi.responses import Response as _ReportV2Response  # noqa: E402
+
+def _v2_report_responses(*, export: bool = False) -> dict:
+    responses = {
+        401: {"description": "Not authenticated"},
+        403: {"description": "Reports feature not entitled"},
+        413: {"description": "Report too large"},
+        422: {"description": "Invalid report request"},
+        503: {"description": "Report entitlement source unavailable"},
+    }
+    if export:
+        responses[200] = {
+            "description": "Canonical report export",
+            "content": {
+                "application/pdf": {},
+                "text/plain": {},
+                "text/csv": {},
+                (
+                    "application/vnd.openxmlformats-officedocument."
+                    "spreadsheetml.sheet"
+                ): {},
+                (
+                    "application/vnd.openxmlformats-officedocument."
+                    "wordprocessingml.document"
+                ): {},
+            },
+        }
+    return responses
+
+
+def _v2_raise_contract(error: Exception) -> None:
+    status_code = getattr(error, "status_code", 500)
+    code = getattr(error, "code", "report_contract_error")
+    raise HTTPException(
+        status_code=status_code,
+        detail={"code": code},
+    ) from None
+
+
+async def _build_report_v2(
+    *,
+    report_type: str,
+    start_date: str | None,
+    end_date: str | None,
+    locale: str | None,
+    status: list[str] | None,
+    client_id: list[str] | None,
+    service_id: list[str] | None,
+    currency: str | None,
+    auth: dict,
+):
+    from app.reports.command_center import build_report_document
+    from app.reports.contracts import (
+        ReportContractError,
+        normalize_report_filters,
+    )
+
+    owner_id = _authenticated_owner(auth)
+    database = get_database()
+    if database is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Database not connected",
+        )
+
+    try:
+        filters = normalize_report_filters(
+            report_type=report_type,
+            status=status,
+            client_id=client_id,
+            service_id=service_id,
+        )
+        return await build_report_document(
+            database=database,
+            owner_id=owner_id,
+            report_type=report_type,
+            start_date=start_date,
+            end_date=end_date,
+            locale=locale,
+            filters=filters,
+            currency=currency,
+        )
+    except ReportContractError as error:
+        _v2_raise_contract(error)
+
+
+@router.get(
+    "/v2/catalog",
+    responses=_v2_report_responses(),
+)
+async def report_v2_catalog(
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+) -> dict:
+    from app.reports.catalog import build_report_catalog
+
+    _authenticated_owner(auth)
+    return build_report_catalog()
+
+
+@router.get(
+    "/v2/{report_type}/preview",
+    responses=_v2_report_responses(),
+)
+async def preview_report_v2(
+    report_type: str,
+    start_date: str | None = Query(default=None),
+    end_date: str | None = Query(default=None),
+    locale: str | None = Query(default="en"),
+    status: list[str] | None = Query(default=None),
+    client_id: list[str] | None = Query(default=None),
+    service_id: list[str] | None = Query(default=None),
+    currency: str | None = Query(default=None),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+) -> dict:
+    from app.reports.contracts import REPORT_PREVIEW_ROW_LIMIT
+
+    document = await _build_report_v2(
+        report_type=report_type,
+        start_date=start_date,
+        end_date=end_date,
+        locale=locale,
+        status=status,
+        client_id=client_id,
+        service_id=service_id,
+        currency=currency,
+        auth=auth,
+    )
+    return document.public_dict(row_limit=REPORT_PREVIEW_ROW_LIMIT)
+
+
+@router.get(
+    "/v2/{report_type}/{format}",
+    response_class=_ReportV2Response,
+    responses=_v2_report_responses(export=True),
+)
+async def export_report_v2(
+    report_type: str,
+    format: str,
+    start_date: str | None = Query(default=None),
+    end_date: str | None = Query(default=None),
+    locale: str | None = Query(default="en"),
+    status: list[str] | None = Query(default=None),
+    client_id: list[str] | None = Query(default=None),
+    service_id: list[str] | None = Query(default=None),
+    currency: str | None = Query(default=None),
+    auth: dict = Depends(require_auth),
+    _entitlement: None = Depends(require_reports_entitlement),
+):
+    from app.reports.contracts import (
+        REPORT_FORMATS_V2,
+        ReportContractError,
+    )
+
+    if format not in REPORT_FORMATS_V2:
+        _v2_raise_contract(
+            ReportContractError("422_invalid_report_filter", 422)
+        )
+
+    document = await _build_report_v2(
+        report_type=report_type,
+        start_date=start_date,
+        end_date=end_date,
+        locale=locale,
+        status=status,
+        client_id=client_id,
+        service_id=service_id,
+        currency=currency,
+        auth=auth,
+    )
+
+    if format == "pdf":
+        from app.reports.renderers.pdf import render_report_document_pdf
+        renderer = render_report_document_pdf
+        media_type = "application/pdf"
+    elif format == "txt":
+        from app.reports.renderers.txt import render_report_document_txt
+        renderer = render_report_document_txt
+        media_type = "text/plain"
+    elif format == "csv":
+        from app.reports.renderers.csv import render_report_document_csv
+        renderer = render_report_document_csv
+        media_type = "text/csv"
+    elif format == "xlsx":
+        from app.reports.renderers.xlsx import render_report_document_xlsx
+        renderer = render_report_document_xlsx
+        media_type = (
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    else:
+        from app.reports.renderers.docx import render_report_document_docx
+        renderer = render_report_document_docx
+        media_type = (
+            "application/vnd.openxmlformats-officedocument."
+            "wordprocessingml.document"
+        )
+
+    payload = renderer(document)
+    filename = (
+        f"salonflow_{document.report_type}_"
+        f"{document.period.start_date.isoformat()}_"
+        f"{document.period.end_date.isoformat()}_"
+        f"{document.locale}.{format}"
+    )
+    return _ReportV2Response(
+        content=payload,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{filename}"'
+            )
+        },
+    )

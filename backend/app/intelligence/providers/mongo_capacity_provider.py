@@ -15,6 +15,7 @@ from app.intelligence.models.windows import resolve_local_date_window_utc
 
 
 _DEFAULT_WINDOW_DAYS = 30
+_MAX_APPOINTMENT_RECORDS = 5_000
 
 _OCCUPYING_STATUSES = frozenset(
     {
@@ -194,8 +195,16 @@ class MongoCapacityProvider:
             await db.appointments
             .find(query)
             .sort("starts_at", 1)
-            .to_list(length=5000)
+            .to_list(
+                length=_MAX_APPOINTMENT_RECORDS + 1
+            )
         )
+
+        if len(appointments) > _MAX_APPOINTMENT_RECORDS:
+            raise CapacityDataUnavailable(
+                "capacity appointment history exceeds supported "
+                "intelligence limit"
+            )
 
         booked_slots = 0
         completed_booking_count = 0

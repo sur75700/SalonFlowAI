@@ -46,3 +46,36 @@ def render_daily_summary_txt(report: DailySummaryReport) -> bytes:
             )
 
     return ("\n".join(lines).rstrip() + "\n").encode("utf-8")
+
+# PHASE_63D_REPORT_DOCUMENT_RENDERER
+def render_report_document_txt(document: object) -> bytes:
+    from app.reports.contracts import ReportDocument
+
+    if not isinstance(document, ReportDocument):
+        raise TypeError("document must be a ReportDocument")
+
+    lines = [
+        document.report_type,
+        (
+            f"{document.period.start_date.isoformat()} .. "
+            f"{document.period.end_date.isoformat()}"
+        ),
+        f"timezone: {document.period.timezone}",
+        f"locale: {document.locale}",
+        "",
+        "metrics:",
+    ]
+    lines.extend(
+        f"- {key}: {value}"
+        for key, value in document.metrics.items()
+    )
+    if document.columns:
+        lines.extend(("", "\t".join(document.columns)))
+        lines.extend(
+            "\t".join("" if value is None else str(value) for value in row)
+            for row in document.rows
+        )
+    if document.warnings:
+        lines.extend(("", "warnings:"))
+        lines.extend(f"- {warning}" for warning in document.warnings)
+    return ("\n".join(lines) + "\n").encode("utf-8")

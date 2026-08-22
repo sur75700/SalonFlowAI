@@ -57,3 +57,35 @@ def render_daily_summary_csv(report: DailySummaryReport) -> bytes:
         )
 
     return buffer.getvalue().encode("utf-8-sig")
+
+# PHASE_63D_REPORT_DOCUMENT_RENDERER
+def render_report_document_csv(document: object) -> bytes:
+    import csv
+    from io import StringIO
+
+    from app.reports.contracts import ReportDocument
+
+    if not isinstance(document, ReportDocument):
+        raise TypeError("document must be a ReportDocument")
+
+    def safe(value: object) -> str:
+        text = "" if value is None else str(value)
+        return f"'{text}" if text.startswith(("=", "+", "-", "@")) else text
+
+    output = StringIO()
+    writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(["report_type", safe(document.report_type)])
+    writer.writerow(["start_date", document.period.start_date.isoformat()])
+    writer.writerow(["end_date", document.period.end_date.isoformat()])
+    writer.writerow(["timezone", safe(document.period.timezone)])
+    writer.writerow(["locale", safe(document.locale)])
+    writer.writerow([])
+    writer.writerow(["metric", "value"])
+    for key, value in document.metrics.items():
+        writer.writerow([safe(key), safe(value)])
+    if document.columns:
+        writer.writerow([])
+        writer.writerow([safe(value) for value in document.columns])
+        for row in document.rows:
+            writer.writerow([safe(value) for value in row])
+    return ("\ufeff" + output.getvalue()).encode("utf-8")

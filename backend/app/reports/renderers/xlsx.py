@@ -96,3 +96,63 @@ def render_daily_summary_xlsx(report: DailySummaryReport) -> bytes:
     ExcelWriter(workbook, archive).save()
     workbook.close()
     return buffer.getvalue()
+
+# PHASE_63D_REPORT_DOCUMENT_RENDERER
+def render_report_document_xlsx(document: object) -> bytes:
+    from datetime import UTC
+    from io import BytesIO
+    from zipfile import ZIP_DEFLATED, ZipFile
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+    from openpyxl.writer.excel import ExcelWriter
+
+    from app.reports.contracts import ReportDocument
+
+    if not isinstance(document, ReportDocument):
+        raise TypeError("document must be a ReportDocument")
+
+    def safe(value: object) -> object:
+        if not isinstance(value, str):
+            return value
+        return f"'{value}" if value.startswith(("=", "+", "-", "@")) else value
+
+    workbook = Workbook()
+    package_timestamp = (
+        document.generated_at.astimezone(UTC).replace(tzinfo=None)
+    )
+    workbook.properties.created = package_timestamp
+    workbook.properties.modified = package_timestamp
+
+    overview = workbook.active
+    overview.title = "Overview"
+    overview.append(["Report Type", safe(document.report_type)])
+    overview.append(["Start Date", document.period.start_date.isoformat()])
+    overview.append(["End Date", document.period.end_date.isoformat()])
+    overview.append(["Timezone", safe(document.period.timezone)])
+    overview.append(["Locale", safe(document.locale)])
+    overview.append([])
+    overview.append(["Metric", "Value"])
+    for key, value in document.metrics.items():
+        overview.append([safe(str(key)), safe(value)])
+    for cell in overview[7]:
+        cell.font = Font(bold=True)
+
+    rows_sheet = workbook.create_sheet("Rows")
+    if document.columns:
+        rows_sheet.append([safe(value) for value in document.columns])
+        for cell in rows_sheet[1]:
+            cell.font = Font(bold=True)
+        for row in document.rows:
+            rows_sheet.append([safe(value) for value in row])
+
+    buffer = BytesIO()
+    archive = ZipFile(
+        buffer,
+        "w",
+        ZIP_DEFLATED,
+        allowZip64=True,
+    )
+    ExcelWriter(workbook, archive).save()
+    workbook.close()
+    return buffer.getvalue()

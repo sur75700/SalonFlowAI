@@ -306,6 +306,60 @@ class MongoCapacityProviderTests(
             45,
         )
 
+    async def test_appointment_limit_accepts_exact_limit(
+        self,
+    ):
+        database = FakeDatabase(
+            [{} for _ in range(5_000)]
+        )
+
+        with patch(
+            "app.intelligence.providers."
+            "mongo_capacity_provider.get_database",
+            return_value=database,
+        ):
+            snapshot = await (
+                MongoCapacityProvider()
+                .get_capacity_snapshot(
+                    context=self.build_context()
+                )
+            )
+
+        self.assertEqual(snapshot.booked_slots, 0)
+        self.assertEqual(
+            database.appointments.cursor.limit,
+            5_001,
+        )
+
+    async def test_appointment_limit_fails_closed(
+        self,
+    ):
+        database = FakeDatabase(
+            [{} for _ in range(5_001)]
+        )
+
+        with patch(
+            "app.intelligence.providers."
+            "mongo_capacity_provider.get_database",
+            return_value=database,
+        ):
+            with self.assertRaisesRegex(
+                CapacityDataUnavailable,
+                "capacity appointment history exceeds "
+                "supported intelligence limit",
+            ):
+                await (
+                    MongoCapacityProvider()
+                    .get_capacity_snapshot(
+                        context=self.build_context()
+                    )
+                )
+
+        self.assertEqual(
+            database.appointments.cursor.limit,
+            5_001,
+        )
+
     async def test_missing_baseline_fails_closed(
         self,
     ):
