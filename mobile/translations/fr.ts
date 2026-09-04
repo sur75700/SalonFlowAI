@@ -335,6 +335,13 @@ const fr = {
       synchronizingLiveData: "Synchronisation des données",
       summaryConnected: "Résumé connecté",
       language: "Langue",
+      soulEyebrow: "VOTRE SALON · VOTRE RYTHME",
+      soulTitle:
+        "Votre salon a son propre rythme. Je suis là pour vous aider à l’entendre.",
+      soulBody:
+        "Chaque réservation, client, service et décision s’inscrit dans une même histoire vivante. Vous donnez la direction ; je garde les signaux essentiels clairs pour que la prochaine décision soit sûre.",
+      soulSignature:
+        "À vos côtés pour chaque décision qui compte.",
       next: "Suivant",
     },
     kpi: {
@@ -520,3 +527,23 @@ const fr = {
   },
 };
 export default fr;
+
+export const revenueTimeIntelligence = {
+  last24Hours: "Dernières 24 heures",
+  last7Days: "7 derniers jours",
+  last30Days: "30 derniers jours",
+  last90Days: "90 derniers jours",
+  yearToDate: "Depuis le début de l’année",
+  last1Year: "Dernière année",
+  allTime: "Depuis toujours",
+  customRange: "Période personnalisée",
+  fromDate: "Date de début",
+  toDate: "Date de fin",
+  applyRange: "Appliquer",
+  cancelRange: "Annuler",
+  loadingRevenueHistory: "Chargement de l’historique des revenus",
+  revenueHistoryUnavailable: "Historique des revenus indisponible",
+  previousPeriod: "Période précédente",
+  usingUtcTime: "Heure UTC utilisée",
+  dataNotice: "Information sur les données",
+} as const;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   clearStoredToken,
@@ -111,16 +111,16 @@ export function useSession() {
     };
   }, [token]);
 
-  const setToken = (nextToken: string) => {
+  const setToken = useCallback((nextToken: string) => {
     writeStoredToken(nextToken);
     notifySessionChanged(nextToken);
-  };
+  }, []);
 
-  const clearToken = () => {
+  const clearToken = useCallback(() => {
     setSessionUser(null);
     clearStoredToken();
     notifySessionChanged("");
-  };
+  }, []);
 
   const sessionEmail = useMemo(
     () => sessionUser?.email || getTokenEmail(token),

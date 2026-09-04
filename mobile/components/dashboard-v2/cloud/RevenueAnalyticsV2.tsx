@@ -1,5 +1,26 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  LayoutChangeEvent,
+  Pressable,
+  Modal,
+  SafeAreaView,
+  PanResponder,
+  useWindowDimensions,
+} from 'react-native';
+import Svg, {
+  Circle,
+  Defs,
+  Line,
+  LinearGradient,
+  Path as SvgPath,
+  Polygon,
+  RadialGradient,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 
 export type TrendDirection = 'up' | 'down' | 'flat';
 
@@ -37,8 +58,9 @@ const colors = {
   surfaceRaised: '#1D1F47',
   border: 'rgba(255,255,255,0.07)',
   royal: '#7C5CFF',
-  royalFillStrong: 'rgba(124,92,255,0.22)',
-  royalFillSoft: 'rgba(124,92,255,0.08)',
+  cosmosBlue: '#4BBEFF',
+  cosmosViolet: '#7C5CFF',
+  cosmosMagenta: '#A855F7',
   textPrimary: '#F6F5FB',
   textSecondary: '#A6A7C4',
   textTertiary: '#6F7092',
@@ -102,155 +124,1136 @@ function scalePoints(
   }));
 }
 
-function sampleY(scaledPoints: ScaledPoint[], sampleX: number, chartWidth: number): number {
-  const n = scaledPoints.length;
-  if (n === 0) return 0;
-  if (n === 1) return scaledPoints[0].y;
-  const t = (sampleX / chartWidth) * (n - 1);
-  const i = Math.max(0, Math.min(n - 2, Math.floor(t)));
-  const frac = t - i;
-  const y0 = scaledPoints[i].y;
-  const y1 = scaledPoints[i + 1].y;
-  return y0 + (y1 - y0) * frac;
+const REVENUE_LINE_GRADIENT_ID = 'revenueCosmosLineGradient';
+const REVENUE_AREA_GRADIENT_ID = 'revenueCosmosAreaGradient';
+const REVENUE_DEPTH_GRADIENT_ID = 'revenueCosmosDepthGradient';
+const REVENUE_FLOOR_GRADIENT_ID = 'revenueCosmosFloorGradient';
+
+function svgNumber(value: number): string {
+  return Number.isFinite(value) ? value.toFixed(2) : '0';
 }
 
-const AREA_COLUMNS = 56;
+/**
+ * Smooth interpolation affects presentation only.
+ * Trusted revenue values remain completely unchanged.
+ */
+function buildSmoothPath(points: ScaledPoint[]): string {
+  if (points.length === 0) return '';
 
-// Area fill sampled independently of point count — always renders as a
-// smooth continuous band, built from plain Views (no SVG, no gradients).
-function AreaFill({
-  scaledPoints,
-  chartWidth,
-  chartHeight,
-}: {
-  scaledPoints: ScaledPoint[];
-  chartWidth: number;
-  chartHeight: number;
-}) {
-  if (chartWidth === 0 || scaledPoints.length < 2) return null;
-  const colWidth = chartWidth / AREA_COLUMNS;
+  if (points.length === 1) {
+    return `M ${svgNumber(points[0].x)} ${svgNumber(points[0].y)}`;
+  }
+
+  let result =
+    `M ${svgNumber(points[0].x)} ${svgNumber(points[0].y)}`;
+
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const previous = points[i - 1] ?? points[i];
+    const current = points[i];
+    const next = points[i + 1];
+    const afterNext = points[i + 2] ?? next;
+
+    const cp1x =
+      current.x + (next.x - previous.x) / 6;
+    const cp1y =
+      current.y + (next.y - previous.y) / 6;
+
+    const cp2x =
+      next.x - (afterNext.x - current.x) / 6;
+    const cp2y =
+      next.y - (afterNext.y - current.y) / 6;
+
+    result +=
+      ` C ${svgNumber(cp1x)} ${svgNumber(cp1y)}` +
+      ` ${svgNumber(cp2x)} ${svgNumber(cp2y)}` +
+      ` ${svgNumber(next.x)} ${svgNumber(next.y)}`;
+  }
+
+  return result;
+}
+
+function buildAreaPath(
+  points: ScaledPoint[],
+  chartHeight: number
+): string {
+  if (points.length < 2) return '';
+
+  const linePath = buildSmoothPath(points);
+  const first = points[0];
+  const last = points[points.length - 1];
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {Array.from({ length: AREA_COLUMNS }).map((_, c) => {
-        const sampleX = c * colWidth + colWidth / 2;
-        const y = sampleY(scaledPoints, sampleX, chartWidth);
-        const fillHeight = Math.max(chartHeight - y, 0);
-        const fadeHeight = fillHeight * 0.4;
-        return (
-          <React.Fragment key={c}>
-            <View
-              style={{
-                position: 'absolute',
-                left: c * colWidth,
-                top: y,
-                width: colWidth + 0.6,
-                height: fillHeight,
-                backgroundColor: colors.royalFillSoft,
-              }}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                left: c * colWidth,
-                top: chartHeight - fadeHeight,
-                width: colWidth + 0.6,
-                height: fadeHeight,
-                backgroundColor: colors.royalFillStrong,
-              }}
-            />
-          </React.Fragment>
-        );
-      })}
-    </View>
+    linePath +
+    ` L ${svgNumber(last.x)} ${svgNumber(chartHeight)}` +
+    ` L ${svgNumber(first.x)} ${svgNumber(chartHeight)} Z`
   );
 }
 
-// Line built from rotated Views connecting each point — solid for the
-// current series, sampled short dashes for the comparison series.
-function LineSegments({
-  scaledPoints,
-  color,
-  dashed,
-}: {
-  scaledPoints: ScaledPoint[];
-  color: string;
-  dashed?: boolean;
-}) {
-  const segments: React.ReactNode[] = [];
+function findPeakPoint(
+  points: ScaledPoint[]
+): ScaledPoint | undefined {
+  if (points.length === 0) return undefined;
 
-  for (let i = 0; i < scaledPoints.length - 1; i++) {
-    const p0 = scaledPoints[i];
-    const p1 = scaledPoints[i + 1];
-    const dx = p1.x - p0.x;
-    const dy = p1.y - p0.y;
-    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  return points.reduce(
+    (peak, point) =>
+      point.y < peak.y ? point : peak,
+    points[0]
+  );
+}
 
-    if (!dashed) {
-      const length = Math.sqrt(dx * dx + dy * dy);
-      const midX = (p0.x + p1.x) / 2;
-      const midY = (p0.y + p1.y) / 2;
-      segments.push(
+const IMMERSIVE_LINE_GRADIENT_ID =
+  'revenueImmersiveLineGradient';
+const IMMERSIVE_AREA_GRADIENT_ID =
+  'revenueImmersiveAreaGradient';
+const IMMERSIVE_DEPTH_GRADIENT_ID =
+  'revenueImmersiveDepthGradient';
+const IMMERSIVE_FLOOR_GRADIENT_ID =
+  'revenueImmersiveFloorGradient';
+const IMMERSIVE_NEBULA_GRADIENT_ID =
+  'revenueImmersiveNebulaGradient';
+
+interface ImmersiveRevenueStageProps {
+  currentSeries: RevenueSeriesPoint[];
+  comparisonSeries?: RevenueSeriesPoint[];
+  currentSeriesLabel: string;
+  min: number;
+  max: number;
+  height: number;
+  axisValueFormatter: (value: number) => string;
+}
+
+function ImmersiveRevenueStage({
+  currentSeries,
+  comparisonSeries,
+  currentSeriesLabel,
+  min,
+  max,
+  height,
+  axisValueFormatter,
+}: ImmersiveRevenueStageProps) {
+  const [chartWidth, setChartWidth] = useState(0);
+  const [activeIndex, setActiveIndex] =
+    useState<number | null>(null);
+
+  const seriesLength = currentSeries.length;
+
+  const interactionPanResponder = useMemo(
+    () => {
+      const resolveIndexFromX = (
+        xValue: number
+      ): number | null => {
+        if (
+          chartWidth <= 0 ||
+          seriesLength === 0
+        ) {
+          return null;
+        }
+
+        const x = Math.max(
+          0,
+          Math.min(chartWidth, xValue)
+        );
+
+        return seriesLength === 1
+          ? 0
+          : Math.round(
+              (x / chartWidth) *
+                (seriesLength - 1)
+            );
+      };
+
+      return PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+
+        onPanResponderGrant: (event) => {
+          const index = resolveIndexFromX(
+            event.nativeEvent.locationX
+          );
+
+          if (index !== null) {
+            setActiveIndex(index);
+          }
+        },
+
+        onPanResponderMove: (event) => {
+          const index = resolveIndexFromX(
+            event.nativeEvent.locationX
+          );
+
+          if (index !== null) {
+            setActiveIndex(index);
+          }
+        },
+
+        onPanResponderTerminationRequest:
+          () => false,
+
+        onShouldBlockNativeResponder:
+          () => false,
+      });
+    },
+    [chartWidth, seriesLength]
+  );
+
+  const currentScaled = useMemo(
+    () => scalePoints(
+      currentSeries,
+      chartWidth,
+      height,
+      min,
+      max
+    ),
+    [currentSeries, chartWidth, height, min, max]
+  );
+
+  const comparisonScaled = useMemo(
+    () =>
+      comparisonSeries
+        ? scalePoints(
+            comparisonSeries,
+            chartWidth,
+            height,
+            min,
+            max
+          )
+        : [],
+    [
+      comparisonSeries,
+      chartWidth,
+      height,
+      min,
+      max,
+    ]
+  );
+
+  const currentPath = useMemo(
+    () => buildSmoothPath(currentScaled),
+    [currentScaled]
+  );
+
+  const comparisonPath = useMemo(
+    () => buildSmoothPath(comparisonScaled),
+    [comparisonScaled]
+  );
+
+  const areaPath = useMemo(
+    () => buildAreaPath(currentScaled, height),
+    [currentScaled, height]
+  );
+
+  const peakPoint = useMemo(
+    () => findPeakPoint(currentScaled),
+    [currentScaled]
+  );
+
+  const lastPoint =
+    currentScaled[currentScaled.length - 1];
+
+  const resolvedActiveIndex =
+    seriesLength === 0
+      ? null
+      : Math.min(
+          activeIndex ?? seriesLength - 1,
+          seriesLength - 1
+        );
+
+  const activePoint =
+    resolvedActiveIndex === null
+      ? undefined
+      : currentSeries[resolvedActiveIndex];
+
+  const activeScaledPoint =
+    resolvedActiveIndex === null
+      ? undefined
+      : currentScaled[resolvedActiveIndex];
+
+  const previousPoint =
+    resolvedActiveIndex !== null &&
+    resolvedActiveIndex > 0
+      ? currentSeries[
+          resolvedActiveIndex - 1
+        ]
+      : undefined;
+
+  const periodTotal = useMemo(
+    () =>
+      currentSeries.reduce(
+        (sum, point) =>
+          sum + point.value,
+        0
+      ),
+    [currentSeries]
+  );
+
+  const activeDelta =
+    activePoint && previousPoint
+      ? activePoint.value -
+        previousPoint.value
+      : null;
+
+  const activeDeltaPercent =
+    activeDelta !== null &&
+    previousPoint &&
+    previousPoint.value !== 0
+      ? (
+          activeDelta /
+          Math.abs(
+            previousPoint.value
+          )
+        ) * 100
+      : null;
+
+  const activeShare =
+    activePoint &&
+    periodTotal !== 0
+      ? (
+          activePoint.value /
+          periodTotal
+        ) * 100
+      : null;
+
+  const activeDeltaColor =
+    activeDelta === null ||
+    activeDelta === 0
+      ? colors.cosmosBlue
+      : activeDelta > 0
+        ? colors.positive
+        : colors.danger;
+
+  const activeDeltaBackground =
+    activeDelta === null ||
+    activeDelta === 0
+      ? 'rgba(75,190,255,0.10)'
+      : activeDelta > 0
+        ? 'rgba(63,207,142,0.10)'
+        : 'rgba(242,97,122,0.10)';
+
+  const activePercentColor =
+    activeDeltaPercent === null ||
+    activeDeltaPercent === 0
+      ? colors.cosmosBlue
+      : activeDeltaPercent > 0
+        ? colors.positive
+        : colors.danger;
+
+  const activePercentBackground =
+    activeDeltaPercent === null ||
+    activeDeltaPercent === 0
+      ? 'rgba(75,190,255,0.10)'
+      : activeDeltaPercent > 0
+        ? 'rgba(63,207,142,0.10)'
+        : 'rgba(242,97,122,0.10)';
+
+  const floorTop = height * 0.76;
+
+  const floorInset = Math.min(
+    72,
+    Math.max(chartWidth * 0.065, 22)
+  );
+
+  const floorPoints =
+    `0,${svgNumber(floorTop)} ` +
+    `${svgNumber(chartWidth)},${svgNumber(floorTop)} ` +
+    `${svgNumber(
+      Math.max(chartWidth - floorInset, 0)
+    )},${svgNumber(height)} ` +
+    `${svgNumber(floorInset)},${svgNumber(height)}`;
+
+  const labelStep =
+    currentSeries.length > 8
+      ? Math.ceil(currentSeries.length / 7)
+      : 1;
+
+  const yAxisSteps = [1, 0.75, 0.5, 0.25, 0];
+
+  const perspectivePositions = [
+    0.08,
+    0.22,
+    0.36,
+    0.5,
+    0.64,
+    0.78,
+    0.92,
+  ];
+
+  return (
+    <>
+      <View style={styles.immersiveChartRow}>
         <View
-          key={i}
-          style={{
-            position: 'absolute',
-            left: midX - length / 2,
-            top: midY - 1.25,
-            width: length,
-            height: 2.5,
-            borderRadius: 1.25,
-            backgroundColor: color,
-            transform: [{ rotate: `${angle}deg` }],
-          }}
-        />
-      );
-    } else {
-      const dashLength = 5;
-      const gapLength = 4;
-      const segmentLength = Math.sqrt(dx * dx + dy * dy) || 0.0001;
-      const step = dashLength + gapLength;
-      const dashCount = Math.max(1, Math.floor(segmentLength / step));
-      for (let d = 0; d < dashCount; d++) {
-        const startT = (d * step) / segmentLength;
-        const endT = Math.min((d * step + dashLength) / segmentLength, 1);
-        const startX = p0.x + dx * startT;
-        const startY = p0.y + dy * startT;
-        const endX = p0.x + dx * endT;
-        const endY = p0.y + dy * endT;
-        const dashDx = endX - startX;
-        const dashDy = endY - startY;
-        const dashLen = Math.sqrt(dashDx * dashDx + dashDy * dashDy);
-        const midX = (startX + endX) / 2;
-        const midY = (startY + endY) / 2;
-        segments.push(
+          style={[
+            styles.immersiveYAxis,
+            { height },
+          ]}
+        >
+          {yAxisSteps.map((step) => (
+            <Text
+              key={step}
+              style={styles.immersiveYAxisLabel}
+            >
+              {axisValueFormatter(
+                min + (max - min) * step
+              )}
+            </Text>
+          ))}
+        </View>
+
+        <View
+          style={[
+            styles.immersivePlot,
+            { height },
+          ]}
+          onLayout={(event) =>
+            setChartWidth(
+              event.nativeEvent.layout.width
+            )
+          }
+        >
+          {chartWidth > 0 && (
+            <Svg
+              width={chartWidth}
+              height={height}
+              viewBox={`0 0 ${chartWidth} ${height}`}
+            >
+              <Defs>
+                <RadialGradient
+                  id={IMMERSIVE_NEBULA_GRADIENT_ID}
+                  cx="48%"
+                  cy="38%"
+                  r="74%"
+                >
+                  <Stop
+                    offset="0%"
+                    stopColor={colors.cosmosBlue}
+                    stopOpacity={0.13}
+                  />
+                  <Stop
+                    offset="38%"
+                    stopColor={colors.cosmosViolet}
+                    stopOpacity={0.07}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={colors.surface}
+                    stopOpacity={0}
+                  />
+                </RadialGradient>
+
+                <LinearGradient
+                  id={IMMERSIVE_LINE_GRADIENT_ID}
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <Stop
+                    offset="0%"
+                    stopColor={colors.cosmosBlue}
+                  />
+                  <Stop
+                    offset="48%"
+                    stopColor="#70E7FF"
+                  />
+                  <Stop
+                    offset="72%"
+                    stopColor={colors.cosmosViolet}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={colors.cosmosMagenta}
+                  />
+                </LinearGradient>
+
+                <LinearGradient
+                  id={IMMERSIVE_AREA_GRADIENT_ID}
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  <Stop
+                    offset="0%"
+                    stopColor={colors.cosmosBlue}
+                    stopOpacity={0.38}
+                  />
+                  <Stop
+                    offset="44%"
+                    stopColor={colors.cosmosViolet}
+                    stopOpacity={0.19}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={colors.cosmosMagenta}
+                    stopOpacity={0.025}
+                  />
+                </LinearGradient>
+
+                <LinearGradient
+                  id={IMMERSIVE_DEPTH_GRADIENT_ID}
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  <Stop
+                    offset="0%"
+                    stopColor={colors.cosmosMagenta}
+                    stopOpacity={0.22}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={colors.cosmosViolet}
+                    stopOpacity={0}
+                  />
+                </LinearGradient>
+
+                <LinearGradient
+                  id={IMMERSIVE_FLOOR_GRADIENT_ID}
+                  x1="0%"
+                  y1="0%"
+                  x2="0%"
+                  y2="100%"
+                >
+                  <Stop
+                    offset="0%"
+                    stopColor={colors.cosmosViolet}
+                    stopOpacity={0.20}
+                  />
+                  <Stop
+                    offset="100%"
+                    stopColor={colors.cosmosBlue}
+                    stopOpacity={0.015}
+                  />
+                </LinearGradient>
+              </Defs>
+
+              <Rect
+                width={chartWidth}
+                height={height}
+                fill={`url(#${IMMERSIVE_NEBULA_GRADIENT_ID})`}
+              />
+
+              {yAxisSteps.map((step) => {
+                const y =
+                  height -
+                  height * step;
+
+                return (
+                  <Line
+                    key={`horizontal-${step}`}
+                    x1={0}
+                    y1={y}
+                    x2={chartWidth}
+                    y2={y}
+                    stroke="rgba(255,255,255,0.07)"
+                    strokeWidth={1}
+                  />
+                );
+              })}
+
+              <Polygon
+                points={floorPoints}
+                fill={`url(#${IMMERSIVE_FLOOR_GRADIENT_ID})`}
+              />
+
+              <Line
+                x1={0}
+                y1={floorTop}
+                x2={chartWidth}
+                y2={floorTop}
+                stroke={colors.cosmosViolet}
+                strokeWidth={1.2}
+                opacity={0.22}
+              />
+
+              {perspectivePositions.map(
+                (position) => {
+                  const bottomX =
+                    chartWidth * position;
+
+                  const horizonX =
+                    chartWidth *
+                    (
+                      0.5 +
+                      (position - 0.5) * 0.68
+                    );
+
+                  return (
+                    <Line
+                      key={`perspective-${position}`}
+                      x1={horizonX}
+                      y1={floorTop}
+                      x2={bottomX}
+                      y2={height}
+                      stroke={colors.cosmosBlue}
+                      strokeWidth={1}
+                      opacity={0.075}
+                    />
+                  );
+                }
+              )}
+
+              {!!areaPath && (
+                <>
+                  <SvgPath
+                    d={areaPath}
+                    fill={`url(#${IMMERSIVE_DEPTH_GRADIENT_ID})`}
+                    opacity={0.62}
+                    transform="translate(0 14)"
+                  />
+
+                  <SvgPath
+                    d={areaPath}
+                    fill={`url(#${IMMERSIVE_AREA_GRADIENT_ID})`}
+                  />
+                </>
+              )}
+
+              {!!comparisonPath && (
+                <SvgPath
+                  d={comparisonPath}
+                  fill="none"
+                  stroke={colors.textTertiary}
+                  strokeWidth={2}
+                  strokeDasharray="8 8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={0.72}
+                />
+              )}
+
+              {!!currentPath && (
+                <>
+                  <SvgPath
+                    d={currentPath}
+                    fill="none"
+                    stroke={colors.cosmosViolet}
+                    strokeWidth={22}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.055}
+                  />
+
+                  <SvgPath
+                    d={currentPath}
+                    fill="none"
+                    stroke={colors.cosmosBlue}
+                    strokeWidth={12}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.12}
+                  />
+
+                  <SvgPath
+                    d={currentPath}
+                    fill="none"
+                    stroke="#7DF1FF"
+                    strokeWidth={5.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.22}
+                  />
+
+                  <SvgPath
+                    d={currentPath}
+                    fill="none"
+                    stroke={`url(#${IMMERSIVE_LINE_GRADIENT_ID})`}
+                    strokeWidth={3.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </>
+              )}
+
+              {!!activeScaledPoint && (
+                <>
+                  <Line
+                    x1={activeScaledPoint.x}
+                    y1={0}
+                    x2={activeScaledPoint.x}
+                    y2={height}
+                    stroke="#BFF9FF"
+                    strokeWidth={1}
+                    strokeDasharray="4 6"
+                    opacity={0.34}
+                  />
+
+                  <Line
+                    x1={0}
+                    y1={activeScaledPoint.y}
+                    x2={chartWidth}
+                    y2={activeScaledPoint.y}
+                    stroke={colors.cosmosViolet}
+                    strokeWidth={1}
+                    strokeDasharray="3 8"
+                    opacity={0.18}
+                  />
+
+                  <Circle
+                    cx={activeScaledPoint.x}
+                    cy={activeScaledPoint.y}
+                    r={22}
+                    fill={colors.cosmosBlue}
+                    opacity={0.045}
+                  />
+
+                  <Circle
+                    cx={activeScaledPoint.x}
+                    cy={activeScaledPoint.y}
+                    r={12}
+                    fill={colors.cosmosViolet}
+                    opacity={0.10}
+                  />
+
+                  <Circle
+                    cx={activeScaledPoint.x}
+                    cy={activeScaledPoint.y}
+                    r={6}
+                    fill="#7DF1FF"
+                    opacity={0.30}
+                  />
+
+                  <Circle
+                    cx={activeScaledPoint.x}
+                    cy={activeScaledPoint.y}
+                    r={3}
+                    fill={colors.textPrimary}
+                  />
+                </>
+              )}
+
+              {!!peakPoint && (
+                <>
+                  <Circle
+                    cx={peakPoint.x}
+                    cy={peakPoint.y}
+                    r={20}
+                    fill={colors.cosmosBlue}
+                    opacity={0.045}
+                  />
+                  <Circle
+                    cx={peakPoint.x}
+                    cy={peakPoint.y}
+                    r={11}
+                    fill={colors.cosmosBlue}
+                    opacity={0.09}
+                  />
+                  <Circle
+                    cx={peakPoint.x}
+                    cy={peakPoint.y}
+                    r={5}
+                    fill="#90F4FF"
+                    opacity={0.30}
+                  />
+                  <Circle
+                    cx={peakPoint.x}
+                    cy={peakPoint.y}
+                    r={2.8}
+                    fill={colors.textPrimary}
+                  />
+                </>
+              )}
+
+              {!!lastPoint && (
+                <>
+                  <Circle
+                    cx={lastPoint.x}
+                    cy={lastPoint.y}
+                    r={14}
+                    fill={colors.cosmosMagenta}
+                    opacity={0.08}
+                  />
+                  <Circle
+                    cx={lastPoint.x}
+                    cy={lastPoint.y}
+                    r={6}
+                    fill={colors.royal}
+                    opacity={0.28}
+                  />
+                  <Circle
+                    cx={lastPoint.x}
+                    cy={lastPoint.y}
+                    r={3}
+                    fill={colors.textPrimary}
+                  />
+                </>
+              )}
+            </Svg>
+          )}
+
+          {!!activePoint && (
+            <View
+              pointerEvents="none"
+              style={[
+                  styles.interactionReadout,
+                  {
+                    width:
+                      chartWidth < 560
+                        ? 214
+                        : 254,
+                    paddingHorizontal:
+                      chartWidth < 560
+                        ? 14
+                        : 18,
+                    paddingVertical:
+                      chartWidth < 560
+                        ? 13
+                        : 16,
+                    borderRadius: 18,
+                    borderWidth: 1,
+                    borderLeftWidth: 3,
+                    borderColor:
+                      activeDeltaColor,
+                    backgroundColor:
+                      'rgba(8,11,34,0.97)',
+                    shadowColor:
+                      activeDeltaColor,
+                    shadowOpacity: 0.24,
+                    shadowRadius: 18,
+                    shadowOffset: {
+                      width: 0,
+                      height: 8,
+                    },
+                    elevation: 8,
+                  },
+                ]}
+            >
+              <Text
+                style={[
+                    styles.interactionDate,
+                    {
+                      color:
+                        colors.textSecondary,
+                      fontSize: 12,
+                      lineHeight: 16,
+                      fontWeight: '700',
+                      letterSpacing: 0.25,
+                    },
+                  ]}
+                numberOfLines={1}
+              >
+                {activePoint.label}
+              </Text>
+
+              <Text
+                style={[
+                    styles.interactionValue,
+                    {
+                      color:
+                        colors.textPrimary,
+                      fontSize:
+                        chartWidth < 560
+                          ? 21
+                          : 25,
+                      lineHeight:
+                        chartWidth < 560
+                          ? 26
+                          : 30,
+                      fontWeight: '900',
+                      letterSpacing: -0.4,
+                      marginTop: 4,
+                    },
+                  ]}
+                numberOfLines={1}
+              >
+                {axisValueFormatter(
+                  activePoint.value
+                )}
+              </Text>
+
+              <View
+                  style={[
+                    styles.interactionStats,
+                    {
+                      marginTop: 12,
+                      flexWrap: 'wrap',
+                      gap: 8,
+                    },
+                  ]}
+                >
+                  <View
+                    style={{
+                      flexBasis: '47%',
+                      minWidth: 88,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      borderRadius: 11,
+                      borderWidth: 1,
+                      borderColor:
+                        activeDeltaColor,
+                      backgroundColor:
+                        activeDeltaBackground,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          colors.textTertiary,
+                        fontSize: 9,
+                        lineHeight: 12,
+                        fontWeight: '800',
+                        letterSpacing: 0.55,
+                      }}
+                    >
+                      Δ
+                    </Text>
+                    <Text
+                      style={{
+                        color:
+                          activeDeltaColor,
+                        fontSize: 12,
+                        lineHeight: 17,
+                        fontWeight: '900',
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {activeDelta === null
+                        ? '—'
+                        : `${
+                            activeDelta >= 0
+                              ? '+'
+                              : ''
+                          }${axisValueFormatter(
+                            activeDelta
+                          )}`}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      flexBasis: '47%',
+                      minWidth: 88,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      borderRadius: 11,
+                      borderWidth: 1,
+                      borderColor:
+                        activePercentColor,
+                      backgroundColor:
+                        activePercentBackground,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          colors.textTertiary,
+                        fontSize: 9,
+                        lineHeight: 12,
+                        fontWeight: '800',
+                        letterSpacing: 0.55,
+                      }}
+                    >
+                      Δ%
+                    </Text>
+                    <Text
+                      style={{
+                        color:
+                          activePercentColor,
+                        fontSize: 12,
+                        lineHeight: 17,
+                        fontWeight: '900',
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {activeDeltaPercent === null
+                        ? '—'
+                        : `${
+                            activeDeltaPercent >= 0
+                              ? '+'
+                              : ''
+                          }${activeDeltaPercent.toFixed(
+                            1
+                          )}%`}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      flexBasis: '47%',
+                      minWidth: 88,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      borderRadius: 11,
+                      borderWidth: 1,
+                      borderColor:
+                        colors.cosmosBlue,
+                      backgroundColor:
+                        'rgba(75,190,255,0.10)',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          colors.textTertiary,
+                        fontSize: 9,
+                        lineHeight: 12,
+                        fontWeight: '800',
+                        letterSpacing: 0.55,
+                      }}
+                    >
+                      Σ
+                    </Text>
+                    <Text
+                      style={{
+                        color:
+                          colors.cosmosBlue,
+                        fontSize: 12,
+                        lineHeight: 17,
+                        fontWeight: '900',
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {activeShare === null
+                        ? '—'
+                        : `${activeShare.toFixed(
+                            1
+                          )}%`}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      flexBasis: '47%',
+                      minWidth: 88,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      borderRadius: 11,
+                      borderWidth: 1,
+                      borderColor:
+                        colors.royal,
+                      backgroundColor:
+                        'rgba(124,92,255,0.10)',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          colors.textTertiary,
+                        fontSize: 9,
+                        lineHeight: 12,
+                        fontWeight: '800',
+                        letterSpacing: 0.55,
+                      }}
+                    >
+                      #
+                    </Text>
+                    <Text
+                      style={{
+                        color:
+                          colors.cosmosViolet,
+                        fontSize: 12,
+                        lineHeight: 17,
+                        fontWeight: '900',
+                        marginTop: 2,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {(resolvedActiveIndex ??
+                        0) + 1}
+                      {' / '}
+                      {seriesLength}
+                    </Text>
+                  </View>
+                </View>
+            </View>
+          )}
+
           <View
-            key={`${i}-${d}`}
-            style={{
-              position: 'absolute',
-              left: midX - dashLen / 2,
-              top: midY - 1,
-              width: dashLen,
-              height: 2,
-              borderRadius: 1,
-              backgroundColor: color,
-              opacity: 0.6,
-              transform: [{ rotate: `${angle}deg` }],
+            {...interactionPanResponder.panHandlers}
+            style={
+              styles.interactionSurface
+            }
+            accessibilityRole="adjustable"
+            accessibilityLabel={
+              currentSeriesLabel
+            }
+            accessibilityValue={{
+              text: activePoint
+                ? `${activePoint.label}, ${axisValueFormatter(
+                    activePoint.value
+                  )}`
+                : currentSeriesLabel,
+            }}
+            accessibilityActions={[
+              { name: 'increment' },
+              { name: 'decrement' },
+            ]}
+            onAccessibilityAction={(
+              event
+            ) => {
+              if (seriesLength === 0) {
+                return;
+              }
+
+              const current =
+                resolvedActiveIndex ??
+                seriesLength - 1;
+
+              if (
+                event.nativeEvent
+                  .actionName ===
+                'increment'
+              ) {
+                setActiveIndex(
+                  Math.min(
+                    current + 1,
+                    seriesLength - 1
+                  )
+                );
+              }
+
+              if (
+                event.nativeEvent
+                  .actionName ===
+                'decrement'
+              ) {
+                setActiveIndex(
+                  Math.max(
+                    current - 1,
+                    0
+                  )
+                );
+              }
             }}
           />
-        );
-      }
-    }
-  }
+        </View>
+      </View>
 
-  return <>{segments}</>;
+      <View style={styles.immersiveXAxisRow}>
+        {currentSeries.map((point, index) => {
+          const show =
+            index % labelStep === 0 ||
+            index === currentSeries.length - 1;
+
+          return (
+            <View
+              key={`${point.label}-${index}`}
+              style={styles.immersiveXAxisCell}
+            >
+              {show && (
+                <Text
+                  style={styles.immersiveXAxisLabel}
+                  numberOfLines={1}
+                >
+                  {point.label}
+                </Text>
+              )}
+            </View>
+          );
+        })}
+      </View>
+    </>
+  );
 }
 
 /**
  * RevenueAnalyticsV2 — premium "Revenue Overview" card. Presentation-only:
- * every number and data point arrives via props. The chart is built
- * entirely from plain Views (rotated line segments + sampled area-fill
- * columns) — no SVG, no external packages.
+ * every number and data point arrives via props. The plot uses the already
+ * installed react-native-svg runtime for a Royal Cosmos 2.5D visualization
+ * without adding polling, requests, timers, or perpetual animation loops.
  */
 function RevenueAnalyticsV2({
   title = 'Revenue Overview',
@@ -270,6 +1273,15 @@ function RevenueAnalyticsV2({
 }: RevenueAnalyticsV2Props) {
   const [chartWidth, setChartWidth] = useState(0);
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
+  const [immersiveOpen, setImmersiveOpen] = useState(false);
+
+  const { height: viewportHeight } =
+    useWindowDimensions();
+
+  const immersiveHeight = Math.max(
+    220,
+    Math.min(viewportHeight * 0.61, 620)
+  );
 
   const canSelectPeriod =
     periodOptions.length > 1 &&
@@ -297,27 +1309,120 @@ function RevenueAnalyticsV2({
     [comparisonSeries, chartWidth, height, min, max]
   );
 
+  const currentPath = useMemo(
+    () => buildSmoothPath(currentScaled),
+    [currentScaled]
+  );
+
+  const comparisonPath = useMemo(
+    () => buildSmoothPath(comparisonScaled),
+    [comparisonScaled]
+  );
+
+  const currentAreaPath = useMemo(
+    () => buildAreaPath(currentScaled, height),
+    [currentScaled, height]
+  );
+
+  const peakPoint = useMemo(
+    () => findPeakPoint(currentScaled),
+    [currentScaled]
+  );
+
   const yAxisSteps = [1, 0.75, 0.5, 0.25, 0];
   const lastPoint = currentScaled[currentScaled.length - 1];
-  const labelStep = currentSeries.length > 6 ? Math.ceil(currentSeries.length / 5) : 1;
+
+  const showPeakNode = Boolean(
+    peakPoint &&
+      (!lastPoint ||
+        Math.abs(peakPoint.x - lastPoint.x) > 0.5 ||
+        Math.abs(peakPoint.y - lastPoint.y) > 0.5)
+  );
+
+  const floorTop = Math.max(
+    height - 28,
+    height * 0.82
+  );
+
+  const floorInset = Math.min(
+    14,
+    Math.max(chartWidth / 8, 6)
+  );
+
+  const floorPoints =
+    `0,${svgNumber(floorTop)} ` +
+    `${svgNumber(chartWidth)},${svgNumber(floorTop)} ` +
+    `${svgNumber(Math.max(chartWidth - floorInset, 0))},${svgNumber(height)} ` +
+    `${svgNumber(floorInset)},${svgNumber(height)}`;
+
+  const labelStep =
+    currentSeries.length > 6
+      ? Math.ceil(currentSeries.length / 5)
+      : 1;
 
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Select revenue period. Current: ${periodLabel}`}
-          disabled={!canSelectPeriod}
-          onPress={() => setPeriodMenuOpen((open) => !open)}
-          style={({ pressed }) => [
-            styles.periodChip,
-            pressed && canSelectPeriod && styles.periodChipPressed,
-          ]}
-        >
-          <Text style={styles.periodChipText}>{periodLabel}</Text>
-          <View style={styles.chevronDown} />
-        </Pressable>
+
+        <View style={styles.headerActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${title}: expand chart`}
+            onPress={() => setImmersiveOpen(true)}
+            style={({ pressed }) => [
+              styles.expandButton,
+              pressed && styles.expandButtonPressed,
+            ]}
+          >
+            <View style={styles.expandGlyph}>
+              <View
+                style={[
+                  styles.expandCorner,
+                  styles.expandCornerTopLeft,
+                ]}
+              />
+              <View
+                style={[
+                  styles.expandCorner,
+                  styles.expandCornerTopRight,
+                ]}
+              />
+              <View
+                style={[
+                  styles.expandCorner,
+                  styles.expandCornerBottomLeft,
+                ]}
+              />
+              <View
+                style={[
+                  styles.expandCorner,
+                  styles.expandCornerBottomRight,
+                ]}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Select revenue period. Current: ${periodLabel}`}
+            disabled={!canSelectPeriod}
+            onPress={() =>
+              setPeriodMenuOpen((open) => !open)
+            }
+            style={({ pressed }) => [
+              styles.periodChip,
+              pressed &&
+                canSelectPeriod &&
+                styles.periodChipPressed,
+            ]}
+          >
+            <Text style={styles.periodChipText}>
+              {periodLabel}
+            </Text>
+            <View style={styles.chevronDown} />
+          </Pressable>
+        </View>
       </View>
 
       {periodMenuOpen && canSelectPeriod && (
@@ -395,18 +1500,212 @@ function RevenueAnalyticsV2({
           </View>
 
           {chartWidth > 0 && (
-            <View style={{ width: chartWidth, height }}>
-              <AreaFill scaledPoints={currentScaled} chartWidth={chartWidth} chartHeight={height} />
-              {comparisonScaled.length > 1 && (
-                <LineSegments scaledPoints={comparisonScaled} color={colors.textTertiary} dashed />
-              )}
-              <LineSegments scaledPoints={currentScaled} color={colors.royal} />
-              {!!lastPoint && (
-                <View style={styles.pointLayer} pointerEvents="none">
-                  <View style={[styles.pointOuterRing, { left: lastPoint.x - 7, top: lastPoint.y - 7 }]} />
-                  <View style={[styles.pointDot, { left: lastPoint.x - 4, top: lastPoint.y - 4 }]} />
-                </View>
-              )}
+            <View
+              style={{ width: chartWidth, height }}
+              pointerEvents="none"
+            >
+              <Svg
+                width={chartWidth}
+                height={height}
+                viewBox={`0 0 ${chartWidth} ${height}`}
+              >
+                <Defs>
+                  <LinearGradient
+                    id={REVENUE_LINE_GRADIENT_ID}
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <Stop
+                      offset="0%"
+                      stopColor={colors.cosmosBlue}
+                    />
+                    <Stop
+                      offset="55%"
+                      stopColor={colors.cosmosViolet}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={colors.cosmosMagenta}
+                    />
+                  </LinearGradient>
+
+                  <LinearGradient
+                    id={REVENUE_AREA_GRADIENT_ID}
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    <Stop
+                      offset="0%"
+                      stopColor={colors.cosmosBlue}
+                      stopOpacity={0.30}
+                    />
+                    <Stop
+                      offset="48%"
+                      stopColor={colors.cosmosViolet}
+                      stopOpacity={0.16}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={colors.cosmosViolet}
+                      stopOpacity={0.02}
+                    />
+                  </LinearGradient>
+
+                  <LinearGradient
+                    id={REVENUE_DEPTH_GRADIENT_ID}
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    <Stop
+                      offset="0%"
+                      stopColor={colors.cosmosMagenta}
+                      stopOpacity={0.15}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={colors.cosmosViolet}
+                      stopOpacity={0}
+                    />
+                  </LinearGradient>
+
+                  <LinearGradient
+                    id={REVENUE_FLOOR_GRADIENT_ID}
+                    x1="0%"
+                    y1="0%"
+                    x2="0%"
+                    y2="100%"
+                  >
+                    <Stop
+                      offset="0%"
+                      stopColor={colors.cosmosViolet}
+                      stopOpacity={0.12}
+                    />
+                    <Stop
+                      offset="100%"
+                      stopColor={colors.cosmosBlue}
+                      stopOpacity={0.015}
+                    />
+                  </LinearGradient>
+                </Defs>
+
+                <Polygon
+                  points={floorPoints}
+                  fill={`url(#${REVENUE_FLOOR_GRADIENT_ID})`}
+                />
+
+                {!!currentAreaPath && (
+                  <>
+                    <SvgPath
+                      d={currentAreaPath}
+                      fill={`url(#${REVENUE_DEPTH_GRADIENT_ID})`}
+                      opacity={0.55}
+                      transform="translate(0 7)"
+                    />
+
+                    <SvgPath
+                      d={currentAreaPath}
+                      fill={`url(#${REVENUE_AREA_GRADIENT_ID})`}
+                    />
+                  </>
+                )}
+
+                {!!comparisonPath && (
+                  <SvgPath
+                    d={comparisonPath}
+                    fill="none"
+                    stroke={colors.textTertiary}
+                    strokeWidth={1.6}
+                    strokeDasharray="6 6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.72}
+                  />
+                )}
+
+                {!!currentPath && (
+                  <>
+                    <SvgPath
+                      d={currentPath}
+                      fill="none"
+                      stroke={colors.cosmosViolet}
+                      strokeWidth={12}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={0.07}
+                    />
+
+                    <SvgPath
+                      d={currentPath}
+                      fill="none"
+                      stroke={colors.cosmosBlue}
+                      strokeWidth={7}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={0.12}
+                    />
+
+                    <SvgPath
+                      d={currentPath}
+                      fill="none"
+                      stroke={`url(#${REVENUE_LINE_GRADIENT_ID})`}
+                      strokeWidth={2.8}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </>
+                )}
+
+                {showPeakNode && peakPoint && (
+                  <>
+                    <Circle
+                      cx={peakPoint.x}
+                      cy={peakPoint.y}
+                      r={10}
+                      fill={colors.cosmosBlue}
+                      opacity={0.08}
+                    />
+                    <Circle
+                      cx={peakPoint.x}
+                      cy={peakPoint.y}
+                      r={5}
+                      fill={colors.cosmosBlue}
+                      opacity={0.22}
+                    />
+                    <Circle
+                      cx={peakPoint.x}
+                      cy={peakPoint.y}
+                      r={2.6}
+                      fill={colors.textPrimary}
+                    />
+                  </>
+                )}
+
+                {!!lastPoint && (
+                  <>
+                    <Circle
+                      cx={lastPoint.x}
+                      cy={lastPoint.y}
+                      r={9}
+                      fill={colors.cosmosViolet}
+                      opacity={0.16}
+                    />
+                    <Circle
+                      cx={lastPoint.x}
+                      cy={lastPoint.y}
+                      r={4.5}
+                      fill={colors.royal}
+                      stroke={colors.surface}
+                      strokeWidth={2}
+                    />
+                  </>
+                )}
+              </Svg>
             </View>
           )}
         </View>
@@ -426,6 +1725,150 @@ function RevenueAnalyticsV2({
           );
         })}
       </View>
+
+      <Modal
+        visible={immersiveOpen}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setImmersiveOpen(false)}
+      >
+        <SafeAreaView style={styles.immersiveRoot}>
+          <View
+            pointerEvents="none"
+            style={styles.immersiveHaloBlue}
+          />
+          <View
+            pointerEvents="none"
+            style={styles.immersiveHaloViolet}
+          />
+
+          <View style={styles.immersiveTopBar}>
+            <View style={styles.immersiveIdentity}>
+              <Text style={styles.immersiveTitle}>
+                {title}
+              </Text>
+
+              <View style={styles.immersiveMetricRow}>
+                <Text
+                  style={styles.immersiveTotal}
+                  numberOfLines={1}
+                >
+                  {totalValue}
+                </Text>
+
+                <View
+                  style={[
+                    styles.trendPill,
+                    {
+                      backgroundColor:
+                        trendBgMap[trendDirection],
+                    },
+                  ]}
+                >
+                  <TrendIndicator
+                    direction={trendDirection}
+                  />
+                  <Text
+                    style={[
+                      styles.trendText,
+                      {
+                        color:
+                          trendColorMap[
+                            trendDirection
+                          ],
+                      },
+                    ]}
+                  >
+                    {trendLabel}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${title}: close expanded chart`}
+              onPress={() => setImmersiveOpen(false)}
+              style={({ pressed }) => [
+                styles.immersiveClose,
+                pressed && styles.immersiveClosePressed,
+              ]}
+            >
+              <Text style={styles.immersiveCloseText}>
+                ×
+              </Text>
+            </Pressable>
+          </View>
+
+          {canSelectPeriod && (
+            <View style={styles.immersivePeriodRow}>
+              {periodOptions.map((option) => {
+                const active =
+                  option.value === selectedPeriod;
+
+                return (
+                  <Pressable
+                    key={option.value}
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: active,
+                    }}
+                    onPress={() =>
+                      selectPeriod(option.value)
+                    }
+                    style={({ pressed }) => [
+                      styles.immersivePeriodOption,
+                      active &&
+                        styles.immersivePeriodOptionActive,
+                      pressed &&
+                        styles.immersivePeriodOptionPressed,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.immersivePeriodText,
+                        active &&
+                          styles.immersivePeriodTextActive,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+
+          <View style={styles.immersiveChartShell}>
+            <ImmersiveRevenueStage
+              key={selectedPeriod ?? periodLabel}
+              currentSeries={currentSeries}
+              comparisonSeries={comparisonSeries}
+              currentSeriesLabel={currentSeriesLabel}
+              min={min}
+              max={max}
+              height={immersiveHeight}
+              axisValueFormatter={axisValueFormatter}
+            />
+          </View>
+
+          <View style={styles.immersiveFooter}>
+            <View
+              style={[
+                styles.legendDot,
+                {
+                  backgroundColor:
+                    colors.cosmosBlue,
+                },
+              ]}
+            />
+            <Text style={styles.immersiveFooterText}>
+              {currentSeriesLabel}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 }
@@ -648,6 +2091,310 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
+  },
+
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  expandButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  expandButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.96 }],
+  },
+
+  expandGlyph: {
+    width: 15,
+    height: 15,
+    position: 'relative',
+  },
+
+  expandCorner: {
+    position: 'absolute',
+    width: 6,
+    height: 6,
+    borderColor: colors.textSecondary,
+  },
+
+  expandCornerTopLeft: {
+    left: 0,
+    top: 0,
+    borderLeftWidth: 1.5,
+    borderTopWidth: 1.5,
+  },
+
+  expandCornerTopRight: {
+    right: 0,
+    top: 0,
+    borderRightWidth: 1.5,
+    borderTopWidth: 1.5,
+  },
+
+  expandCornerBottomLeft: {
+    left: 0,
+    bottom: 0,
+    borderLeftWidth: 1.5,
+    borderBottomWidth: 1.5,
+  },
+
+  expandCornerBottomRight: {
+    right: 0,
+    bottom: 0,
+    borderRightWidth: 1.5,
+    borderBottomWidth: 1.5,
+  },
+
+  immersiveRoot: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: '#070A1C',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+
+  immersiveHaloBlue: {
+    position: 'absolute',
+    width: 520,
+    height: 520,
+    borderRadius: 260,
+    backgroundColor: 'rgba(75,190,255,0.055)',
+    top: -220,
+    left: -140,
+  },
+
+  immersiveHaloViolet: {
+    position: 'absolute',
+    width: 620,
+    height: 620,
+    borderRadius: 310,
+    backgroundColor: 'rgba(124,92,255,0.055)',
+    bottom: -300,
+    right: -210,
+  },
+
+  immersiveTopBar: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    zIndex: 2,
+  },
+
+  immersiveIdentity: {
+    flex: 1,
+    paddingRight: 16,
+  },
+
+  immersiveTitle: {
+    color: colors.textPrimary,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+  },
+
+  immersiveMetricRow: {
+    marginTop: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+
+  immersiveTotal: {
+    color: colors.textPrimary,
+    fontSize: 38,
+    fontWeight: '800',
+    letterSpacing: -1,
+  },
+
+  immersiveClose: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.065)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+
+  immersiveClosePressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.96 }],
+  },
+
+  immersiveCloseText: {
+    color: colors.textPrimary,
+    fontSize: 25,
+    fontWeight: '300',
+    lineHeight: 27,
+  },
+
+  immersivePeriodRow: {
+    marginTop: 18,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 9,
+    zIndex: 2,
+  },
+
+  immersivePeriodOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.045)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.085)',
+  },
+
+  immersivePeriodOptionActive: {
+    backgroundColor: 'rgba(124,92,255,0.20)',
+    borderColor: 'rgba(112,231,255,0.52)',
+  },
+
+  immersivePeriodOptionPressed: {
+    opacity: 0.72,
+  },
+
+  immersivePeriodText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  immersivePeriodTextActive: {
+    color: '#DDFBFF',
+  },
+
+  immersiveChartShell: {
+    marginTop: 18,
+    paddingTop: 18,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(112,231,255,0.14)',
+    backgroundColor: 'rgba(13,16,45,0.92)',
+    overflow: 'hidden',
+    zIndex: 1,
+  },
+
+  immersiveChartRow: {
+    flexDirection: 'row',
+  },
+
+  immersiveYAxis: {
+    width: 54,
+    marginRight: 10,
+    justifyContent: 'space-between',
+  },
+
+  immersiveYAxisLabel: {
+    color: 'rgba(220,232,255,0.56)',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
+  immersivePlot: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+    borderRadius: 18,
+  },
+
+  interactionSurface: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+    backgroundColor: 'transparent',
+  },
+
+  interactionReadout: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    zIndex: 4,
+    minWidth: 170,
+    maxWidth: 270,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    backgroundColor:
+      'rgba(9,13,37,0.88)',
+    borderWidth: 1,
+    borderColor:
+      'rgba(125,241,255,0.17)',
+  },
+
+  interactionDate: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+
+  interactionValue: {
+    marginTop: 3,
+    color: '#E8FCFF',
+    fontSize: 23,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+  },
+
+  interactionStats: {
+    marginTop: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+  },
+
+  interactionStat: {
+    color:
+      'rgba(220,232,255,0.64)',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+
+  immersiveXAxisRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+    paddingLeft: 64,
+  },
+
+  immersiveXAxisCell: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  immersiveXAxisLabel: {
+    color: 'rgba(220,232,255,0.50)',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+
+  immersiveFooter: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+
+  immersiveFooterText: {
+    marginLeft: 7,
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
 

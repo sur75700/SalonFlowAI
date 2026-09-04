@@ -18,6 +18,8 @@ type SummaryHookResult = HookBaseState & {
 type AnalyticsHookResult = HookBaseState & {
   summary: SummaryData | null;
   analytics: AnalyticsData | null;
+  summaryError: string;
+  analyticsError: string;
   reload: () => Promise<void>;
   refresh: () => void;
 };
@@ -93,19 +95,31 @@ export function useAnalyticsData(
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [summaryError, setSummaryError] = useState("");
+  const [analyticsError, setAnalyticsError] = useState("");
 
   const load = useCallback(async () => {
     if (!token) {
       setLoading(false);
+      setRefreshing(false);
       setSummary(null);
       setAnalytics(null);
+      setError("");
+      setSummaryError("");
+      setAnalyticsError("");
       return;
     }
 
     try {
       setError("");
+      setSummaryError("");
+      setAnalyticsError("");
 
-      const [summaryRes, analyticsRes, insightsRes] = await Promise.all([
+      const [
+        summaryResult,
+        analyticsResult,
+        insightsResult,
+      ] = await Promise.allSettled([
         api.get("/appointments/dashboard/summary", {
           headers: authHeaders(token),
         }),
@@ -117,63 +131,151 @@ export function useAnalyticsData(
         }),
       ]);
 
-      const totals = analyticsRes.data?.totals ?? {};
+      const rejectedReasons = [
+        summaryResult,
+        analyticsResult,
+        insightsResult,
+      ]
+        .filter(
+          (result): result is PromiseRejectedResult =>
+            result.status === "rejected"
+        )
+        .map((result) => result.reason);
 
-      setSummary(summaryRes.data);
-      setAnalytics({
-        ...analyticsRes.data,
-        completedRevenue:
-          analyticsRes.data.completedRevenue ??
-          analyticsRes.data.completed_revenue ??
-          totals.completed_revenue ??
-          analyticsRes.data.total_revenue ??
-          0,
-        scheduledPipeline:
-          analyticsRes.data.scheduledPipeline ??
-          analyticsRes.data.scheduled_pipeline ??
-          totals.scheduled_pipeline ??
-          0,
-        cancelledValue:
-          analyticsRes.data.cancelledValue ??
-          analyticsRes.data.cancelled_value ??
-          totals.cancelled_value ??
-          0,
-        avgCompletedTicket:
-          analyticsRes.data.avgCompletedTicket ??
-          analyticsRes.data.avg_completed_ticket ??
-          totals.avg_completed_booking_value ??
-          0,
-        topPerformingServices:
-          analyticsRes.data.topPerformingServices ??
-          analyticsRes.data.top_performing_services ??
-          analyticsRes.data.top_services ??
-          [],
-        forecast: insightsRes.data?.forecast,
-        risk_summary: insightsRes.data?.risk_summary,
-        growth_summary: insightsRes.data?.growth_summary,
-        executive_decision: insightsRes.data?.executive_decision,
-        client_summary: insightsRes.data?.client_summary,
-        client_risk: insightsRes.data?.client_risk,
-        mission_control: insightsRes.data?.mission_control ?? [],
-        performance_center: insightsRes.data?.performance_center,
-        benchmark_center: insightsRes.data?.benchmark_center,
-        revenue_simulator: insightsRes.data?.revenue_simulator,
-        insights: insightsRes.data?.insights ?? [],
-      });
+      if (
+        rejectedReasons.some((reason) =>
+          isAuthError(reason)
+        )
+      ) {
+        clearToken();
+        setSummary(null);
+        setAnalytics(null);
+        setError("");
+        setSummaryError("");
+        setAnalyticsError("");
+        return;
+      }
+
+      const messageFor = (
+        reason: unknown,
+        fallback: string
+      ) => {
+        const caught = reason as any;
+
+        return (
+          caught?.response?.data?.detail ||
+          caught?.message ||
+          fallback
+        );
+      };
+
+      let nextSummaryError = "";
+      let nextAnalyticsError = "";
+      let supplementalError = "";
+
+      if (summaryResult.status === "fulfilled") {
+        setSummary(summaryResult.value.data);
+      } else {
+        nextSummaryError = messageFor(
+          summaryResult.reason,
+          "Failed to load summary"
+        );
+      }
+
+      if (analyticsResult.status === "fulfilled") {
+        const analyticsRes = analyticsResult.value;
+        const totals = analyticsRes.data?.totals ?? {};
+
+        const insightsData =
+          insightsResult.status === "fulfilled"
+            ? insightsResult.value.data
+            : undefined;
+
+        setAnalytics({
+          ...analyticsRes.data,
+          completedRevenue:
+            analyticsRes.data.completedRevenue ??
+            analyticsRes.data.completed_revenue ??
+            totals.completed_revenue ??
+            analyticsRes.data.total_revenue ??
+            0,
+          scheduledPipeline:
+            analyticsRes.data.scheduledPipeline ??
+            analyticsRes.data.scheduled_pipeline ??
+            totals.scheduled_pipeline ??
+            0,
+          cancelledValue:
+            analyticsRes.data.cancelledValue ??
+            analyticsRes.data.cancelled_value ??
+            totals.cancelled_value ??
+            0,
+          avgCompletedTicket:
+            analyticsRes.data.avgCompletedTicket ??
+            analyticsRes.data.avg_completed_ticket ??
+            totals.avg_completed_booking_value ??
+            0,
+          topPerformingServices:
+            analyticsRes.data.topPerformingServices ??
+            analyticsRes.data.top_performing_services ??
+            analyticsRes.data.top_services ??
+            [],
+          forecast: insightsData?.forecast,
+          risk_summary: insightsData?.risk_summary,
+          growth_summary: insightsData?.growth_summary,
+          executive_decision:
+            insightsData?.executive_decision,
+          client_summary: insightsData?.client_summary,
+          client_risk: insightsData?.client_risk,
+          mission_control:
+            insightsData?.mission_control ?? [],
+          performance_center:
+            insightsData?.performance_center,
+          benchmark_center:
+            insightsData?.benchmark_center,
+          revenue_simulator:
+            insightsData?.revenue_simulator,
+          insights: insightsData?.insights ?? [],
+        });
+      } else {
+        nextAnalyticsError = messageFor(
+          analyticsResult.reason,
+          "Failed to load analytics"
+        );
+      }
+
+      if (insightsResult.status === "rejected") {
+        supplementalError = messageFor(
+          insightsResult.reason,
+          "Failed to load analytics insights"
+        );
+      }
+
+      setSummaryError(nextSummaryError);
+      setAnalyticsError(nextAnalyticsError);
+      setError(
+        nextSummaryError ||
+          nextAnalyticsError ||
+          supplementalError
+      );
     } catch (err: any) {
       if (isAuthError(err)) {
         clearToken();
         setSummary(null);
         setAnalytics(null);
         setError("");
+        setSummaryError("");
+        setAnalyticsError("");
         return;
       }
 
-      setError(
+      const message =
         err?.response?.data?.detail ||
-          err?.message ||
-          "Failed to load analytics"
-      );
+        err?.message ||
+        "Failed to load dashboard data";
+
+      setError(message);
+      setSummaryError(message);
+      setAnalyticsError(message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -195,6 +297,8 @@ export function useAnalyticsData(
     loading,
     refreshing,
     error,
+    summaryError,
+    analyticsError,
     reload: load,
     refresh,
   };

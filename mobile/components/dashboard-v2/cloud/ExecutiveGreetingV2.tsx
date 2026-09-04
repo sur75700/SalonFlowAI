@@ -24,6 +24,10 @@ export interface ExecutiveGreetingV2Props {
     settings: string;
     signOut: string;
     signingOut: string;
+    soulEyebrow?: string;
+    soulTitle?: string;
+    soulBody?: string;
+    soulSignature?: string;
   };
 
   /** Salon owner / operator's first name */
@@ -175,7 +179,14 @@ function ExecutiveGreetingV2({
       </View>
 
       <View style={styles.headerRow}>
-        <Text style={styles.eyebrow}>{greeting.toUpperCase()}</Text>
+        <Text
+          style={styles.eyebrow}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          accessibilityLabel="SalonFlowAI"
+        >
+          SalonFlow<Text style={styles.eyebrowAI}>AI</Text>
+        </Text>
 
         <View style={styles.headerActions}>
           <View style={[styles.healthPill, { backgroundColor: health.bg }]}>
@@ -220,107 +231,152 @@ function ExecutiveGreetingV2({
       </View>
 
       {accountMenuOpen && accountMenu && (
-        <View style={styles.accountMenu}>
-          <View style={styles.accountIdentity}>
-            <View style={styles.accountAvatarLarge}>
-              <Text style={styles.accountAvatarLargeText}>
-                {accountMenu.initials}
+        <View style={styles.accountOpenStage}>
+          <View style={styles.soulPanel}>
+            <View
+              pointerEvents="none"
+              style={styles.soulOrbLarge}
+            />
+            <View
+              pointerEvents="none"
+              style={styles.soulOrbSmall}
+            />
+
+            <Text style={styles.soulEyebrow}>
+              {accountLabels?.soulEyebrow ??
+                'YOUR SALON · YOUR RHYTHM'}
+            </Text>
+
+            <Text style={styles.soulBrand}>
+              SalonFlowAI
+            </Text>
+
+            <Text style={styles.soulTitle}>
+              {accountLabels?.soulTitle ??
+                "Your salon has its own rhythm. I’m here to help you hear it."}
+            </Text>
+
+            <Text style={styles.soulBody}>
+              {accountLabels?.soulBody ??
+                "Every booking, client, service, and decision becomes part of one living story. You lead the vision; I keep the signals clear so your next move feels confident."}
+            </Text>
+
+            <View style={styles.soulSignatureRow}>
+              <View
+                style={styles.soulSignatureLine}
+              />
+
+              <Text
+                style={styles.soulSignature}
+              >
+                {accountLabels?.soulSignature ??
+                  'With you for every decision that matters.'}
               </Text>
             </View>
+          </View>
 
-            <View style={styles.accountIdentityText}>
-              <Text style={styles.accountName} numberOfLines={1}>
-                {ownerFirstName}
-              </Text>
-              {!!accountMenu.email && (
-                <Text style={styles.accountEmail} numberOfLines={1}>
-                  {accountMenu.email}
+          <View style={styles.accountMenu}>
+            <View style={styles.accountIdentity}>
+              <View style={styles.accountAvatarLarge}>
+                <Text style={styles.accountAvatarLargeText}>
+                  {accountMenu.initials}
                 </Text>
-              )}
+              </View>
+
+              <View style={styles.accountIdentityText}>
+                <Text style={styles.accountName} numberOfLines={1}>
+                  {ownerFirstName}
+                </Text>
+                {!!accountMenu.email && (
+                  <Text style={styles.accountEmail} numberOfLines={1}>
+                    {accountMenu.email}
+                  </Text>
+                )}
+              </View>
             </View>
-          </View>
 
-          <View style={styles.accountDivider} />
+            <View style={styles.accountDivider} />
 
-          <Text style={styles.accountSectionLabel}>
-            {(accountLabels?.language ?? 'Language').toUpperCase()}
-          </Text>
+            <Text style={styles.accountSectionLabel}>
+              {(accountLabels?.language ?? 'Language').toUpperCase()}
+            </Text>
 
-          <View style={styles.languageGrid}>
-            {accountMenu.languageOptions.map((option) => {
-              const active =
-                option.value === accountMenu.selectedLanguage;
+            <View style={styles.languageGrid}>
+              {accountMenu.languageOptions.map((option) => {
+                const active =
+                  option.value === accountMenu.selectedLanguage;
 
-              return (
-                <Pressable
-                  key={option.value}
-                  onPress={() => {
-                    accountMenu.onLanguageChange(option.value);
-                    setAccountMenuOpen(false);
-                  }}
-                  style={({ pressed }) => [
-                    styles.languageOption,
-                    active && styles.languageOptionActive,
-                    pressed && styles.menuItemPressed,
-                  ]}
-                >
-                  <Text style={styles.languageFlag}>
-                    {option.flag}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.languageText,
-                      active && styles.languageTextActive,
+                return (
+                  <Pressable
+                    key={option.value}
+                    onPress={() => {
+                      accountMenu.onLanguageChange(option.value);
+                      setAccountMenuOpen(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.languageOption,
+                      active && styles.languageOptionActive,
+                      pressed && styles.menuItemPressed,
                     ]}
-                    numberOfLines={1}
                   >
-                    {option.label}
-                  </Text>
-                  {active && (
-                    <Text style={styles.languageCheck}>✓</Text>
-                  )}
-                </Pressable>
-              );
-            })}
+                    <Text style={styles.languageFlag}>
+                      {option.flag}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.languageText,
+                        active && styles.languageTextActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {option.label}
+                    </Text>
+                    {active && (
+                      <Text style={styles.languageCheck}>✓</Text>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <View style={styles.accountDivider} />
+
+            <Pressable
+              onPress={() => {
+                setAccountMenuOpen(false);
+                accountMenu.onSettings();
+              }}
+              style={({ pressed }) => [
+                styles.accountMenuItem,
+                pressed && styles.menuItemPressed,
+              ]}
+            >
+              <Text style={styles.accountMenuIcon}>⚙️</Text>
+              <Text style={styles.accountMenuText}>
+                {accountLabels?.settings ?? 'Settings'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              disabled={accountMenu.loggingOut}
+              onPress={() => {
+                setAccountMenuOpen(false);
+                accountMenu.onLogout();
+              }}
+              style={({ pressed }) => [
+                styles.accountMenuItem,
+                styles.logoutItem,
+                pressed && styles.menuItemPressed,
+              ]}
+            >
+              <Text style={styles.accountMenuIcon}>🚪</Text>
+              <Text style={styles.logoutText}>
+                {accountMenu.loggingOut
+                  ? accountLabels?.signingOut ?? 'Signing out…'
+                  : accountLabels?.signOut ?? 'Sign out'}
+              </Text>
+            </Pressable>
           </View>
-
-          <View style={styles.accountDivider} />
-
-          <Pressable
-            onPress={() => {
-              setAccountMenuOpen(false);
-              accountMenu.onSettings();
-            }}
-            style={({ pressed }) => [
-              styles.accountMenuItem,
-              pressed && styles.menuItemPressed,
-            ]}
-          >
-            <Text style={styles.accountMenuIcon}>⚙️</Text>
-            <Text style={styles.accountMenuText}>
-              {accountLabels?.settings ?? "Settings"}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            disabled={accountMenu.loggingOut}
-            onPress={() => {
-              setAccountMenuOpen(false);
-              accountMenu.onLogout();
-            }}
-            style={({ pressed }) => [
-              styles.accountMenuItem,
-              styles.logoutItem,
-              pressed && styles.menuItemPressed,
-            ]}
-          >
-            <Text style={styles.accountMenuIcon}>🚪</Text>
-            <Text style={styles.logoutText}>
-              {accountMenu.loggingOut
-                ? accountLabels?.signingOut ?? 'Signing out…'
-                : accountLabels?.signOut ?? 'Sign out'}
-            </Text>
-          </Pressable>
         </View>
       )}
 
@@ -498,12 +554,138 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderTopColor: colors.textTertiary,
   },
-  accountMenu: {
+  accountOpenStage: {
     zIndex: 20,
-    marginTop: 12,
-    marginLeft: 'auto',
     width: '100%',
-    maxWidth: 350,
+    marginTop: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'stretch',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+
+  soulPanel: {
+    position: 'relative',
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 420,
+    minWidth: 260,
+    minHeight: 246,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    paddingHorizontal: 24,
+    paddingVertical: 22,
+    borderRadius: 20,
+    backgroundColor: 'rgba(15,17,48,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(124,92,255,0.30)',
+    shadowColor: colors.royal,
+    shadowOpacity: 0.17,
+    shadowRadius: 25,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+  },
+
+  soulOrbLarge: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    right: -76,
+    top: -92,
+    backgroundColor: colors.royalGlow,
+    opacity: 0.32,
+  },
+
+  soulOrbSmall: {
+    position: 'absolute',
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    left: -46,
+    bottom: -58,
+    backgroundColor: colors.goldGlow,
+    opacity: 0.31,
+  },
+
+  soulEyebrow: {
+    position: 'relative',
+    zIndex: 2,
+    color: colors.gold,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+  },
+
+  soulBrand: {
+    position: 'relative',
+    zIndex: 2,
+    marginTop: 8,
+    color: '#C7BAFF',
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '900',
+    letterSpacing: -0.8,
+    textShadowColor: 'rgba(124,92,255,0.48)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 15,
+  },
+
+  soulTitle: {
+    position: 'relative',
+    zIndex: 2,
+    maxWidth: 660,
+    marginTop: 10,
+    color: colors.textPrimary,
+    fontSize: 18,
+    lineHeight: 25,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+
+  soulBody: {
+    position: 'relative',
+    zIndex: 2,
+    maxWidth: 720,
+    marginTop: 9,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+
+  soulSignatureRow: {
+    position: 'relative',
+    zIndex: 2,
+    marginTop: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+  },
+
+  soulSignatureLine: {
+    width: 30,
+    height: 2,
+    borderRadius: 999,
+    backgroundColor: colors.royal,
+  },
+
+  soulSignature: {
+    flexShrink: 1,
+    color: colors.gold,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '800',
+    letterSpacing: 0.15,
+  },
+
+  accountMenu: {
+    zIndex: 21,
+    width: 350,
+    maxWidth: '100%',
+    flexShrink: 1,
     padding: 14,
     borderRadius: 18,
     backgroundColor: '#1D1F47',
@@ -624,10 +806,21 @@ const styles = StyleSheet.create({
     color: colors.negative,
   },
   eyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    color: colors.royal,
+    flexShrink: 1,
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 0.55,
+    color: '#F3D184',
+    textShadowColor: 'rgba(163, 116, 255, 0.58)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  eyebrowAI: {
+    color: '#FFF0B8',
+    fontWeight: '900',
+    textShadowColor: 'rgba(205, 176, 255, 0.72)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
   healthPill: {
     flexDirection: 'row',

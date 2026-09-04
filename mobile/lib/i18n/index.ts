@@ -1,3 +1,8 @@
+import { revenueTimeIntelligence as revenueTimeIntelligenceEn } from "../../translations/en";
+import { revenueTimeIntelligence as revenueTimeIntelligenceFr } from "../../translations/fr";
+import { revenueTimeIntelligence as revenueTimeIntelligenceHy } from "../../translations/hy";
+import { revenueTimeIntelligence as revenueTimeIntelligenceRu } from "../../translations/ru";
+
 import { translations as nestedTranslations } from "../../translations";
 
 export type AppLanguage = "en" | "hy" | "ru" | "fr";
@@ -2946,4 +2951,25 @@ export function t(key: string, locale: AppLanguage = defaultLanguage): string {
   if (override) return override;
 
   return translations[locale]?.[key] ?? translations.en[key] ?? key;
+}
+
+
+export type RevenueTimeIntelligenceCopy = {
+  [K in keyof typeof revenueTimeIntelligenceEn]: string;
+};
+
+export function getRevenueTimeIntelligenceCopy(
+  language: string
+): RevenueTimeIntelligenceCopy {
+  switch (language) {
+    case "hy":
+      return revenueTimeIntelligenceHy;
+    case "ru":
+      return revenueTimeIntelligenceRu;
+    case "fr":
+      return revenueTimeIntelligenceFr;
+    case "en":
+    default:
+      return revenueTimeIntelligenceEn;
+  }
 }

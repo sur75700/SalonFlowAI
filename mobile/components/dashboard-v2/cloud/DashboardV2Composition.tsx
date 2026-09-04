@@ -5,6 +5,13 @@ import { useRouter, type Href } from 'expo-router';
 import ExecutiveGreetingV2 from './ExecutiveGreetingV2';
 import KPICardV2 from './KPICardV2';
 import RevenueAnalyticsV2 from './RevenueAnalyticsV2';
+import RevenueRangeSheetV2 from './RevenueRangeSheetV2';
+import {
+  useRevenueTimeSeries,
+  type RevenuePreset,
+  type RevenueTimeCurrency,
+} from '../../../hooks/useRevenueTimeSeries';
+import { getRevenueTimeIntelligenceCopy } from '../../../lib/i18n';
 import AppointmentAnalyticsV2 from './AppointmentAnalyticsV2';
 import AICommandCenterV2 from './AICommandCenterV2';
 import { useIntelligenceDecision } from '../../../hooks/useIntelligenceDecision';
@@ -418,6 +425,24 @@ function DashboardV2Composition() {
   const [revenuePeriod, setRevenuePeriod] =
     React.useState<RevenuePeriod>('7d');
 
+  const [
+    revenueTimePreset,
+    setRevenueTimePreset,
+  ] = React.useState<RevenuePreset>('7d');
+
+  const [
+    revenueRangeSheetVisible,
+    setRevenueRangeSheetVisible,
+  ] = React.useState(false);
+
+  const [
+    revenueCustomRange,
+    setRevenueCustomRange,
+  ] = React.useState<{
+    dateFrom: string;
+    dateTo: string;
+  } | null>(null);
+
   const [appointmentPeriod, setAppointmentPeriod] =
     React.useState<AppointmentPeriod>('all');
   const {
@@ -437,11 +462,48 @@ function DashboardV2Composition() {
 
   const dashboardCopy = t.dashboardV2;
 
-  const revenuePeriodOptions = [
-    { value: '7d', label: dashboardCopy.periods.last7Days },
-    { value: '30d', label: dashboardCopy.periods.last30Days },
-    { value: '90d', label: dashboardCopy.periods.last90Days },
-  ] as const;
+  const revenueTimeCopy =
+    getRevenueTimeIntelligenceCopy(
+      language
+    );
+
+  const revenuePeriodOptions: readonly {
+    value: RevenuePreset;
+    label: string;
+  }[] = [
+    {
+      value: '24h',
+      label: revenueTimeCopy.last24Hours,
+    },
+    {
+      value: '7d',
+      label: revenueTimeCopy.last7Days,
+    },
+    {
+      value: '30d',
+      label: revenueTimeCopy.last30Days,
+    },
+    {
+      value: '90d',
+      label: revenueTimeCopy.last90Days,
+    },
+    {
+      value: 'ytd',
+      label: revenueTimeCopy.yearToDate,
+    },
+    {
+      value: '1y',
+      label: revenueTimeCopy.last1Year,
+    },
+    {
+      value: 'all',
+      label: revenueTimeCopy.allTime,
+    },
+    {
+      value: 'custom',
+      label: revenueTimeCopy.customRange,
+    },
+  ];
 
   const appointmentPeriodOptions = [
     { value: 'today', label: dashboardCopy.periods.today },
@@ -537,7 +599,8 @@ function DashboardV2Composition() {
     analytics,
     loading,
     refreshing,
-    error,
+    summaryError,
+    analyticsError,
     refresh,
   } = useAnalyticsData(token, clearToken);
 
@@ -556,7 +619,15 @@ function DashboardV2Composition() {
   };
   const { width } = useWindowDimensions();
 
-  const dataPending = booting || loading;
+  const dataPending =
+    booting || (loading && summary === null);
+
+  const summaryUnavailable =
+    Boolean(summaryError) && summary === null;
+
+  const analyticsUnavailable =
+    Boolean(analyticsError) && analytics === null;
+
   const displayValue = (value: number | undefined) =>
     dataPending ? '—' : String(value ?? 0);
 
@@ -608,7 +679,7 @@ function DashboardV2Composition() {
       value: displayValue(summary?.total_clients),
       trendLabel: dataPending ? dashboardCopy.common.syncing : dashboardCopy.common.live,
       trendDirection: 'flat' as const,
-      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.clientBase,
+      helperText: summaryUnavailable ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.clientBase,
       accent: 'gold' as const,
       sparklineData: undefined,
     },
@@ -617,7 +688,7 @@ function DashboardV2Composition() {
       value: displayValue(summary?.total_services),
       trendLabel: dataPending ? dashboardCopy.common.syncing : dashboardCopy.common.live,
       trendDirection: 'flat' as const,
-      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.activeCatalog,
+      helperText: summaryUnavailable ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.activeCatalog,
       accent: 'royal' as const,
       sparklineData: undefined,
     },
@@ -631,7 +702,7 @@ function DashboardV2Composition() {
             String(completionRate)
           ),
       trendDirection: completionRate >= 60 ? 'up' as const : 'flat' as const,
-      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.totalDemand,
+      helperText: summaryUnavailable ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.totalDemand,
       accent: 'blue' as const,
       sparklineData: undefined,
     },
@@ -640,7 +711,7 @@ function DashboardV2Composition() {
       value: displayValue(summary?.today_appointments),
       trendLabel: dataPending ? dashboardCopy.common.syncing : dashboardCopy.common.live,
       trendDirection: todayBookings > 0 ? 'up' as const : 'flat' as const,
-      helperText: error ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.todayActivity,
+      helperText: summaryUnavailable ? dashboardCopy.kpi.dataUnavailable : dashboardCopy.kpi.todayActivity,
       accent: 'green' as const,
       sparklineData: undefined,
     },
@@ -726,6 +797,31 @@ function DashboardV2Composition() {
   const revenueCurrency = normalizeRevenueCurrency(
     analytics?.currency
   );
+
+  const revenueTimeCurrency: RevenueTimeCurrency =
+    revenueCurrency === 'USD' ||
+    revenueCurrency === 'EUR' ||
+    revenueCurrency === 'RUB'
+      ? revenueCurrency
+      : 'AMD';
+
+  const revenueTime =
+    useRevenueTimeSeries({
+      token,
+      preset: revenueTimePreset,
+      currency: revenueTimeCurrency,
+      dateFrom:
+        revenueTimePreset === 'custom'
+          ? revenueCustomRange?.dateFrom
+          : undefined,
+      dateTo:
+        revenueTimePreset === 'custom'
+          ? revenueCustomRange?.dateTo
+          : undefined,
+      enabled:
+        revenueTimePreset !== 'custom' ||
+        revenueCustomRange !== null,
+    });
 
   const {
     billingStatus,
@@ -848,34 +944,17 @@ function DashboardV2Composition() {
     }
   );
 
-  const revenueLast7DaysTotal = revenueSeries.reduce(
-    (total, point) => total + point.value,
-    0
-  );
-
   const hasCompletedRevenue = revenueSeries.some(
     (point) => point.value > 0
   );
-
-  const visibleRevenueSeries = hasCompletedRevenue
-    ? revenueSeries
-    : [];
 
   const todayRevenue =
     revenueByDate.get(getLocalDateKey()) ?? 0;
 
   const revenueReady =
-    !loading &&
-    !error &&
+    !dataPending &&
+    !analyticsUnavailable &&
     analytics !== null;
-
-  const revenueTotalLabel = revenueReady
-    ? formatMoney(
-        revenueLast7DaysTotal,
-        revenueCurrency,
-        locale
-      )
-    : '—';
 
   const revenueTodayLabel = revenueReady
     ? formatMoney(
@@ -885,9 +964,9 @@ function DashboardV2Composition() {
       )
     : '—';
 
-  const revenueStatusLabel = loading
+  const revenueStatusLabel = dataPending
     ? dashboardCopy.common.syncing
-    : error
+    : analyticsUnavailable
       ? dashboardCopy.revenue.unavailable
       : hasCompletedRevenue
         ? dashboardCopy.revenue.actualCompletedRevenue
@@ -909,6 +988,10 @@ function DashboardV2Composition() {
       }}
       accountLabels={{
         language: dashboardCopy.hero.language,
+        soulEyebrow: dashboardCopy.hero.soulEyebrow,
+        soulTitle: dashboardCopy.hero.soulTitle,
+        soulBody: dashboardCopy.hero.soulBody,
+        soulSignature: dashboardCopy.hero.soulSignature,
         settings: dashboardCopy.common.settings,
         signOut: dashboardCopy.common.signOut,
         signingOut: dashboardCopy.common.signingOut,
@@ -916,14 +999,18 @@ function DashboardV2Composition() {
       ownerFirstName={ownerFirstName}
       salonName="SalonFlowAI"
       businessHealth={{
-        label: error
+        label: summaryUnavailable
           ? dashboardCopy.hero.needsAttention
           : dataPending
             ? dashboardCopy.common.syncing
             : totalBookings > 0
               ? dashboardCopy.common.live
               : dashboardCopy.common.ready,
-        tone: error ? 'negative' : dataPending ? 'neutral' : 'positive',
+        tone: summaryUnavailable
+          ? 'negative'
+          : dataPending
+            ? 'neutral'
+            : 'positive',
       }}
       revenueToday={{
         amount: revenueTodayLabel,
@@ -933,8 +1020,12 @@ function DashboardV2Composition() {
         trendDirection: 'flat',
       }}
       aiConfidence={{
-        value: error ? 0 : dataPending ? 0 : 94,
-        label: error
+        value: summaryUnavailable
+          ? 0
+          : dataPending
+            ? 0
+            : 94,
+        label: summaryUnavailable
           ? dashboardCopy.hero.summaryUnavailable
           : dataPending
             ? dashboardCopy.hero.synchronizingLiveData
@@ -977,33 +1068,166 @@ function DashboardV2Composition() {
     </View>
   );
 
-  const revenuePeriodLabel =
-    revenuePeriodOptions.find(
-      (option) => option.value === revenuePeriod
-    )?.label ?? dashboardCopy.periods.last7Days;
+  const handleRevenuePeriodChange = (
+    value: string
+  ) => {
+    const next =
+      value as RevenuePreset;
 
-  const revenueSection = (
-    <RevenueAnalyticsV2
-      title={dashboardCopy.revenue.title}
-      periodLabel={revenuePeriodLabel}
-      periodOptions={revenuePeriodOptions}
-      selectedPeriod={revenuePeriod}
-      onPeriodChange={(value) =>
-        setRevenuePeriod(value as RevenuePeriod)
-      }
-      totalValue={revenueTotalLabel}
-      trendLabel={revenueStatusLabel}
-      trendDirection="flat"
-      currentSeries={visibleRevenueSeries}
-      currentSeriesLabel={dashboardCopy.revenue.completedRevenue}
-      axisValueFormatter={(value) =>
-        formatCompactRevenue(
-          value,
-          revenueCurrency,
+    if (next === 'custom') {
+      setRevenueRangeSheetVisible(
+        true
+      );
+      return;
+    }
+
+    if (
+      next === '7d' ||
+      next === '30d' ||
+      next === '90d'
+    ) {
+      setRevenuePeriod(next);
+    }
+
+    setRevenueTimePreset(next);
+  };
+
+  const handleRevenueRangeApply = (
+    range: {
+      dateFrom: string;
+      dateTo: string;
+    }
+  ) => {
+    setRevenueCustomRange(range);
+    setRevenueTimePreset('custom');
+    setRevenueRangeSheetVisible(false);
+  };
+
+  const revenueTimeCurrentSeries =
+    revenueTime.data?.series.map(
+      (point) => ({
+        label: point.label,
+        value: point.value,
+      })
+    ) ?? [];
+
+  const revenueTimeComparisonSeries =
+    revenueTime.data &&
+    revenueTime.data.comparison_series.length > 0
+      ? revenueTime.data.comparison_series.map(
+          (point) => ({
+            label: point.label,
+            value: point.value,
+          })
+        )
+      : undefined;
+
+  const revenueTimeDisplayCurrency =
+    normalizeRevenueCurrency(
+      revenueTime.data?.currency ??
+        revenueTimeCurrency
+    );
+
+  const revenueTimeTotalLabel =
+    revenueTime.data
+      ? formatMoney(
+          revenueTime.data.summary.completed_revenue,
+          revenueTimeDisplayCurrency,
           locale
         )
-      }
-    />
+      : '—';
+
+  const revenueDeltaPercent =
+    revenueTime.data?.summary.delta_percent;
+
+  const revenueTimeWarning =
+    revenueTime.data?.warnings[0];
+
+  const revenueTimeTrendDirection =
+    revenueTime.data?.summary.delta
+      ? revenueTime.data.summary.delta > 0
+        ? 'up'
+        : 'down'
+      : 'flat';
+
+  const revenueTimeTrendLabel =
+    revenueTime.error
+      ? revenueTimeCopy.revenueHistoryUnavailable
+      : revenueTimeWarning === 'timezone_fallback_utc'
+        ? revenueTimeCopy.usingUtcTime
+        : revenueTimeWarning
+          ? revenueTimeCopy.dataNotice
+          : revenueTime.loading
+            ? revenueTimeCopy.loadingRevenueHistory
+            : revenueDeltaPercent === null ||
+                revenueDeltaPercent === undefined
+              ? revenueTimeCopy.previousPeriod
+              : `${revenueDeltaPercent >= 0 ? '+' : ''}${revenueDeltaPercent.toFixed(1)}% · ${revenueTimeCopy.previousPeriod}`;
+
+  const revenueTrustedRequest =
+    revenueTime.trustedRequest;
+
+  const revenueDisplayedPreset =
+    revenueTrustedRequest?.preset ??
+    revenueTime.data?.preset ??
+    revenueTimePreset;
+
+  const revenuePeriodLabel =
+    revenueDisplayedPreset === 'custom' &&
+    revenueTrustedRequest?.dateFrom &&
+    revenueTrustedRequest?.dateTo
+      ? `${revenueTrustedRequest.dateFrom} ↔ ${revenueTrustedRequest.dateTo}`
+      : revenuePeriodOptions.find(
+          (option) =>
+            option.value ===
+            revenueDisplayedPreset
+        )?.label ??
+        revenueTimeCopy.last7Days;
+
+  const revenueTimeRendererKey =
+    revenueTime.data
+      ? `${revenueTime.data.preset}:${revenueTime.data.range.start_utc}:${revenueTime.data.range.end_utc}`
+      : `pending:${revenueTimePreset}`;
+
+  const revenueSection = (
+    <>
+      <RevenueAnalyticsV2
+            key={revenueTimeRendererKey}
+            title={dashboardCopy.revenue.title}
+            periodLabel={revenuePeriodLabel}
+            periodOptions={revenuePeriodOptions}
+            selectedPeriod={revenueDisplayedPreset}
+            onPeriodChange={handleRevenuePeriodChange}
+            totalValue={revenueTimeTotalLabel}
+            trendLabel={revenueTimeTrendLabel}
+            trendDirection={revenueTimeTrendDirection}
+            currentSeries={revenueTimeCurrentSeries}
+            comparisonSeries={revenueTimeComparisonSeries}
+            currentSeriesLabel={dashboardCopy.revenue.completedRevenue}
+            comparisonSeriesLabel={revenueTimeCopy.previousPeriod}
+            axisValueFormatter={(value) =>
+              formatCompactRevenue(
+                value,
+                revenueTimeDisplayCurrency,
+                locale
+              )
+            }
+          />
+      <RevenueRangeSheetV2
+        visible={revenueRangeSheetVisible}
+        value={
+          revenueCustomRange ?? {
+            dateFrom: '',
+            dateTo: '',
+          }
+        }
+        copy={revenueTimeCopy}
+        onApply={handleRevenueRangeApply}
+        onCancel={() =>
+          setRevenueRangeSheetVisible(false)
+        }
+      />
+    </>
   );
 
   const appointmentNow = new Date();
