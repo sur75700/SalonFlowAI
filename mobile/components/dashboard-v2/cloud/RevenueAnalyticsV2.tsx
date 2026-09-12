@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 import {
   View,
   Text,
@@ -1271,6 +1272,7 @@ function RevenueAnalyticsV2({
   axisValueFormatter = defaultFormatAxisValue,
   height = 200,
 }: RevenueAnalyticsV2Props) {
+  const { theme } = useDashboardTheme();
   const [chartWidth, setChartWidth] = useState(0);
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
   const [immersiveOpen, setImmersiveOpen] = useState(false);
@@ -1361,7 +1363,15 @@ function RevenueAnalyticsV2({
       : 1;
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
+      ]}
+    >
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
 
@@ -1412,6 +1422,10 @@ function RevenueAnalyticsV2({
             }
             style={({ pressed }) => [
               styles.periodChip,
+              {
+                backgroundColor: theme.palette.surfaceRaised,
+                borderColor: theme.palette.border,
+              },
               pressed &&
                 canSelectPeriod &&
                 styles.periodChipPressed,
@@ -1436,6 +1450,10 @@ function RevenueAnalyticsV2({
                 onPress={() => selectPeriod(option.value)}
                 style={({ pressed }) => [
                   styles.periodOption,
+                  {
+                    backgroundColor: theme.palette.surfaceRaised,
+                    borderColor: theme.palette.border,
+                  },
                   active && styles.periodOptionActive,
                   pressed && styles.periodOptionPressed,
                 ]}

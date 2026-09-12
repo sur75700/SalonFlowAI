@@ -10,6 +10,7 @@ from app.api.billing import router as billing_router
 from app.api.capacity import router as capacity_router
 from app.api.clients import router as clients_router
 from app.api.intelligence import router as intelligence_router
+from app.api.market import router as market_router
 from app.api.reports import router as reports_router
 from app.api.services import router as services_router
 from app.core.config import settings
@@ -54,6 +55,7 @@ app.include_router(
     tags=["appointments"],
 )
 app.include_router(services_router, prefix="/services", tags=["services"])
+app.include_router(market_router, prefix="/market", tags=["market"])
 app.include_router(reports_router, prefix="/reports", tags=["reports"])
 app.include_router(
     analytics_router,

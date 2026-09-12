@@ -243,7 +243,9 @@ export default function ReportPreviewPanel({
 }: Props) {
   if (loading) {
     return (
-      <View style={styles.state}>
+      <View
+        accessibilityLiveRegion="polite"
+        style={styles.state}>
         <View style={styles.stateGlyph}>
           <Text
             style={styles.stateGlyphText}
@@ -474,6 +476,7 @@ export default function ReportPreviewPanel({
 
         {document.rows.length === 0 ? (
           <View
+            accessibilityLiveRegion="polite"
             style={styles.emptyState}
           >
             <Text

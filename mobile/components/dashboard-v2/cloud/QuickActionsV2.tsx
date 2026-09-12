@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type QuickActionTone = 'royal' | 'gold' | 'blue' | 'green' | 'red';
 
@@ -45,6 +46,7 @@ function getColumnCount(width: number): number {
 }
 
 function ActionTile({ action }: { action: QuickAction }) {
+  const { theme } = useDashboardTheme();
   const tone = toneColorMap[action.tone];
   const monogram = action.label.trim().charAt(0).toUpperCase();
 
@@ -56,7 +58,7 @@ function ActionTile({ action }: { action: QuickAction }) {
       hitSlop={2}
       style={({ pressed }) => [
         styles.tile,
-        { backgroundColor: pressed ? tone.bgPressed : colors.surfaceRaised, borderColor: pressed ? tone.fg : colors.border },
+        { backgroundColor: pressed ? tone.bgPressed : theme.palette.surfaceRaised, borderColor: pressed ? tone.fg : theme.palette.border },
         pressed && styles.tilePressed,
       ]}
     >
@@ -86,6 +88,7 @@ function QuickActionsV2({
   emptyLabel,
   actions,
 }: QuickActionsV2Props) {
+  const { theme } = useDashboardTheme();
   const [containerWidth, setContainerWidth] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
 
@@ -94,7 +97,15 @@ function QuickActionsV2({
   const isEmpty = !actions || actions.length === 0;
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
+      ]}
+    >
       <Text style={styles.title}>{title}</Text>
 
       <View style={styles.grid} onLayout={onLayout}>

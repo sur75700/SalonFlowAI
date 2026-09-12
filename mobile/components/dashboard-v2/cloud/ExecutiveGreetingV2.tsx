@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, Pressable } from 'react-native';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type HealthTone = 'positive' | 'neutral' | 'negative';
 export type TrendDirection = 'up' | 'down' | 'flat';
@@ -46,8 +47,9 @@ export interface ExecutiveGreetingV2Props {
     trendDirection: TrendDirection;
   };
   aiConfidence: {
-    value: number; // 0–100
-    label?: string; // e.g. "High accuracy today"
+    value: number | null; // 0–100 when available
+    state?: 'available' | 'loading' | 'refreshing' | 'unavailable' | 'not_entitled';
+    label?: string;
   };
   appointmentPulse: {
     completed: number;
@@ -66,6 +68,14 @@ export interface ExecutiveGreetingV2Props {
     }[];
     selectedLanguage: string;
     onLanguageChange: (value: string) => void;
+    themeLabel: string;
+    themeOptions: readonly {
+      value: string;
+      label: string;
+      swatch: string;
+    }[];
+    selectedTheme: string;
+    onThemeChange: (value: string) => void;
     onSettings: () => void;
     onLogout: () => void;
     loggingOut?: boolean;
@@ -133,6 +143,21 @@ function ExecutiveGreetingV2({
 }: ExecutiveGreetingV2Props) {
   const [accountMenuOpen, setAccountMenuOpen] =
     React.useState(false);
+  const { theme } = useDashboardTheme();
+  const palette = theme.palette;
+
+  const aiConfidenceAvailable =
+    (aiConfidence.state === undefined ||
+      aiConfidence.state === 'available' ||
+      aiConfidence.state === 'refreshing') &&
+    typeof aiConfidence.value === 'number' &&
+    Number.isFinite(aiConfidence.value) &&
+    aiConfidence.value >= 0 &&
+    aiConfidence.value <= 100;
+
+  const aiConfidenceDisplay = aiConfidenceAvailable
+    ? `${Math.round(aiConfidence.value as number)}%`
+    : '—';
 
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
@@ -171,7 +196,15 @@ function ExecutiveGreetingV2({
     computeGreeting();
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+        },
+      ]}
+    >
       {/* Signature soft glow — layered translucent circles, zero dependencies */}
       <View pointerEvents="none" style={styles.glowWrap}>
         <View style={[styles.glowCircle, styles.glowOuter]} />
@@ -232,7 +265,15 @@ function ExecutiveGreetingV2({
 
       {accountMenuOpen && accountMenu && (
         <View style={styles.accountOpenStage}>
-          <View style={styles.soulPanel}>
+          <View
+            style={[
+              styles.soulPanel,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.borderStrong,
+              },
+            ]}
+          >
             <View
               pointerEvents="none"
               style={styles.soulOrbLarge}
@@ -275,7 +316,15 @@ function ExecutiveGreetingV2({
             </View>
           </View>
 
-          <View style={styles.accountMenu}>
+          <View
+            style={[
+              styles.accountMenu,
+              {
+                backgroundColor: palette.surfaceRaised,
+                borderColor: palette.borderStrong,
+              },
+            ]}
+          >
             <View style={styles.accountIdentity}>
               <View style={styles.accountAvatarLarge}>
                 <Text style={styles.accountAvatarLargeText}>
@@ -333,6 +382,70 @@ function ExecutiveGreetingV2({
                     </Text>
                     {active && (
                       <Text style={styles.languageCheck}>✓</Text>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <View style={styles.accountDivider} />
+
+            <Text style={styles.accountSectionLabel}>
+              {accountMenu.themeLabel.toUpperCase()}
+            </Text>
+
+            <View style={styles.themeGrid}>
+              {accountMenu.themeOptions.map((option) => {
+                const active =
+                  option.value === accountMenu.selectedTheme;
+
+                return (
+                  <Pressable
+                    key={option.value}
+                    onPress={() =>
+                      accountMenu.onThemeChange(option.value)
+                    }
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={({ pressed }) => [
+                      styles.themeOption,
+                      active && {
+                        backgroundColor: palette.goldGlow,
+                        borderColor: palette.gold,
+                      },
+                      pressed && styles.menuItemPressed,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.themeSwatch,
+                        {
+                          backgroundColor: option.swatch,
+                        },
+                      ]}
+                    />
+
+                    <Text
+                      style={[
+                        styles.themeText,
+                        active && {
+                          color: palette.textPrimary,
+                        },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {option.label}
+                    </Text>
+
+                    {active && (
+                      <Text
+                        style={[
+                          styles.languageCheck,
+                          { color: palette.gold },
+                        ]}
+                      >
+                        ✓
+                      </Text>
                     )}
                   </Pressable>
                 );
@@ -413,8 +526,12 @@ function ExecutiveGreetingV2({
           <Text style={styles.metricLabel}>
             {(metricLabels?.aiConfidence ?? "AI CONFIDENCE").toUpperCase()}
           </Text>
-          <Text style={styles.metricValue} numberOfLines={1}>
-            {Math.round(aiConfidence.value)}%
+          <Text
+            style={styles.metricValue}
+            numberOfLines={1}
+            accessibilityLabel={`${metricLabels?.aiConfidence ?? 'AI Confidence'}: ${aiConfidenceDisplay}`}
+          >
+            {aiConfidenceDisplay}
           </Text>
           {!!aiConfidence.label && (
             <Text style={styles.metricHelper} numberOfLines={1}>
@@ -778,6 +895,32 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: colors.gold,
   },
+  themeGrid: {
+    gap: 7,
+  },
+  themeOption: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  themeSwatch: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+  },
+  themeText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
   accountMenuItem: {
     minHeight: 40,
     flexDirection: 'row',
@@ -807,9 +950,9 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     flexShrink: 1,
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '900',
-    letterSpacing: 0.55,
+    letterSpacing: 0.35,
     color: '#F3D184',
     textShadowColor: 'rgba(163, 116, 255, 0.58)',
     textShadowOffset: { width: 0, height: 0 },

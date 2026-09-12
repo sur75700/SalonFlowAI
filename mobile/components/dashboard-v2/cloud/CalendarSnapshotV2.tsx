@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type CalendarEventTone = 'royal' | 'gold' | 'blue' | 'green' | 'red';
 
@@ -44,13 +45,30 @@ const toneColorMap: Record<CalendarEventTone, { fg: string; bg: string }> = {
  * (fixed dot + flexed line) that stretches to match each row's height.
  */
 function CalendarSnapshotV2({ title, dateLabel, events, emptyLabel }: CalendarSnapshotV2Props) {
+  const { theme } = useDashboardTheme();
   const isEmpty = !events || events.length === 0;
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
+      ]}
+    >
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.dateChip}>
+        <View
+          style={[
+            styles.dateChip,
+            {
+              backgroundColor: theme.palette.surfaceRaised,
+              borderColor: theme.palette.border,
+            },
+          ]}
+        >
           <Text style={styles.dateChipText} numberOfLines={1}>
             {dateLabel}
           </Text>

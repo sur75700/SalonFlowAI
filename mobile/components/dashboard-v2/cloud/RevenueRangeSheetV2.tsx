@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useDashboardTheme } from "../../../hooks/useDashboardTheme";
 
 export interface RevenueRangeValue {
   dateFrom: string;
@@ -40,6 +41,7 @@ export default function RevenueRangeSheetV2({
   onApply,
   onCancel,
 }: RevenueRangeSheetV2Props) {
+  const { theme } = useDashboardTheme();
   const [
     draft,
     setDraft,
@@ -107,7 +109,15 @@ export default function RevenueRangeSheetV2({
         style={styles.backdrop}
       >
         <View
-          style={styles.sheet}
+          style={[
+            styles.sheet,
+            {
+              backgroundColor:
+                theme.palette.surfaceRaised,
+              borderColor:
+                theme.palette.borderStrong,
+            },
+          ]}
           accessibilityRole="none"
         >
           <Text
@@ -136,7 +146,17 @@ export default function RevenueRangeSheetV2({
             placeholder="YYYY-MM-DD"
             autoCapitalize="none"
             autoCorrect={false}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor:
+                  theme.palette.surface,
+                borderColor:
+                  theme.palette.border,
+                color:
+                  theme.palette.textPrimary,
+              },
+            ]}
             accessibilityLabel={
               copy.fromDate
             }
@@ -161,7 +181,17 @@ export default function RevenueRangeSheetV2({
             placeholder="YYYY-MM-DD"
             autoCapitalize="none"
             autoCorrect={false}
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor:
+                  theme.palette.surface,
+                borderColor:
+                  theme.palette.border,
+                color:
+                  theme.palette.textPrimary,
+              },
+            ]}
             accessibilityLabel={
               copy.toDate
             }

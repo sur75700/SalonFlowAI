@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, RefreshControl, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, SafeAreaView, RefreshControl, useWindowDimensions } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 
 import ExecutiveGreetingV2 from './ExecutiveGreetingV2';
@@ -15,13 +16,26 @@ import { getRevenueTimeIntelligenceCopy } from '../../../lib/i18n';
 import AppointmentAnalyticsV2 from './AppointmentAnalyticsV2';
 import AICommandCenterV2 from './AICommandCenterV2';
 import { useIntelligenceDecision } from '../../../hooks/useIntelligenceDecision';
+import { useMarketPulse } from '../../../hooks/useMarketPulse';
+import { selectNextBestActions, type NextBestAction } from '../../../lib/dashboard/nextBestAction';
+import { buildFinalDashboardEnrichment } from '../../../lib/dashboard/finalEnrichment';
+import NextBestActionV2 from './NextBestActionV2';
+import RoyalMarketPulseV2 from './RoyalMarketPulseV2';
+import ClientRetentionPulseV2 from './ClientRetentionPulseV2';
 import {
   buildAICommandCenterLiveModel,
   buildIntelligenceDecisionRequest,
 } from './ai-command-center-live-model';
 import QuickActionsV2 from './QuickActionsV2';
 import CalendarSnapshotV2 from './CalendarSnapshotV2';
-import RoyalCosmosBackground from '../../ui/RoyalCosmosBackground';
+import DashboardThemeBackground from './DashboardThemeBackground';
+import {
+  DashboardThemeProvider,
+  useDashboardTheme,
+} from '../../../hooks/useDashboardTheme';
+import type {
+  DashboardThemeId,
+} from '../../../lib/theme/dashboardThemes';
 import { useSession } from '../../../hooks/useSession';
 import { useLogout } from '../../../hooks/useLogout';
 import { useAppLanguage } from '../../../contexts/LanguageContext';
@@ -376,37 +390,37 @@ const quickActionBlueprints = [
   {
     id: 'clients',
     label: 'Clients',
-    icon: <Text style={{ fontSize: 20 }}>👥</Text>,
+    icon: <Ionicons name="people-outline" size={22} color="#E8C97A" />,
     tone: 'gold' as const,
   },
   {
     id: 'services',
     label: 'Services',
-    icon: <Text style={{ fontSize: 20 }}>✂️</Text>,
+    icon: <Ionicons name="sparkles-outline" size={22} color="#7C5CFF" />,
     tone: 'royal' as const,
   },
   {
     id: 'bookings',
     label: 'Bookings',
-    icon: <Text style={{ fontSize: 20 }}>📅</Text>,
+    icon: <Ionicons name="calendar-number-outline" size={22} color="#5CB8FF" />,
     tone: 'blue' as const,
   },
   {
     id: 'reports',
     label: 'Reports',
-    icon: <Text style={{ fontSize: 20 }}>📄</Text>,
+    icon: <Ionicons name="document-text-outline" size={22} color="#3FCF8E" />,
     tone: 'green' as const,
   },
   {
     id: 'settings',
     label: 'Settings',
-    icon: <Text style={{ fontSize: 20 }}>⚙️</Text>,
+    icon: <Ionicons name="options-outline" size={22} color="#E8C97A" />,
     tone: 'gold' as const,
   },
   {
     id: 'analytics',
     label: 'Analytics',
-    icon: <Text style={{ fontSize: 20 }}>📊</Text>,
+    icon: <Ionicons name="stats-chart-outline" size={22} color="#7C5CFF" />,
     tone: 'royal' as const,
   },
 ];
@@ -419,8 +433,13 @@ const quickActionBlueprints = [
  * width — phone (single column) → tablet (two-column sections) →
  * desktop (executive grid: primary content + right rail).
  */
-function DashboardV2Composition() {
+function DashboardV2CompositionInner() {
   const router = useRouter();
+  const {
+    selectedThemeId,
+    setTheme,
+    theme,
+  } = useDashboardTheme();
 
   const [revenuePeriod, setRevenuePeriod] =
     React.useState<RevenuePeriod>('7d');
@@ -612,10 +631,47 @@ function DashboardV2Composition() {
     refresh: refreshAppointments,
   } = useAppointmentsData(token, clearToken);
 
+  const analyticsScopeTokenRef = React.useRef(token);
+  const analyticsAtTokenChangeRef = React.useRef(analytics);
+  const [analyticsScopeReady, setAnalyticsScopeReady] =
+    React.useState(true);
+
+  const analyticsTokenChanged =
+    analyticsScopeTokenRef.current !== token;
+  const analyticsScopeSafe =
+    !analyticsTokenChanged && analyticsScopeReady;
+
+  React.useEffect(() => {
+    if (analyticsScopeTokenRef.current === token) {
+      return;
+    }
+
+    analyticsScopeTokenRef.current = token;
+    analyticsAtTokenChangeRef.current = analytics;
+    setAnalyticsScopeReady(analytics === null);
+  }, [analytics, token]);
+
+  React.useEffect(() => {
+    if (
+      analyticsScopeTokenRef.current === token &&
+      !analyticsScopeReady &&
+      analytics !== analyticsAtTokenChangeRef.current
+    ) {
+      setAnalyticsScopeReady(true);
+    }
+  }, [analytics, analyticsScopeReady, token]);
+
+  const marketPulse = useMarketPulse({
+    token: token ?? '',
+    clearToken,
+    enabled: !booting && Boolean(token),
+  });
+
   const handleDashboardRefresh = () => {
     refresh();
     refreshAppointments();
     intelligenceDecision.refresh();
+    marketPulse.refresh();
   };
   const { width } = useWindowDimensions();
 
@@ -876,6 +932,44 @@ function DashboardV2Composition() {
       intelligenceRequest !== null,
   });
 
+  const intelligenceStatus =
+    !intelligenceBillingKnown
+      ? 'loading' as const
+      : intelligenceKnownDenied
+        ? 'not_entitled' as const
+        : intelligenceDecision.status;
+
+  const intelligenceWindowLabel =
+    revenuePeriod === '7d'
+      ? dashboardCopy.periods.last7Days
+      : revenuePeriod === '30d'
+        ? dashboardCopy.periods.last30Days
+        : dashboardCopy.periods.last90Days;
+
+  const finalEnrichment = React.useMemo(
+    () =>
+      buildFinalDashboardEnrichment({
+        intelligenceStatus,
+        intelligenceData: intelligenceDecision.data,
+        intelligenceWindowLabel,
+        analytics,
+        analyticsLoading: loading,
+        analyticsRefreshing: refreshing,
+        analyticsError: Boolean(analyticsError),
+        analyticsScopeSafe,
+      }),
+    [
+      analytics,
+      analyticsScopeSafe,
+      analyticsError,
+      intelligenceDecision.data,
+      intelligenceStatus,
+      intelligenceWindowLabel,
+      loading,
+      refreshing,
+    ]
+  );
+
   const revenuePeriodDays =
     revenuePeriod === '7d'
       ? 7
@@ -1020,16 +1114,18 @@ function DashboardV2Composition() {
         trendDirection: 'flat',
       }}
       aiConfidence={{
-        value: summaryUnavailable
-          ? 0
-          : dataPending
-            ? 0
-            : 94,
-        label: summaryUnavailable
-          ? dashboardCopy.hero.summaryUnavailable
-          : dataPending
-            ? dashboardCopy.hero.synchronizingLiveData
-            : dashboardCopy.hero.summaryConnected,
+        value: finalEnrichment.heroConfidence.valuePercent,
+        state: finalEnrichment.heroConfidence.state,
+        label:
+          finalEnrichment.heroConfidence.state === 'available'
+            ? translate('AI Confidence Live', language)
+            : finalEnrichment.heroConfidence.state === 'refreshing'
+              ? translate('AI Confidence Refreshing', language)
+              : finalEnrichment.heroConfidence.state === 'not_entitled'
+                ? translate('AI Confidence Locked', language)
+                : finalEnrichment.heroConfidence.state === 'loading'
+                  ? translate('AI Confidence Loading', language)
+                  : translate('AI Confidence Unavailable', language),
       }}
       appointmentPulse={{
         completed: completedBookings,
@@ -1047,6 +1143,33 @@ function DashboardV2Composition() {
         selectedLanguage: language,
         onLanguageChange: (value) =>
           setLanguage(value as AppLanguage),
+        themeLabel: translate(
+          'Dashboard Appearance',
+          language
+        ),
+        themeOptions: [
+          {
+            value: 'royal_cosmos',
+            label: translate(
+              'Royal Cosmos',
+              language
+            ),
+            swatch: '#7C5CFF',
+          },
+          {
+            value: 'royal_gold_cosmos',
+            label: translate(
+              'Royal Gold Cosmos',
+              language
+            ),
+            swatch: '#F3D184',
+          },
+        ],
+        selectedTheme: selectedThemeId,
+        onThemeChange: (value) =>
+          setTheme(
+            value as DashboardThemeId
+          ),
         onSettings: () =>
           router.push('/(tabs)/explore' as Href),
         onLogout: async () => {
@@ -1333,13 +1456,29 @@ function DashboardV2Composition() {
         )
       }
       segments={appointmentSegments}
+      capacity={finalEnrichment.capacity}
+      capacityLabels={{
+        title: translate('Capacity Intelligence', language),
+        utilization: translate('Capacity Utilization', language),
+        availableSlots: translate('Capacity Available Slots', language),
+        idleHours: translate('Capacity Idle Hours', language),
+        analysisWindow: translate('Capacity Analysis Window', language),
+        loading: translate('Capacity Loading', language),
+        refreshing: translate('Capacity Refreshing', language),
+        unavailable: translate('Capacity Unavailable', language),
+        locked: translate('Capacity Locked', language),
+      }}
     />
   );
 
-  const intelligenceStatus =
-    intelligenceKnownDenied
-      ? 'not_entitled'
-      : intelligenceDecision.status;
+  const nextBestActions = selectNextBestActions(
+    intelligenceDecision.data,
+    {
+      entitled:
+        intelligenceBillingKnown &&
+        !intelligenceKnownDenied,
+    }
+  );
 
   const intelligenceModel =
     buildAICommandCenterLiveModel(
@@ -1419,6 +1558,82 @@ function DashboardV2Composition() {
     />
   );
 
+  const clientRetentionSection = (
+    <ClientRetentionPulseV2
+      model={finalEnrichment.clientRetention}
+      labels={{
+        title: translate('Client Retention Pulse', language),
+        subtitle: translate('Client Retention Pulse Subtitle', language),
+        live: translate('Client Pulse Live', language),
+        returningRatio: translate('Client Returning Ratio', language),
+        riskScore: translate('Client Risk Index', language),
+        singleAppointment: translate('Client Single Appointment', language),
+        repeatHistory: translate('Client Repeat History', language),
+        inactive: translate('Client Inactive', language),
+        atRisk: translate('Client At Risk 30', language),
+        highRisk: translate('Client High Risk 60', language),
+        lost: translate('Client Lost 90', language),
+        overlapNote: translate('Client Risk Groups Overlap', language),
+        loading: translate('Client Pulse Loading', language),
+        refreshing: translate('Client Pulse Refreshing', language),
+        unavailable: translate('Client Pulse Unavailable', language),
+        empty: translate('Client Pulse Empty', language),
+      }}
+    />
+  );
+
+  const nextBestActionSection = (
+    <NextBestActionV2
+      actions={nextBestActions}
+      status={intelligenceStatus}
+      labels={{
+        title: translate('Next Best Action', locale),
+        subtitle: translate('Next Best Action Subtitle', locale),
+        makeMoney: translate('Make Money', locale),
+        preventLoss: translate('Prevent Loss', locale),
+        improveOperations: translate('Improve Operations', locale),
+        evidence: translate('Evidence', locale),
+        expectedImpact: translate('AI Expected Impact', locale),
+        confidence: translate('AI Confidence', locale),
+        open: translate('Open Action', locale),
+        empty: translate('No Supported Actions', locale),
+        emptyDetail: translate('No Supported Actions Subtitle', locale),
+        loading: dashboardCopy.common.syncing,
+        unavailable: dashboardCopy.common.unavailable,
+        retry: translate('Retry', locale),
+        locked: translate('Locked Feature Upgrade Note', locale),
+        upgrade: translate('Pricing Packages', locale),
+      }}
+      onActionPress={(action: NextBestAction) =>
+        router.push(action.destination as Href)
+      }
+      onRetry={intelligenceDecision.refresh}
+      onUpgrade={() =>
+        router.push('/(tabs)/explore' as Href)
+      }
+    />
+  );
+
+  const marketPulseSection = (
+    <RoyalMarketPulseV2
+      data={marketPulse.data}
+      status={marketPulse.status}
+      locale={locale}
+      labels={{
+        title: translate('Royal Market Pulse', locale),
+        subtitle: translate('Market Pulse Subtitle', locale),
+        fresh: translate('Market Fresh', locale),
+        stale: translate('Market Stale', locale),
+        unavailable: translate('Market Unavailable', locale),
+        loading: translate('Market Loading', locale),
+        refreshing: translate('Market Refreshing', locale),
+        retry: translate('Retry', locale),
+        source: translate('Market Source', locale),
+      }}
+      onRetry={marketPulse.refresh}
+    />
+  );
+
   const quickActionsSection = (
     <QuickActionsV2
       title={dashboardCopy.actions.title}
@@ -1459,16 +1674,21 @@ function DashboardV2Composition() {
 
 
   return (
-    <RoyalCosmosBackground style={styles.cosmosShell}>
+    <DashboardThemeBackground style={styles.cosmosShell}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
+          style={styles.dashboardScroll}
           contentContainerStyle={[styles.scrollContent, { paddingHorizontal: pagePadding }]}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing || appointmentsRefreshing}
+              refreshing={
+                refreshing ||
+                appointmentsRefreshing ||
+                marketPulse.refreshing
+              }
               onRefresh={handleDashboardRefresh}
-              tintColor="#7C5CFF"
+              tintColor={theme.palette.royal}
             />
           }
         >
@@ -1479,8 +1699,11 @@ function DashboardV2Composition() {
           {isPhone && (
             <>
               <View style={styles.sectionGap}>{revenueSection}</View>
+              <View style={styles.sectionGap}>{marketPulseSection}</View>
+              <View style={styles.sectionGap}>{nextBestActionSection}</View>
               <View style={styles.sectionGap}>{appointmentSection}</View>
               <View style={styles.sectionGap}>{aiSection}</View>
+              <View style={styles.sectionGap}>{clientRetentionSection}</View>
               <View style={styles.sectionGap}>{quickActionsSection}</View>
               <View style={styles.sectionGap}>{calendarSection}</View>
             </>
@@ -1492,7 +1715,12 @@ function DashboardV2Composition() {
                 <View style={styles.twoColCell}>{revenueSection}</View>
                 <View style={styles.twoColCell}>{appointmentSection}</View>
               </View>
+              <View style={[styles.twoColRow, styles.sectionGap]}>
+                <View style={styles.twoColCell}>{marketPulseSection}</View>
+                <View style={styles.twoColCell}>{nextBestActionSection}</View>
+              </View>
               <View style={styles.sectionGap}>{aiSection}</View>
+              <View style={styles.sectionGap}>{clientRetentionSection}</View>
               <View style={styles.sectionGap}>{quickActionsSection}</View>
               <View style={styles.sectionGap}>{calendarSection}</View>
             </>
@@ -1502,20 +1730,23 @@ function DashboardV2Composition() {
             <View style={styles.executiveGrid}>
               <View style={styles.primaryCol}>
                 <View style={styles.sectionGap}>{revenueSection}</View>
+                <View style={styles.sectionGap}>{marketPulseSection}</View>
+                <View style={styles.sectionGap}>{nextBestActionSection}</View>
                 <View style={styles.sectionGap}>{quickActionsSection}</View>
                 <View style={styles.sectionGap}>{calendarSection}</View>
               </View>
 
               <View style={styles.rightRail}>
                 <View style={styles.sectionGap}>{appointmentSection}</View>
-                <View>{aiSection}</View>
+                <View style={styles.sectionGap}>{aiSection}</View>
+                <View>{clientRetentionSection}</View>
               </View>
             </View>
           )}
         </View>
         </ScrollView>
       </SafeAreaView>
-    </RoyalCosmosBackground>
+    </DashboardThemeBackground>
   );
 }
 
@@ -1528,9 +1759,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
+  dashboardScroll: {
+    flex: 1,
+  },
   scrollContent: {
     paddingTop: 16,
-    paddingBottom: 40,
+    // Clears the fixed bottom tab bar while preserving a calm end-of-page
+    // breathing zone across web, tablet, and safe-area-heavy phones.
+    paddingBottom: 112,
   },
   pageInner: {
     width: '100%',
@@ -1573,5 +1809,13 @@ const styles = StyleSheet.create({
     minWidth: 280,
   },
 });
+
+function DashboardV2Composition() {
+  return (
+    <DashboardThemeProvider>
+      <DashboardV2CompositionInner />
+    </DashboardThemeProvider>
+  );
+}
 
 export default DashboardV2Composition;

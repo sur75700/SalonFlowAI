@@ -676,7 +676,11 @@ export default function ReportsCommandCenterV2({
         )}
         accent="#FF7F9E"
       >
-        <View style={styles.errorPanel}>
+        <View
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+          style={styles.errorPanel}
+        >
           <Text
             style={styles.errorTitle}
           >
@@ -735,7 +739,11 @@ export default function ReportsCommandCenterV2({
   return (
     <>
       {error ? (
-        <View style={styles.errorPanel}>
+        <View
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+          style={styles.errorPanel}
+        >
           <Text
             style={styles.errorTitle}
           >
@@ -753,6 +761,10 @@ export default function ReportsCommandCenterV2({
 
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t(
+              "reports.commandCenter.dismiss",
+              locale,
+            )}
             onPress={() =>
               setError("")
             }
@@ -787,6 +799,7 @@ export default function ReportsCommandCenterV2({
 
           <Text
             style={styles.noticeText}
+            accessibilityLiveRegion="polite"
           >
             {notice}
           </Text>
@@ -842,6 +855,16 @@ export default function ReportsCommandCenterV2({
 
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={t(
+            previewLoading
+              ? "reports.commandCenter.loadingPreview"
+              : "reports.commandCenter.loadPreview",
+            locale,
+          )}
+          accessibilityState={{
+            disabled: previewLoading,
+            busy: previewLoading,
+          }}
           disabled={previewLoading}
           onPress={handlePreview}
           style={[
@@ -888,6 +911,16 @@ export default function ReportsCommandCenterV2({
 
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={t(
+            "reports.commandCenter.openExport",
+            locale,
+          )}
+          accessibilityState={{
+            disabled:
+              !preview ||
+              previewLoading,
+            busy: previewLoading,
+          }}
           disabled={
             !preview ||
             previewLoading
