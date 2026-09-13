@@ -30,7 +30,6 @@ import QuickActionsV2 from './QuickActionsV2';
 import CalendarSnapshotV2 from './CalendarSnapshotV2';
 import DashboardThemeBackground from './DashboardThemeBackground';
 import {
-  DashboardThemeProvider,
   useDashboardTheme,
 } from '../../../hooks/useDashboardTheme';
 import type {
@@ -1812,9 +1811,7 @@ const styles = StyleSheet.create({
 
 function DashboardV2Composition() {
   return (
-    <DashboardThemeProvider>
       <DashboardV2CompositionInner />
-    </DashboardThemeProvider>
   );
 }
 

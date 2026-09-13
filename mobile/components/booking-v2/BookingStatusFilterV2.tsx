@@ -20,10 +20,10 @@ export interface BookingStatusFilterV2Props {
 }
 
 const colors = {
-  surface: '#171938',
-  surfaceRaised: '#1D1F47',
-  border: 'rgba(255,255,255,0.07)',
-  royal: '#7C5CFF',
+  surface: 'rgba(8, 12, 31, 0.82)',
+  surfaceRaised: 'rgba(15, 20, 48, 0.90)',
+  border: 'rgba(150, 129, 255, 0.25)',
+  royal: '#8B72FF',
   textPrimary: '#F6F5FB',
   textSecondary: '#A6A7C4',
   textTertiary: '#6F7092',

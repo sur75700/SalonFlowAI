@@ -15,8 +15,8 @@ export interface BookingListSectionV2Props {
 }
 
 const colors = {
-  surface: 'rgba(23,25,56,0.88)',
-  border: 'rgba(124,92,255,0.16)',
+  surface: 'rgba(8, 12, 31, 0.72)',
+  border: 'rgba(147, 126, 255, 0.22)',
   textPrimary: '#F6F5FB',
   textSecondary: '#A6A7C4',
   textTertiary: '#6F7092',
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   centerState: {
-    borderRadius: 20,
+    borderRadius: 22,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,

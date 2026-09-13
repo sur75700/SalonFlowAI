@@ -12,9 +12,9 @@ export interface BookingSummaryStripV2Props {
 }
 
 const colors = {
-  surface: 'rgba(10, 13, 36, 0.94)',
+  surface: 'rgba(8, 12, 32, 0.82)',
   surfaceTop: 'rgba(24, 28, 66, 0.96)',
-  border: 'rgba(139, 114, 255, 0.30)',
+  border: 'rgba(160, 138, 255, 0.24)',
   borderSoft: 'rgba(255, 255, 255, 0.06)',
   textPrimary: '#FBFAFF',
   textSecondary: '#B7B9D4',
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'stretch',
     backgroundColor: 'transparent',
-    gap: 14,
+    gap: 16,
   },
 
   cell: {
@@ -83,13 +83,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
     paddingHorizontal: 16,
-    borderRadius: 24,
+    borderRadius: 26,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    shadowColor: '#02030D',
-    shadowOpacity: 0.42,
-    shadowRadius: 24,
+    shadowColor: '#735BFF',
+    shadowOpacity: 0.13,
+    shadowRadius: 20,
     shadowOffset: {
       width: 0,
       height: 12,
@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     marginRight: 9,
     borderRadius: 4,
     shadowColor: '#FFFFFF',
-    shadowOpacity: 0.28,
-    shadowRadius: 7,
+    shadowOpacity: 0.52,
+    shadowRadius: 9,
     shadowOffset: {
       width: 0,
       height: 0,

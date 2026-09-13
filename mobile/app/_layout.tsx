@@ -6,11 +6,13 @@ import { LanguageProvider } from "../contexts/LanguageContext";
 import { BillingProvider } from "../contexts/BillingContext";
 import { ToastProvider } from "../components/ui/Toast";
 import { useSession } from "../hooks/useSession";
+import { DashboardThemeProvider } from "../hooks/useDashboardTheme";
 
 export default function RootLayout() {
   const { token, booting } = useSession();
 
   return (
+    <DashboardThemeProvider>
     <View style={styles.root}>
       <ToastProvider>
         <LanguageProvider>
@@ -36,6 +38,7 @@ export default function RootLayout() {
         />
       ) : null}
     </View>
+    </DashboardThemeProvider>
   );
 }
 

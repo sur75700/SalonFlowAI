@@ -23,13 +23,13 @@ export type {
 } from "./BookingCardV2";
 
 const palette = {
-  surface: "rgba(10, 13, 36, 0.94)",
-  surfacePressed: "rgba(21, 25, 62, 0.98)",
-  surfaceSelected: "rgba(26, 30, 72, 0.98)",
+  surface: "rgba(8, 11, 31, 0.90)",
+  surfacePressed: "rgba(18, 22, 58, 0.97)",
+  surfaceSelected: "rgba(24, 28, 70, 0.98)",
 
-  border: "rgba(139, 114, 255, 0.34)",
-  borderSoft: "rgba(255, 255, 255, 0.075)",
-  borderSelected: "rgba(160, 143, 255, 0.78)",
+  border: "rgba(169, 147, 255, 0.46)",
+  borderSoft: "rgba(255, 255, 255, 0.10)",
+  borderSelected: "rgba(183, 166, 255, 0.90)",
 
   textPrimary: "#FBFAFF",
   textSecondary: "#D2D4EE",
@@ -41,9 +41,9 @@ const palette = {
   amber: "#F2BC58",
   danger: "#F36D84",
 
-  royalSoft: "rgba(139, 114, 255, 0.14)",
-  blueSoft: "rgba(103, 194, 255, 0.14)",
-  greenSoft: "rgba(71, 214, 154, 0.14)",
+  royalSoft: "rgba(139, 114, 255, 0.18)",
+  blueSoft: "rgba(103, 194, 255, 0.17)",
+  greenSoft: "rgba(71, 214, 154, 0.16)",
   amberSoft: "rgba(242, 188, 88, 0.14)",
   dangerSoft: "rgba(243, 109, 132, 0.14)",
 } as const;
@@ -238,6 +238,8 @@ function BookingCardV3({
         pressed && isInteractive && styles.cardPressed,
       ]}
     >
+      <View pointerEvents="none" style={styles.bookingCosmicSheen} />
+      <View pointerEvents="none" style={styles.bookingCosmicSheenBlue} />
       <View style={styles.topHighlight} pointerEvents="none" />
       <View style={styles.leftAccent} pointerEvents="none" />
 
@@ -467,22 +469,21 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     minHeight: 184,
-    borderRadius: 28,
-
+    borderRadius: 30,
     backgroundColor: palette.surface,
 
     borderWidth: 1,
     borderColor: palette.border,
 
-    shadowColor: "#02030D",
-    shadowOpacity: 0.5,
-    shadowRadius: 32,
+    shadowColor: "#765EFF",
+    shadowOpacity: 0.20,
+    shadowRadius: 26,
     shadowOffset: {
       width: 0,
       height: 18,
     },
 
-    elevation: 14,
+    elevation: 16,
     overflow: "hidden",
   },
 
@@ -777,7 +778,6 @@ const styles = StyleSheet.create({
 
     borderRadius: 999,
     borderWidth: 1,
-
     maxWidth: 180,
   },
 
@@ -881,6 +881,28 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0.1,
   },
+  bookingCosmicSheen: {
+    position: "absolute",
+    top: -72,
+    right: -34,
+    width: 184,
+    height: 184,
+    borderRadius: 999,
+    backgroundColor: "rgba(139, 114, 255, 0.13)",
+    opacity: 0.95,
+  },
+
+  bookingCosmicSheenBlue: {
+    position: "absolute",
+    bottom: -88,
+    left: 48,
+    width: 180,
+    height: 180,
+    borderRadius: 999,
+    backgroundColor: "rgba(76, 160, 255, 0.075)",
+    opacity: 0.85,
+  },
+
 });
 
 export default React.memo(BookingCardV3);

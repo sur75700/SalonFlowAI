@@ -73,12 +73,12 @@ export interface CreateBookingSheetV2Props {
 }
 
 const colors = {
-  scrim: 'rgba(7,7,15,0.6)',
-  surface: '#171938',
-  surfaceRaised: '#1D1F47',
-  surfaceOption: '#22244F',
-  border: 'rgba(255,255,255,0.08)',
-  royal: '#7C5CFF',
+  scrim: 'rgba(1, 2, 10, 0.76)',
+  surface: 'rgba(7, 10, 28, 0.98)',
+  surfaceRaised: 'rgba(15, 20, 49, 0.96)',
+  surfaceOption: 'rgba(21, 27, 62, 0.98)',
+  border: 'rgba(158, 137, 255, 0.30)',
+  royal: '#8B72FF',
   textPrimary: '#F6F5FB',
   textSecondary: '#A6A7C4',
   textTertiary: '#6F7092',
@@ -233,6 +233,11 @@ function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
           style={isSheet ? styles.sheetOuter : styles.panelOuter}
         >
           <Animated.View style={[isSheet ? styles.sheet : styles.panel, containerAnimatedStyle]}>
+            {!isSheet ? (
+              <View pointerEvents="none" style={styles.desktopModalCrown} />
+            ) : null}
+            <View pointerEvents="none" style={styles.cosmicAura} />
+            <View pointerEvents="none" style={styles.cosmicAuraBlue} />
             {isSheet && <View style={styles.grabber} />}
 
             <View style={styles.headerRow}>
@@ -347,14 +352,21 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   panelOuter: {
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+    alignItems: 'center',
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   sheet: {
+    elevation: 18,
+    shadowRadius: 28,
+    shadowOpacity: 0.22,
+    shadowColor: '#7C5CFF',
     backgroundColor: colors.surface,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     borderWidth: 1,
     borderColor: colors.border,
     borderBottomWidth: 0,
@@ -364,9 +376,17 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   panel: {
-    width: 420,
-    maxWidth: '100%',
-    height: '100%',
+    maxHeight: '88%',
+    minHeight: 0,
+    elevation: 24,
+    shadowRadius: 34,
+    shadowOpacity: 0.34,
+    shadowColor: '#7C5CFF',
+    borderWidth: 1,
+    borderRadius: 30,
+    width: '100%',
+    maxWidth: 540,
+    height: 'auto',
     backgroundColor: colors.surface,
     borderLeftWidth: 1,
     borderColor: colors.border,
@@ -426,7 +446,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.border,
@@ -484,7 +504,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   textInput: {
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.border,
@@ -532,8 +552,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   submitBtn: {
+    borderColor: 'rgba(255, 255, 255, 0.20)',
+    borderWidth: 1,
+    elevation: 12,
+    shadowRadius: 18,
+    shadowOpacity: 0.48,
+    shadowColor: '#7C5CFF',
     backgroundColor: colors.royal,
-    borderRadius: 14,
+    borderRadius: 18,
     paddingVertical: 14,
     alignItems: 'center',
   },
@@ -546,6 +572,9 @@ const styles = StyleSheet.create({
     color: '#F6F5FB',
   },
   resetBtn: {
+    borderColor: 'rgba(167, 146, 255, 0.32)',
+    borderWidth: 1,
+    borderRadius: 18,
     marginTop: 10,
     alignItems: 'center',
     paddingVertical: 8,
@@ -555,6 +584,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textTertiary,
   },
+  cosmicAura: {
+    position: "absolute",
+    top: -96,
+    right: -70,
+    width: 260,
+    height: 260,
+    borderRadius: 999,
+    backgroundColor: 'rgba(139, 114, 255, 0.20)',
+    opacity: 0.96,
+  },
+
+  cosmicAuraBlue: {
+    position: "absolute",
+    bottom: -112,
+    left: -62,
+    width: 240,
+    height: 240,
+    borderRadius: 999,
+    backgroundColor: 'rgba(73, 154, 255, 0.075)',
+    opacity: 0.88,
+  },
+
+  desktopModalCrown: {
+    position: "absolute",
+    top: 8,
+    left: "50%",
+    width: 58,
+    height: 4,
+    marginLeft: -29,
+    borderRadius: 999,
+    backgroundColor: "rgba(223, 215, 255, 0.34)",
+    opacity: 0.92,
+  },
+
 });
 
 export default React.memo(CreateBookingSheetV2);

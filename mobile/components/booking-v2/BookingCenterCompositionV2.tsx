@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, SafeAreaView, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
 
-import RoyalCosmosBackground from '../ui/RoyalCosmosBackground';
+import DashboardThemeBackground from '../dashboard-v2/cloud/DashboardThemeBackground';
 import BookingCommandHeaderV2 from './BookingCommandHeaderV2';
 import BookingSummaryStripV2, { BookingSummaryStat } from './BookingSummaryStripV2';
 import BookingStatusFilterV2, { BookingFilterOption, BookingFilterValue } from './BookingStatusFilterV2';
@@ -21,8 +21,8 @@ export interface BookingListItem extends BookingCardV2Props {
  * all of this; BookingCenterPreviewAdapterV2 supplies preview data for
  * visual QA only and is never imported by the production route.
  *
- * Uses RoyalCosmosBackground the same way the real DashboardV2Composition
- * does (confirmed from that file: `<RoyalCosmosBackground style={...}>`),
+ * Uses DashboardThemeBackground the same way the real DashboardV2Composition
+ * does (confirmed from that file: `<DashboardThemeBackground style={...}>`),
  * for true visual continuity with Dashboard V2 — its internal contents
  * were never shared with me, only this real usage pattern.
  */
@@ -151,7 +151,7 @@ function BookingCenterCompositionV2(props: BookingCenterCompositionV2Props) {
   );
 
   return (
-    <RoyalCosmosBackground style={styles.cosmosShell}>
+    <DashboardThemeBackground style={styles.cosmosShell}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={[styles.scrollContent, { paddingHorizontal: isDesktop ? 40 : 16 }]}
@@ -243,7 +243,7 @@ function BookingCenterCompositionV2(props: BookingCenterCompositionV2Props) {
           errorMessage={props.errorMessage}
         />
       </SafeAreaView>
-    </RoyalCosmosBackground>
+    </DashboardThemeBackground>
   );
 }
 
