@@ -115,9 +115,9 @@ export default function CreateClientSheetV2({
       animationType={isDesktop ? 'fade' : 'slide'}
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, isDesktop && styles.overlayDesktop]}>
         <Pressable
-          style={styles.backdrop}
+          style={[styles.backdrop, isDesktop && styles.backdropDesktop]}
           onPress={interactive ? onClose : undefined}
           accessibilityRole="button"
           accessibilityLabel={t.closeAction}
@@ -126,6 +126,24 @@ export default function CreateClientSheetV2({
           style={[styles.panel, isDesktop ? styles.panelDesktop : styles.panelMobile]}
           accessibilityViewIsModal
         >
+          {isDesktop && (
+            <>
+              <View
+                pointerEvents="none"
+                style={styles.desktopModalOrbPrimary}
+              />
+              <View
+                pointerEvents="none"
+                style={styles.desktopModalOrbSecondary}
+              />
+            </>
+          )}
+          {isDesktop && (
+            <View
+              pointerEvents="none"
+              style={styles.desktopModalCrown}
+            />
+          )}
           {!isDesktop && <View style={styles.dragHandle} />}
 
           <View style={styles.header}>
@@ -254,10 +272,77 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.surface,
     borderColor: theme.color.borderStrong,
   },
+  overlayDesktop: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+  },
+
+  backdropDesktop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(3, 2, 15, 0.72)',
+  },
+
+  desktopModalOrbPrimary: {
+    position: 'absolute',
+    top: -116,
+    right: -72,
+    width: 248,
+    height: 248,
+    borderRadius: 124,
+    backgroundColor: 'rgba(124, 92, 246, 0.24)',
+    borderWidth: 1,
+    borderColor: 'rgba(184, 160, 255, 0.18)',
+  },
+
+  desktopModalOrbSecondary: {
+    position: 'absolute',
+    bottom: -138,
+    left: -94,
+    width: 232,
+    height: 232,
+    borderRadius: 116,
+    backgroundColor: 'rgba(74, 52, 190, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(126, 104, 255, 0.12)',
+  },
+
+  desktopModalCrown: {
+    position: 'absolute',
+    top: 0,
+    left: 72,
+    right: 72,
+    height: 2,
+    borderRadius: 999,
+    backgroundColor: 'rgba(173, 139, 255, 0.94)',
+    shadowColor: '#A78BFA',
+    shadowOpacity: 0.92,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
+  },
+
   panelDesktop: {
-    width: 440,
-    borderLeftWidth: 1,
-    height: '100%',
+    width: '100%',
+    maxWidth: 560,
+    height: 600,
+    minHeight: 560,
+    maxHeight: '88%',
+    flex: 0,
+    alignSelf: 'center',
+    overflow: 'hidden',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(170, 139, 255, 0.48)',
+    backgroundColor: 'rgba(17, 12, 43, 0.985)',
+    shadowColor: '#8B5CF6',
+    shadowOpacity: 0.42,
+    shadowRadius: 34,
+    shadowOffset: { width: 0, height: 20 },
+    elevation: 22,
+    zIndex: 1,
   },
   panelMobile: {
     position: 'absolute',

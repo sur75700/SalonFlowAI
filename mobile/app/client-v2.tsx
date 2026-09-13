@@ -10,7 +10,7 @@ import type {
 } from '../components/client-v2/ClientSearchFiltersV2';
 import { buildClientRecordsV2 } from '../components/client-v2/clientV2Adapter';
 import DevLoginCard from '../components/auth/DevLoginCard';
-import RoyalCosmosBackground from '../components/ui/RoyalCosmosBackground';
+import DashboardThemeBackground from '../components/dashboard-v2/cloud/DashboardThemeBackground';
 import { useClientsData } from '../hooks/useResourceData';
 import { useClientMutations } from '../hooks/useMutations';
 import { useSession } from '../hooks/useSession';
@@ -336,7 +336,7 @@ export default function ClientV2Screen() {
   }
 
   return (
-    <RoyalCosmosBackground>
+    <DashboardThemeBackground>
       <ClientCenterContainerV2
         header={{
           overline: 'SALONFLOW AI',
@@ -514,6 +514,6 @@ export default function ClientV2Screen() {
           },
         }}
       />
-    </RoyalCosmosBackground>
+    </DashboardThemeBackground>
   );
 }
