@@ -15,7 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Polyline } from "react-native-svg";
 
-import RoyalCosmosBackground from "../ui/RoyalCosmosBackground";
+import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
 import type { ServiceItem } from "../../types/models";
 
 export type ServiceFilterKey =
@@ -719,6 +719,7 @@ function ServiceCard({
       onPress={onPress}
       style={({ pressed }) => [
         styles.serviceCard,
+        styles.cardCosmosSurface,
         { borderColor: visual.border },
         wide ? styles.serviceCardWide : styles.serviceCardFull,
         pressed && !disabled && styles.cardPressed,
@@ -903,7 +904,7 @@ export default function ServiceCenterCompositionV2({
     : DEFAULT_SERVICE_VISUAL;
 
   return (
-    <RoyalCosmosBackground style={styles.root}>
+    <DashboardThemeBackground style={styles.root}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -945,24 +946,44 @@ export default function ServiceCenterCompositionV2({
               style={[
                 styles.kpiCard,
                 index === 0 && {
-                  backgroundColor: "#4B3FA0",
-                  borderColor: "#8C7CFF",
+                  backgroundColor: "rgba(91, 72, 196, 0.34)",
+                  borderColor: "rgba(168, 145, 255, 0.48)",
                   opacity: 1,
+                  shadowColor: "#8B72FF",
+                  shadowOpacity: 0.22,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 9 },
+                  elevation: 7,
                 },
                 index === 1 && {
-                  backgroundColor: "#087A5B",
-                  borderColor: "#45E5B2",
+                  backgroundColor: "rgba(10, 116, 88, 0.34)",
+                  borderColor: "rgba(74, 224, 175, 0.42)",
                   opacity: 1,
+                  shadowColor: "#34D399",
+                  shadowOpacity: 0.18,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 9 },
+                  elevation: 7,
                 },
                 index === 2 && {
-                  backgroundColor: "#A43E5B",
-                  borderColor: "#FF829E",
+                  backgroundColor: "rgba(146, 50, 86, 0.32)",
+                  borderColor: "rgba(255, 128, 171, 0.40)",
                   opacity: 1,
+                  shadowColor: "#F472B6",
+                  shadowOpacity: 0.17,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 9 },
+                  elevation: 7,
                 },
                 index === 3 && {
-                  backgroundColor: "#B87500",
-                  borderColor: "#FFD064",
+                  backgroundColor: "rgba(166, 105, 0, 0.32)",
+                  borderColor: "rgba(255, 205, 88, 0.44)",
                   opacity: 1,
+                  shadowColor: "#FBBF24",
+                  shadowOpacity: 0.18,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 9 },
+                  elevation: 7,
                 },
                 wide ? styles.kpiWide : styles.kpiMobile,
               ]}
@@ -1389,7 +1410,7 @@ export default function ServiceCenterCompositionV2({
           </>
         ) : null}
       </SheetShell>
-    </RoyalCosmosBackground>
+    </DashboardThemeBackground>
   );
 }
 
@@ -1726,6 +1747,16 @@ const styles = StyleSheet.create({
     width: "48.8%",
     flexGrow: 1,
   },
+  cardCosmosSurface: {
+    backgroundColor: "rgba(10, 16, 45, 0.82)",
+    borderColor: "rgba(145, 126, 255, 0.30)",
+    shadowColor: "#7667FF",
+    shadowOpacity: 0.16,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+  },
+
   cardPressed: {
     transform: [{ translateY: -2 }, { scale: 0.995 }],
     borderColor: "rgba(255,255,255,0.18)",
