@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
+import type { CapacitySnapshotModel } from '../../../lib/dashboard/finalEnrichment';
 
 export type AppointmentSegmentTone = 'scheduled' | 'completed' | 'cancelled' | 'other';
 
@@ -28,6 +30,18 @@ export interface AppointmentAnalyticsV2Props {
   selectedPeriod?: string;
   onPeriodChange?: (value: string) => void;
   segments: AppointmentSegment[];
+  capacity?: CapacitySnapshotModel;
+  capacityLabels?: {
+    title: string;
+    utilization: string;
+    availableSlots: string;
+    idleHours: string;
+    analysisWindow: string;
+    loading: string;
+    refreshing: string;
+    unavailable: string;
+    locked: string;
+  };
 }
 
 const colors = {
@@ -144,7 +158,10 @@ function AppointmentAnalyticsV2({
   selectedPeriod,
   onPeriodChange,
   segments,
+  capacity,
+  capacityLabels,
 }: AppointmentAnalyticsV2Props) {
+  const { theme } = useDashboardTheme();
   const [periodMenuOpen, setPeriodMenuOpen] =
     React.useState(false);
 
@@ -165,7 +182,15 @@ function AppointmentAnalyticsV2({
   );
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
+      ]}
+    >
       <View style={styles.headerRow}>
         <Text style={styles.title}>{title}</Text>
         <Pressable
@@ -178,6 +203,10 @@ function AppointmentAnalyticsV2({
           onPress={() => setPeriodMenuOpen((open) => !open)}
           style={({ pressed }) => [
             styles.periodChip,
+            {
+              backgroundColor: theme.palette.surfaceRaised,
+              borderColor: theme.palette.border,
+            },
             pressed && canSelectPeriod && styles.periodChipPressed,
           ]}
         >
@@ -197,6 +226,10 @@ function AppointmentAnalyticsV2({
                 onPress={() => selectPeriod(option.value)}
                 style={({ pressed }) => [
                   styles.periodOption,
+                  {
+                    backgroundColor: theme.palette.surfaceRaised,
+                    borderColor: theme.palette.border,
+                  },
                   active && styles.periodOptionActive,
                   pressed && styles.periodOptionPressed,
                 ]}
@@ -251,9 +284,65 @@ function AppointmentAnalyticsV2({
           )}
         </View>
       </View>
+
+      {capacity && capacityLabels && (
+        <View style={styles.capacitySection}>
+          <View style={styles.capacityHeader}>
+            <Text style={styles.capacityTitle}>{capacityLabels.title}</Text>
+            {!!capacity.windowLabel && (
+              <Text style={styles.capacityWindow}>
+                {capacityLabels.analysisWindow}: {capacity.windowLabel}
+              </Text>
+            )}
+          </View>
+
+          {capacity.state === 'available' || capacity.state === 'refreshing' ? (
+            <>
+              {capacity.state === 'refreshing' && (
+                <Text style={styles.capacityStateText}>{capacityLabels.refreshing}</Text>
+              )}
+              <View style={styles.capacityGrid}>
+                <CapacityMetric
+                  label={capacityLabels.utilization}
+                  value={capacity.utilizationPercent === null ? '—' : `${Math.round(capacity.utilizationPercent * 10) / 10}%`}
+                />
+                <CapacityMetric
+                  label={capacityLabels.availableSlots}
+                  value={capacity.availableSlots === null ? '—' : String(capacity.availableSlots)}
+                />
+                <CapacityMetric
+                  label={capacityLabels.idleHours}
+                  value={capacity.idleHours === null ? '—' : `${Math.round(capacity.idleHours * 10) / 10}h`}
+                />
+              </View>
+            </>
+          ) : (
+            <Text style={styles.capacityStateText}>
+              {capacity.state === 'loading'
+                ? capacityLabels.loading
+                : capacity.state === 'not_entitled'
+                  ? capacityLabels.locked
+                  : capacityLabels.unavailable}
+            </Text>
+          )}
+        </View>
+      )}
     </View>
   );
 }
+
+function CapacityMetric({
+  label,
+  value,
+}: Readonly<{ label: string; value: string }>) {
+  return (
+    <View style={styles.capacityMetric} accessible accessibilityLabel={`${label}: ${value}`}>
+      <Text style={styles.capacityMetricValue}>{value}</Text>
+      <Text style={styles.capacityMetricLabel}>{label}</Text>
+    </View>
+  );
+}
+
 
 const styles = StyleSheet.create({
   card: {
@@ -409,6 +498,62 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     color: colors.textSecondary,
+  },
+  capacitySection: {
+    marginTop: 18,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  capacityHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  capacityTitle: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  capacityWindow: {
+    flexShrink: 1,
+    color: colors.textTertiary,
+    fontSize: 10,
+    textAlign: 'right',
+  },
+  capacityStateText: {
+    marginTop: 10,
+    color: colors.textSecondary,
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  capacityGrid: {
+    marginTop: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  capacityMetric: {
+    flex: 1,
+    minWidth: 92,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: 'rgba(255,255,255,0.025)',
+  },
+  capacityMetricValue: {
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  capacityMetricLabel: {
+    marginTop: 2,
+    color: colors.textSecondary,
+    fontSize: 9,
+    lineHeight: 13,
   },
 });
 

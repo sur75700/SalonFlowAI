@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, ActivityIndicator, Pressable } from 'react-native';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type InsightTone = 'positive' | 'neutral' | 'warning' | 'danger';
 export type TrendDirection = 'up' | 'down' | 'flat';
@@ -236,6 +237,7 @@ function AICommandCenterV2({
   onRetry,
   onUpgrade,
 }: AICommandCenterV2Props) {
+  const { theme } = useDashboardTheme();
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -266,7 +268,15 @@ function AICommandCenterV2({
 
   if (status === 'not_entitled') {
     return (
-      <View style={entitlementLockStyles.shell}>
+      <View
+        style={[
+          entitlementLockStyles.shell,
+          {
+            backgroundColor: theme.palette.surface,
+            borderColor: theme.palette.borderStrong,
+          },
+        ]}
+      >
         <Text style={entitlementLockStyles.eyebrow}>
           {labels.commandCenter}
         </Text>
@@ -305,7 +315,15 @@ function AICommandCenterV2({
         : labels.loading;
 
     return (
-      <View style={styles.card}>
+      <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
+      ]}
+    >
         <View
           style={{
             minHeight: 260,
@@ -367,7 +385,15 @@ function AICommandCenterV2({
   }
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
+      ]}
+    >
       {/* Header */}
       <View style={styles.headerRow}>
         <View style={styles.titleRow}>

@@ -149,6 +149,7 @@ export default function ReportCatalogSelector({
             key={entry.report_type}
             accessibilityRole="button"
             accessibilityLabel={title}
+            accessibilityHint={description}
             accessibilityState={{
               selected: active,
             }}

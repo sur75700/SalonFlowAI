@@ -116,6 +116,13 @@ export default function ReportFilterPanel({
             accessibilityLabel={
               startLabel
             }
+            accessibilityHint={t(
+              "reports.commandCenter.dateHint",
+              locale,
+            )}
+            accessibilityState={{
+              disabled,
+            }}
             editable={!disabled}
             value={value.startDate}
             onChangeText={(startDate) =>
@@ -150,6 +157,13 @@ export default function ReportFilterPanel({
                 "reports.commandCenter.endDate",
                 locale,
               )}
+              accessibilityHint={t(
+                "reports.commandCenter.dateHint",
+                locale,
+              )}
+              accessibilityState={{
+                disabled,
+              }}
               editable={!disabled}
               value={value.endDate}
               onChangeText={(endDate) =>
@@ -199,9 +213,14 @@ export default function ReportFilterPanel({
                   <Pressable
                     key={status}
                     disabled={disabled}
-                    accessibilityRole="button"
+                    accessibilityRole="checkbox"
+                    accessibilityLabel={t(
+                      `reports.commandCenter.statusValues.${status}`,
+                      locale,
+                    )}
                     accessibilityState={{
-                      selected: active,
+                      checked: active,
+                      disabled,
                     }}
                     onPress={() =>
                       toggleStatus(
@@ -252,6 +271,17 @@ export default function ReportFilterPanel({
           </FieldLabel>
 
           <TextInput
+            accessibilityLabel={t(
+              "reports.commandCenter.clients",
+              locale,
+            )}
+            accessibilityHint={t(
+              "reports.commandCenter.idHint",
+              locale,
+            )}
+            accessibilityState={{
+              disabled,
+            }}
             editable={!disabled}
             value={value.clientIds}
             onChangeText={(clientIds) =>
@@ -289,6 +319,17 @@ export default function ReportFilterPanel({
           </FieldLabel>
 
           <TextInput
+            accessibilityLabel={t(
+              "reports.commandCenter.services",
+              locale,
+            )}
+            accessibilityHint={t(
+              "reports.commandCenter.idHint",
+              locale,
+            )}
+            accessibilityState={{
+              disabled,
+            }}
             editable={!disabled}
             value={value.serviceIds}
             onChangeText={(serviceIds) =>
@@ -338,9 +379,14 @@ export default function ReportFilterPanel({
                   <Pressable
                     key={currency}
                     disabled={disabled}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
+                    accessibilityLabel={`${t(
+                      "reports.commandCenter.currency",
+                      locale,
+                    )}: ${currency}`}
                     accessibilityState={{
-                      selected: active,
+                      checked: active,
+                      disabled,
                     }}
                     onPress={() =>
                       onChange({

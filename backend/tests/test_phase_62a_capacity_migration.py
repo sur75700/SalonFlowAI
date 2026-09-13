@@ -15,6 +15,10 @@ from app.db.migrations.phase_62a_capacity import (
     _ensure_collection,
     apply_capacity_foundation,
 )
+from app.db.migrations.phase_63e_revenue_time_series import (
+    MIGRATION_CHECKSUM as REVENUE_TIME_SERIES_MIGRATION_CHECKSUM,
+    MIGRATION_ID as REVENUE_TIME_SERIES_MIGRATION_ID,
+)
 from app.db.migrations.runner import run_migrations
 
 
@@ -162,7 +166,7 @@ class CapacityMigrationTests(unittest.IsolatedAsyncioTestCase):
         await run_migrations(database)
 
         ledger = database["_schema_migrations"]
-        self.assertEqual(len(ledger.records), 1)
+        self.assertEqual(len(ledger.records), 2)
         self.assertIn(MIGRATION_ID, ledger.records)
         self.assertEqual(
             ledger.records[MIGRATION_ID]["checksum"],
@@ -171,6 +175,17 @@ class CapacityMigrationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             len(database.salon_capacity_profiles.indexes),
             first_index_count,
+        )
+
+        self.assertIn(
+            REVENUE_TIME_SERIES_MIGRATION_ID,
+            ledger.records,
+        )
+        self.assertEqual(
+            ledger.records[
+                REVENUE_TIME_SERIES_MIGRATION_ID
+            ]["checksum"],
+            REVENUE_TIME_SERIES_MIGRATION_CHECKSUM,
         )
 
     async def test_runner_rejects_checksum_drift(self) -> None:

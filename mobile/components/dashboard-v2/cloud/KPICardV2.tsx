@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type TrendDirection = 'up' | 'down' | 'flat';
 export type KPIAccent = 'gold' | 'royal' | 'blue' | 'green' | 'red';
@@ -110,6 +111,7 @@ function KPICardV2({
   sparklineData,
   compact = false,
 }: KPICardV2Props) {
+  const { theme } = useDashboardTheme();
   const accentColor = accentColorMap[accent];
   const monogram = label.trim().charAt(0).toUpperCase();
 
@@ -117,6 +119,10 @@ function KPICardV2({
     <View
       style={[
         styles.card,
+        {
+          backgroundColor: theme.palette.surface,
+          borderColor: theme.palette.border,
+        },
         { padding: compact ? 12 : 16 },
         { borderLeftColor: accentColor.fg, borderLeftWidth: 3 },
       ]}

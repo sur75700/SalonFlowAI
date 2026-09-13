@@ -129,7 +129,10 @@ export default function ReportExportSheet({
           )}
         />
 
-        <View style={styles.sheet}>
+        <View
+          accessibilityViewIsModal
+          style={styles.sheet}
+        >
           <View style={styles.handle} />
 
           <View style={styles.header}>
@@ -194,6 +197,15 @@ export default function ReportExportSheet({
                 <Pressable
                   key={format}
                   accessibilityRole="button"
+                  accessibilityLabel={`${format.toUpperCase()}. ${t(
+                    `reports.commandCenter.formatDescriptions.${format}`,
+                    locale,
+                  )}`}
+                  accessibilityState={{
+                    disabled: Boolean(
+                      busyFormat,
+                    ),
+                  }}
                   disabled={Boolean(
                     busyFormat,
                   )}

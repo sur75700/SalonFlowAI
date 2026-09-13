@@ -1,9 +1,15 @@
+from pydantic import BaseModel, Field
+
 from datetime import UTC, datetime, timedelta
 from collections import defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import require_auth
+from app.analytics.revenue_time_series import (
+    RevenueTimeSeriesError,
+    build_revenue_time_series,
+)
 from bson import ObjectId
 from app.db.mongo import get_database
 
@@ -1171,3 +1177,85 @@ async def analytics_insights(auth: dict = Depends(require_auth)):
         "decision_priority": decision_priority,
         "insights": insights or [],
     }
+
+class RevenueTimeSeriesRangeResponse(BaseModel):
+    start_local: str
+    end_local: str
+    start_utc: str
+    end_utc: str
+
+
+class RevenueTimeSeriesSummaryResponse(BaseModel):
+    completed_revenue: float
+    previous_completed_revenue: float
+    delta: float
+    delta_percent: float | None = None
+    completed_count: int
+
+
+class RevenueTimeSeriesPointResponse(BaseModel):
+    bucket_start: str
+    bucket_end: str
+    label: str
+    value: float
+    completed_count: int
+
+
+class RevenueTimeSeriesResponse(BaseModel):
+    contract_version: str
+    preset: str
+    currency: str
+    timezone: str
+    timezone_source: str
+    range: RevenueTimeSeriesRangeResponse
+    granularity: str
+    earliest_trusted_at: str | None = None
+    summary: RevenueTimeSeriesSummaryResponse
+    series: list[RevenueTimeSeriesPointResponse] = Field(
+        default_factory=list
+    )
+    comparison_series: list[RevenueTimeSeriesPointResponse] = Field(
+        default_factory=list
+    )
+    warnings: list[str] = Field(
+        default_factory=list
+    )
+
+
+@router.get(
+    "/revenue/time-series",
+    response_model=RevenueTimeSeriesResponse,
+)
+async def analytics_revenue_time_series(
+    preset: str = "30d",
+    date_from: str | None = None,
+    date_to: str | None = None,
+    currency: str = "AMD",
+    compare: bool = True,
+    auth: dict = Depends(require_auth),
+):
+    owner_id = auth.get("admin_id")
+
+    if (
+        not owner_id
+        or not ObjectId.is_valid(owner_id)
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token",
+        )
+
+    try:
+        return await build_revenue_time_series(
+            owner_id=owner_id,
+            preset=preset,
+            date_from=date_from,
+            date_to=date_to,
+            currency=currency,
+            compare=compare,
+        )
+    except RevenueTimeSeriesError as error:
+        raise HTTPException(
+            status_code=error.status_code,
+            detail=error.code,
+        ) from error

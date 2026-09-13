@@ -335,6 +335,13 @@ const ru = {
       synchronizingLiveData: "Синхронизация данных",
       summaryConnected: "Сводка подключена",
       language: "Язык",
+      soulEyebrow: "ТВОЙ САЛОН · ТВОЙ РИТМ",
+      soulTitle:
+        "У твоего салона есть свой ритм. Я здесь, чтобы помочь тебе его слышать.",
+      soulBody:
+        "Каждая запись, клиент, услуга и решение складываются в одну живую историю. Ты задаёшь направление, а я держу важные сигналы ясными, чтобы следующий шаг был уверенным.",
+      soulSignature:
+        "Рядом с тобой в каждом важном решении.",
       next: "Далее",
     },
     kpi: {
@@ -520,3 +527,23 @@ const ru = {
   },
 };
 export default ru;
+
+export const revenueTimeIntelligence = {
+  last24Hours: "Последние 24 часа",
+  last7Days: "Последние 7 дней",
+  last30Days: "Последние 30 дней",
+  last90Days: "Последние 90 дней",
+  yearToDate: "С начала года",
+  last1Year: "Последний год",
+  allTime: "За всё время",
+  customRange: "Произвольный период",
+  fromDate: "Дата начала",
+  toDate: "Дата окончания",
+  applyRange: "Применить",
+  cancelRange: "Отмена",
+  loadingRevenueHistory: "Загрузка истории выручки",
+  revenueHistoryUnavailable: "История выручки недоступна",
+  previousPeriod: "Предыдущий период",
+  usingUtcTime: "Используется время UTC",
+  dataNotice: "Уведомление о данных",
+} as const;

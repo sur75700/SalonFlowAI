@@ -379,6 +379,13 @@ const hy = {
       synchronizingLiveData: "Տվյալները համաժամեցվում են",
       summaryConnected: "Ամփոփումը միացված է",
       language: "Լեզու",
+      soulEyebrow: "ՔՈ ՍՐԱՀԸ · ՔՈ ՌԻԹՄԸ",
+      soulTitle:
+        "Քո սրահն իր ռիթմն ունի։ Ես այստեղ եմ, որ օգնեմ քեզ լսել այն։",
+      soulBody:
+        "Ամեն ամրագրում, հաճախորդ, ծառայություն ու որոշում միանում են մեկ կենդանի պատմության մեջ։ Դու ձևավորում ես տեսլականը, իսկ ես կարևոր ազդանշանները պահում եմ հստակ, որպեսզի հաջորդ քայլդ վստահ լինի։",
+      soulSignature:
+        "Քո կողքին՝ ամեն կարևոր որոշման պահին։",
       next: "Հաջորդը",
     },
     kpi: {
@@ -564,3 +571,23 @@ const hy = {
   },
 };
 export default hy;
+
+export const revenueTimeIntelligence = {
+  last24Hours: "Վերջին 24 ժամը",
+  last7Days: "Վերջին 7 օրը",
+  last30Days: "Վերջին 30 օրը",
+  last90Days: "Վերջին 90 օրը",
+  yearToDate: "Տարվա սկզբից",
+  last1Year: "Վերջին 1 տարին",
+  allTime: "Ամբողջ ժամանակը",
+  customRange: "Ընտրված ժամանակահատված",
+  fromDate: "Սկսած",
+  toDate: "Մինչև",
+  applyRange: "Կիրառել",
+  cancelRange: "Չեղարկել",
+  loadingRevenueHistory: "Բեռնվում է եկամտի պատմությունը",
+  revenueHistoryUnavailable: "Եկամտի պատմությունը հասանելի չէ",
+  previousPeriod: "Նախորդ ժամանակահատված",
+  usingUtcTime: "Օգտագործվում է UTC ժամ",
+  dataNotice: "Տվյալների ծանուցում",
+} as const;

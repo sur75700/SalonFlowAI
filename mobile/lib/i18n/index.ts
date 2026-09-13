@@ -1,3 +1,8 @@
+import { revenueTimeIntelligence as revenueTimeIntelligenceEn } from "../../translations/en";
+import { revenueTimeIntelligence as revenueTimeIntelligenceFr } from "../../translations/fr";
+import { revenueTimeIntelligence as revenueTimeIntelligenceHy } from "../../translations/hy";
+import { revenueTimeIntelligence as revenueTimeIntelligenceRu } from "../../translations/ru";
+
 import { translations as nestedTranslations } from "../../translations";
 
 export type AppLanguage = "en" | "hy" | "ru" | "fr";
@@ -270,6 +275,9 @@ const dict: Record<string, string> = {
   "AI Matrix No Action": "No action yet",
   "AI Matrix Protect Pipeline": "Protect pipeline revenue",
   "Settings": "Settings",
+  "Dashboard Appearance": "Dashboard Appearance",
+  "Royal Cosmos": "Royal Cosmos",
+  "Royal Gold Cosmos": "Royal Gold Cosmos",
   "Settings Center": "Settings & Subscription Center",
   "Settings Center Subtitle": "Manage your workspace, subscription packages, support links, backend access, and operator tools.",
   "Account Overview": "Account Overview",
@@ -707,12 +715,111 @@ const dict: Record<string, string> = {
 };
 
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
-  en: {},
+  en: {
+    "AI Confidence Live": "Live Intelligence confidence",
+    "AI Confidence Refreshing": "Refreshing Intelligence confidence…",
+    "AI Confidence Loading": "Synchronizing Intelligence confidence…",
+    "AI Confidence Unavailable": "Intelligence confidence unavailable",
+    "AI Confidence Locked": "Advanced AI required",
+    "Capacity Intelligence": "Capacity Intelligence",
+    "Capacity Utilization": "Utilization",
+    "Capacity Available Slots": "Available slots",
+    "Capacity Idle Hours": "Idle hours",
+    "Capacity Analysis Window": "AI analysis window",
+    "Capacity Loading": "Synchronizing capacity facts…",
+    "Capacity Refreshing": "Refreshing capacity facts…",
+    "Capacity Unavailable": "Capacity facts are unavailable for this analysis window.",
+    "Capacity Locked": "Advanced AI is required for capacity intelligence.",
+    "Client Retention Pulse": "Client Retention Pulse",
+    "Client Retention Pulse Subtitle": "Appointment-history classifications from current analytics, shown without double-counting overlapping risk groups.",
+    "Client Pulse Live": "Live",
+    "Client Returning Ratio": "2+ appointment ratio",
+    "Client Risk Index": "Risk index",
+    "Client Single Appointment": "1 recorded appointment",
+    "Client Repeat History": "2+ recorded appointments",
+    "Client Inactive": "Inactive clients",
+    "Client At Risk 30": "At risk · 30+ days",
+    "Client High Risk 60": "High risk · 60+ days",
+    "Client Lost 90": "Lost · 90+ days",
+    "Client Risk Groups Overlap": "Risk groups may overlap; they are not summed as unique clients.",
+    "Client Pulse Loading": "Synchronizing client analytics…",
+    "Client Pulse Refreshing": "Refreshing client analytics…",
+    "Client Pulse Unavailable": "Client retention facts are unavailable right now.",
+    "Client Pulse Empty": "No client history is available yet.",
+    "Royal Market Pulse": "Royal Market Pulse",
+    "Market Pulse Subtitle": "Live AMD reference rates and Bitcoin market context, served securely by SalonFlowAI.",
+    "Market Fresh": "Fresh",
+    "Market Stale": "Stale",
+    "Market Unavailable": "Unavailable",
+    "Market Loading": "Loading market pulse…",
+    "Market Refreshing": "Refreshing market pulse…",
+    "Market Source": "Source",
+    "Next Best Action": "Next Best Action",
+    "Next Best Action Subtitle": "Up to three evidence-backed actions projected from the existing Intelligence decision.",
+    "Make Money": "Make Money",
+    "Prevent Loss": "Prevent Loss",
+    "Improve Operations": "Improve Operations",
+    "Evidence": "Evidence",
+    "Open Action": "Open",
+    "No Supported Actions": "No supported actions",
+    "No Supported Actions Subtitle": "SalonFlowAI will show an action only when the current Intelligence decision contains supported evidence and expected impact.",
+  },
   fr: {
+    "AI Confidence Live": "Confiance Intelligence en direct",
+    "AI Confidence Refreshing": "Actualisation de la confiance Intelligence…",
+    "AI Confidence Loading": "Synchronisation de la confiance Intelligence…",
+    "AI Confidence Unavailable": "Confiance Intelligence indisponible",
+    "AI Confidence Locked": "IA avancée requise",
+    "Capacity Intelligence": "Intelligence de capacité",
+    "Capacity Utilization": "Utilisation",
+    "Capacity Available Slots": "Créneaux disponibles",
+    "Capacity Idle Hours": "Heures inutilisées",
+    "Capacity Analysis Window": "Fenêtre d’analyse IA",
+    "Capacity Loading": "Synchronisation des données de capacité…",
+    "Capacity Refreshing": "Actualisation des données de capacité…",
+    "Capacity Unavailable": "Les données de capacité sont indisponibles pour cette fenêtre d’analyse.",
+    "Capacity Locked": "L’IA avancée est requise pour l’intelligence de capacité.",
+    "Client Retention Pulse": "Pouls de fidélisation client",
+    "Client Retention Pulse Subtitle": "Classifications issues de l’historique des rendez-vous, sans double comptage des groupes de risque qui se chevauchent.",
+    "Client Pulse Live": "En direct",
+    "Client Returning Ratio": "Ratio 2+ rendez-vous",
+    "Client Risk Index": "Indice de risque",
+    "Client Single Appointment": "1 rendez-vous enregistré",
+    "Client Repeat History": "2+ rendez-vous enregistrés",
+    "Client Inactive": "Clients inactifs",
+    "Client At Risk 30": "À risque · 30+ jours",
+    "Client High Risk 60": "Risque élevé · 60+ jours",
+    "Client Lost 90": "Perdus · 90+ jours",
+    "Client Risk Groups Overlap": "Les groupes de risque peuvent se chevaucher et ne sont pas additionnés comme clients uniques.",
+    "Client Pulse Loading": "Synchronisation de l’analytique client…",
+    "Client Pulse Refreshing": "Actualisation de l’analytique client…",
+    "Client Pulse Unavailable": "Les données de fidélisation client sont indisponibles pour le moment.",
+    "Client Pulse Empty": "Aucun historique client n’est encore disponible.",
+    "Royal Market Pulse": "Pouls royal du marché",
+    "Market Pulse Subtitle": "Taux de référence AMD et contexte de marché Bitcoin, servis de façon sécurisée par le backend SalonFlowAI.",
+    "Market Fresh": "À jour",
+    "Market Stale": "Périmé",
+    "Market Unavailable": "Indisponible",
+    "Market Loading": "Chargement du pouls du marché…",
+    "Market Refreshing": "Actualisation du pouls du marché…",
+    "Market Source": "Source",
+    "Next Best Action": "Prochaine meilleure action",
+    "Next Best Action Subtitle": "Jusqu’à trois actions étayées par des preuves, projetées depuis la décision Intelligence déjà chargée.",
+    "Make Money": "Augmenter le revenu",
+    "Prevent Loss": "Prévenir les pertes",
+    "Improve Operations": "Améliorer les opérations",
+    "Evidence": "Preuve",
+    "Open Action": "Ouvrir",
+    "No Supported Actions": "Aucune action prise en charge",
+    "No Supported Actions Subtitle": "SalonFlowAI affiche une action uniquement lorsque la décision Intelligence actuelle contient des preuves prises en charge et un impact attendu.",
+
     "Locked Feature": "Fonctionnalité verrouillée",
     "Requires Plan": "Forfait requis",
     "Locked Feature Upgrade Note": "Comparez les forfaits dans le centre des paramètres pour débloquer cette fonctionnalité.",
 
+    "Dashboard Appearance": "Apparence du tableau de bord",
+    "Royal Cosmos": "Royal Cosmos",
+    "Royal Gold Cosmos": "Royal Gold Cosmos",
     "Settings Center": "Centre des paramètres et d’abonnement",
     "Settings Center Subtitle": "Gérez le workspace, les forfaits, le support, les outils système et les notes opérateur.",
 
@@ -1480,10 +1587,61 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "AI Confidence Live": "AI վստահություն՝ կենդանի տվյալներով",
+    "AI Confidence Refreshing": "AI վստահությունը թարմացվում է…",
+    "AI Confidence Loading": "AI վստահությունը համաժամացվում է…",
+    "AI Confidence Unavailable": "AI վստահությունը հասանելի չէ",
+    "AI Confidence Locked": "Պահանջվում է Advanced AI",
+    "Capacity Intelligence": "Հզորության ինտելեկտ",
+    "Capacity Utilization": "Օգտագործում",
+    "Capacity Available Slots": "Ազատ սլոթներ",
+    "Capacity Idle Hours": "Չօգտագործված ժամեր",
+    "Capacity Analysis Window": "AI վերլուծության պատուհան",
+    "Capacity Loading": "Հզորության տվյալները համաժամացվում են…",
+    "Capacity Refreshing": "Հզորության տվյալները թարմացվում են…",
+    "Capacity Unavailable": "Այս վերլուծության պատուհանի հզորության տվյալները հասանելի չեն։",
+    "Capacity Locked": "Հզորության ինտելեկտի համար պահանջվում է Advanced AI։",
+    "Client Retention Pulse": "Հաճախորդների վերադարձի զարկերակ",
+    "Client Retention Pulse Subtitle": "Ընթացիկ անալիտիկայի այցերի պատմության դասակարգումներ՝ առանց համընկնող ռիսկային խմբերը կրկնակի հաշվելու։",
+    "Client Pulse Live": "Կենդանի",
+    "Client Returning Ratio": "2+ այցի հարաբերակցություն",
+    "Client Risk Index": "Ռիսկի ինդեքս",
+    "Client Single Appointment": "1 գրանցված այց",
+    "Client Repeat History": "2+ գրանցված այց",
+    "Client Inactive": "Ոչ ակտիվ հաճախորդներ",
+    "Client At Risk 30": "Ռիսկային · 30+ օր",
+    "Client High Risk 60": "Բարձր ռիսկ · 60+ օր",
+    "Client Lost 90": "Կորցրած · 90+ օր",
+    "Client Risk Groups Overlap": "Ռիսկային խմբերը կարող են համընկնել և չեն գումարվում որպես եզակի հաճախորդներ։",
+    "Client Pulse Loading": "Հաճախորդների անալիտիկան համաժամացվում է…",
+    "Client Pulse Refreshing": "Հաճախորդների անալիտիկան թարմացվում է…",
+    "Client Pulse Unavailable": "Հաճախորդների վերադարձի տվյալները հիմա հասանելի չեն։",
+    "Client Pulse Empty": "Հաճախորդների պատմություն դեռ չկա։",
+    "Royal Market Pulse": "Շուկայի թագավորական զարկերակ",
+    "Market Pulse Subtitle": "AMD-ի տեղեկատու փոխարժեքները և Bitcoin-ի շուկայական համատեքստը՝ անվտանգ մատուցված SalonFlowAI-ի backend-ից։",
+    "Market Fresh": "Թարմ",
+    "Market Stale": "Հնացած",
+    "Market Unavailable": "Անհասանելի",
+    "Market Loading": "Բեռնվում է շուկայի զարկերակը…",
+    "Market Refreshing": "Թարմացվում է շուկայի զարկերակը…",
+    "Market Source": "Աղբյուր",
+    "Next Best Action": "Հաջորդ լավագույն գործողությունը",
+    "Next Best Action Subtitle": "Մինչև երեք ապացույցով հիմնավորված գործողություն՝ արդեն բեռնված Intelligence որոշումից։",
+    "Make Money": "Ավելացնել եկամուտը",
+    "Prevent Loss": "Կանխել կորուստը",
+    "Improve Operations": "Բարելավել գործառնությունները",
+    "Evidence": "Ապացույց",
+    "Open Action": "Բացել",
+    "No Supported Actions": "Հաստատված գործողություններ չկան",
+    "No Supported Actions Subtitle": "SalonFlowAI-ն գործողություն է ցույց տալիս միայն այն դեպքում, երբ ընթացիկ Intelligence որոշումն ունի աջակցվող ապացույց և ակնկալվող ազդեցություն։",
+
     "Locked Feature": "Փակ ֆունկցիա",
     "Requires Plan": "Պահանջվող փաթեթ",
     "Locked Feature Upgrade Note": "Համեմատեք փաթեթները Կարգավորումների կենտրոնում՝ այս ֆունկցիան բացելու համար։",
 
+    "Dashboard Appearance": "Վահանակի տեսք",
+    "Royal Cosmos": "Royal Cosmos",
+    "Royal Gold Cosmos": "Royal Gold Cosmos",
     "Settings Center": "Կարգավորումների և բաժանորդագրության կենտրոն",
     "Settings Center Subtitle": "Կառավարեք workspace-ը, փաթեթները, աջակցությունը, համակարգի գործիքները և օպերատորի նշումները։",
 
@@ -2193,10 +2351,61 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "AI Confidence Live": "Доверие Intelligence по текущим данным",
+    "AI Confidence Refreshing": "Обновление доверия Intelligence…",
+    "AI Confidence Loading": "Синхронизация доверия Intelligence…",
+    "AI Confidence Unavailable": "Доверие Intelligence недоступно",
+    "AI Confidence Locked": "Требуется Advanced AI",
+    "Capacity Intelligence": "Интеллект загрузки",
+    "Capacity Utilization": "Использование",
+    "Capacity Available Slots": "Свободные слоты",
+    "Capacity Idle Hours": "Свободные часы",
+    "Capacity Analysis Window": "Окно анализа AI",
+    "Capacity Loading": "Синхронизация данных загрузки…",
+    "Capacity Refreshing": "Обновление данных загрузки…",
+    "Capacity Unavailable": "Данные загрузки недоступны для этого окна анализа.",
+    "Capacity Locked": "Для аналитики загрузки требуется Advanced AI.",
+    "Client Retention Pulse": "Пульс удержания клиентов",
+    "Client Retention Pulse Subtitle": "Классификации по истории записей без двойного подсчета пересекающихся групп риска.",
+    "Client Pulse Live": "Онлайн",
+    "Client Returning Ratio": "Доля с 2+ записями",
+    "Client Risk Index": "Индекс риска",
+    "Client Single Appointment": "1 зарегистрированная запись",
+    "Client Repeat History": "2+ зарегистрированных записей",
+    "Client Inactive": "Неактивные клиенты",
+    "Client At Risk 30": "В зоне риска · 30+ дней",
+    "Client High Risk 60": "Высокий риск · 60+ дней",
+    "Client Lost 90": "Потеряны · 90+ дней",
+    "Client Risk Groups Overlap": "Группы риска могут пересекаться и не суммируются как уникальные клиенты.",
+    "Client Pulse Loading": "Синхронизация клиентской аналитики…",
+    "Client Pulse Refreshing": "Обновление клиентской аналитики…",
+    "Client Pulse Unavailable": "Данные удержания клиентов сейчас недоступны.",
+    "Client Pulse Empty": "История клиентов пока недоступна.",
+    "Royal Market Pulse": "Королевский пульс рынка",
+    "Market Pulse Subtitle": "Справочные курсы AMD и рыночный контекст Bitcoin, безопасно получаемые через backend SalonFlowAI.",
+    "Market Fresh": "Свежие",
+    "Market Stale": "Устаревшие",
+    "Market Unavailable": "Недоступно",
+    "Market Loading": "Загрузка рыночного пульса…",
+    "Market Refreshing": "Обновление рыночного пульса…",
+    "Market Source": "Источник",
+    "Next Best Action": "Следующее лучшее действие",
+    "Next Best Action Subtitle": "До трёх действий с доказательствами, спроецированных из уже загруженного решения Intelligence.",
+    "Make Money": "Увеличить доход",
+    "Prevent Loss": "Предотвратить потери",
+    "Improve Operations": "Улучшить операции",
+    "Evidence": "Доказательство",
+    "Open Action": "Открыть",
+    "No Supported Actions": "Поддерживаемых действий нет",
+    "No Supported Actions Subtitle": "SalonFlowAI показывает действие только когда текущее решение Intelligence содержит подтверждённые данные и ожидаемый эффект.",
+
     "Locked Feature": "Закрытая функция",
     "Requires Plan": "Требуемый пакет",
     "Locked Feature Upgrade Note": "Сравните пакеты в Центре настроек, чтобы открыть эту функцию.",
 
+    "Dashboard Appearance": "Внешний вид панели",
+    "Royal Cosmos": "Royal Cosmos",
+    "Royal Gold Cosmos": "Royal Gold Cosmos",
     "Settings Center": "Центр настроек и подписки",
     "Settings Center Subtitle": "Управляйте workspace, пакетами, поддержкой, системными инструментами и заметками оператора.",
 
@@ -2946,4 +3155,25 @@ export function t(key: string, locale: AppLanguage = defaultLanguage): string {
   if (override) return override;
 
   return translations[locale]?.[key] ?? translations.en[key] ?? key;
+}
+
+
+export type RevenueTimeIntelligenceCopy = {
+  [K in keyof typeof revenueTimeIntelligenceEn]: string;
+};
+
+export function getRevenueTimeIntelligenceCopy(
+  language: string
+): RevenueTimeIntelligenceCopy {
+  switch (language) {
+    case "hy":
+      return revenueTimeIntelligenceHy;
+    case "ru":
+      return revenueTimeIntelligenceRu;
+    case "fr":
+      return revenueTimeIntelligenceFr;
+    case "en":
+    default:
+      return revenueTimeIntelligenceEn;
+  }
 }
