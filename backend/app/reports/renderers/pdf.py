@@ -246,10 +246,17 @@ def render_report_document_pdf(document: object) -> bytes:
     from io import BytesIO
     from xml.sax.saxutils import escape
 
+    from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
 
     from app.reports.contracts import ReportDocument
 
@@ -288,17 +295,24 @@ def render_report_document_pdf(document: object) -> bytes:
         fontName=bold_font,
     )
 
-    story = [
-        Paragraph(escape(document.report_type), title_style),
-        Paragraph(
-            escape(
-                f"{document.period.start_date.isoformat()} .. "
-                f"{document.period.end_date.isoformat()} "
-                f"({document.period.timezone})"
-            ),
-            body_style,
+    cosmos_title = Paragraph(
+        escape(f"SalonFlowAI • {document.report_type}"),
+        title_style,
+    )
+
+    period_label = Paragraph(
+        escape(
+            f"{document.period.start_date.isoformat()} .. "
+            f"{document.period.end_date.isoformat()} "
+            f"({document.period.timezone})"
         ),
-        Spacer(1, 8),
+        body_style,
+    )
+
+    story = [
+        cosmos_title,
+        period_label,
+        Spacer(1, 12),
     ]
     metric_rows = [
         [
@@ -308,8 +322,28 @@ def render_report_document_pdf(document: object) -> bytes:
         for key, value in document.metrics.items()
     ]
     if metric_rows:
-        story.append(Table(metric_rows, repeatRows=0))
-        story.append(Spacer(1, 8))
+        metric_table = Table(
+            metric_rows,
+            repeatRows=0,
+            hAlign="LEFT",
+        )
+
+        metric_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8F7FF")),
+                    ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#D8D4FF")),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]
+            )
+        )
+
+        story.append(metric_table)
+        story.append(Spacer(1, 12))
 
     if document.columns:
         table_rows = [
@@ -328,7 +362,28 @@ def render_report_document_pdf(document: object) -> bytes:
             ]
             for row in document.rows
         )
-        story.append(Table(table_rows, repeatRows=1))
+        data_table = Table(
+            table_rows,
+            repeatRows=1,
+            hAlign="LEFT",
+        )
+
+        data_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#111827")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#CBD5E1")),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]
+            )
+        )
+
+        story.append(data_table)
 
     pdf.build(story)
     return buffer.getvalue()
