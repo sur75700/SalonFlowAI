@@ -1,5 +1,7 @@
 import React, {
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -11,7 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import AnalyticsCommandCenterV2 from "./AnalyticsCommandCenterV2";
-import RoyalCosmosBackground from "../ui/RoyalCosmosBackground";
+import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
 
 import { useAppointmentsData } from "../../hooks/useResourceData";
 import { useSession } from "../../hooks/useSession";
@@ -50,7 +52,7 @@ function StatusView({
   const error = tone === "rose";
 
   return (
-    <RoyalCosmosBackground
+    <DashboardThemeBackground
       style={styles.root}
     >
       <View style={styles.statusRoot}>
@@ -106,7 +108,7 @@ function StatusView({
           ) : null}
         </View>
       </View>
-    </RoyalCosmosBackground>
+    </DashboardThemeBackground>
   );
 }
 
@@ -195,8 +197,23 @@ export default function AnalyticsRealContainerV2() {
     ]
   );
 
+  const wasRefreshingRef =
+    useRef(false);
+
+  useEffect(() => {
+    const refreshFinished =
+      wasRefreshingRef.current &&
+      !appointmentsState.refreshing;
+
+    wasRefreshingRef.current =
+      appointmentsState.refreshing;
+
+    if (refreshFinished) {
+      setGeneratedAt(Date.now());
+    }
+  }, [appointmentsState.refreshing]);
+
   const refresh = () => {
-    setGeneratedAt(Date.now());
     appointmentsState.refresh();
   };
 
@@ -226,7 +243,10 @@ export default function AnalyticsRealContainerV2() {
     );
   }
 
-  if (appointmentsState.loading) {
+  if (
+    appointmentsState.loading &&
+    !appointmentsState.refreshing
+  ) {
     return (
       <StatusView
         title={tr(

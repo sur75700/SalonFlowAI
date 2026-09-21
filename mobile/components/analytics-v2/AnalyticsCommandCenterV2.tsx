@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   Pressable,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,12 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 import Svg, {
   Circle,
   G,
-  Line,
-  Polygon,
   Polyline,
 } from "react-native-svg";
 
-import RoyalCosmosBackground from "../ui/RoyalCosmosBackground";
+import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
+import RevenueAnalyticsV2 from "../dashboard-v2/cloud/RevenueAnalyticsV2";
+import AnalyticsImmersivePanelV2 from "./AnalyticsImmersivePanelV2";
 import AnalyticsExportSheetV2 from "./AnalyticsExportSheetV2";
 import AnalyticsLiveInsightSheetV2 from "./AnalyticsLiveInsightSheetV2";
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -349,152 +350,92 @@ function RevenuePulse({
   model: AnalyticsPreviewModel;
   dataMode: "preview" | "live";
 }) {
-  const chart = useMemo(() => {
-    const values = model.revenueSeries.flatMap((point) => [
-      point.current,
-      point.previous,
-    ]);
-
-    const max = Math.max(...values, 1);
-    const min = Math.min(...values, 0);
-    const range = max - min || 1;
-
-    const createPoints = (
-      key: "current" | "previous"
-    ) =>
-      model.revenueSeries
-        .map((point, index) => {
-          const x =
-            40 +
-            (index /
-              Math.max(model.revenueSeries.length - 1, 1)) *
-              820;
-
-          const y =
-            220 - ((point[key] - min) / range) * 170;
-
-          return `${x},${y}`;
-        })
-        .join(" ");
-
-    return {
-      current: createPoints("current"),
-      previous: createPoints("previous"),
-    };
-  }, [model.revenueSeries]);
-
   const st = useAnalyticsSurfaceT();
 
+  const revenueKpi = useMemo(
+    () =>
+      model.kpis.find(
+        (item) => item.id === "revenue"
+      ),
+    [model.kpis]
+  );
+
+  const currentSeries = useMemo(
+    () =>
+      model.revenueSeries.map((point) => ({
+        label: point.label,
+        value: point.current,
+      })),
+    [model.revenueSeries]
+  );
+
+  const comparisonSeries = useMemo(
+    () =>
+      model.revenueSeries.map((point) => ({
+        label: point.label,
+        value: point.previous,
+      })),
+    [model.revenueSeries]
+  );
+
+  const formatRevenueAxisValue = (
+    value: number
+  ): string => {
+    if (!Number.isFinite(value)) {
+      return "—";
+    }
+
+    const absolute = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+
+    if (absolute >= 1_000_000) {
+      const scaled = absolute / 1_000_000;
+      return `${sign}${scaled.toFixed(
+        scaled >= 10 ? 0 : 1
+      )}M`;
+    }
+
+    if (absolute >= 1_000) {
+      const scaled = absolute / 1_000;
+      return `${sign}${scaled.toFixed(
+        scaled >= 10 ? 0 : 1
+      )}K`;
+    }
+
+    return `${Math.round(value)}`;
+  };
+
   return (
-    <Card style={styles.revenueCard}>
-      <SectionHeader
-        overline={st("REVENUE INTELLIGENCE")}
-        title={st("Revenue Pulse")}
-        subtitle={
-          dataMode === "live"
-            ? st("Completed revenue compared with the previous selected period.")
-            : st("Completed revenue compared with the previous preview period.")
-        }
-        action={
-          <View style={styles.livePill}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>
-              {dataMode === "live"
-                ? st("Live data")
-                : st("Live preview")}
-            </Text>
-          </View>
-        }
-      />
-
-      <View style={styles.chartLegend}>
-        <View style={styles.legendItem}>
-          <View
-            style={[
-              styles.legendLine,
-              { backgroundColor: COLORS.emerald },
-            ]}
-          />
-          <Text style={styles.legendText}>{st("Current period")}</Text>
-        </View>
-
-        <View style={styles.legendItem}>
-          <View
-            style={[
-              styles.legendLine,
-              {
-                backgroundColor:
-                  "rgba(170,179,202,0.55)",
-              },
-            ]}
-          />
-          <Text style={styles.legendText}>
-              {st("Previous period")}
-            </Text>
-        </View>
-      </View>
-
-      <View style={styles.revenueChart}>
-        <Svg width="100%" height={250} viewBox="0 0 900 250">
-          {[50, 92, 134, 176, 218].map((y) => (
-            <Line
-              key={y}
-              x1={40}
-              y1={y}
-              x2={860}
-              y2={y}
-              stroke="rgba(255,255,255,0.06)"
-              strokeWidth={1}
-            />
-          ))}
-
-          <Polygon
-            points={`${chart.current} 860,220 40,220`}
-            fill="rgba(57,245,166,0.09)"
-          />
-
-          <Polyline
-            points={chart.previous}
-            fill="none"
-            stroke="rgba(170,179,202,0.54)"
-            strokeWidth={2}
-            strokeDasharray="8 8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          <Polyline
-            points={chart.current}
-            fill="none"
-            stroke={COLORS.emerald}
-            strokeWidth={8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity={0.1}
-          />
-
-          <Polyline
-            points={chart.current}
-            fill="none"
-            stroke={COLORS.emerald}
-            strokeWidth={3}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </Svg>
-      </View>
-
-      <View style={styles.chartAxis}>
-        {model.revenueSeries.map((point, index) => (
-          <Text
-            key={`${point.label}-${index}`}
-            style={styles.axisLabel}
-          >
-            {point.label}
-          </Text>
-        ))}
-      </View>
-    </Card>
+    <RevenueAnalyticsV2
+      visualVariant="analyticsEmerald"
+      title={st("Revenue Intelligence")}
+      periodLabel={
+        model.previewLabel ||
+        model.lastUpdated ||
+        (dataMode === "live"
+          ? st("Live data")
+          : st("Live preview"))
+      }
+      totalValue={revenueKpi?.value ?? "—"}
+      trendLabel={revenueKpi?.delta ?? "—"}
+      trendDirection={
+        revenueKpi?.direction ?? "flat"
+      }
+      currentSeries={currentSeries}
+      comparisonSeries={comparisonSeries}
+      currentSeriesLabel={st("Current Period Revenue")}
+      comparisonSeriesLabel={st("Previous Period Revenue")}
+      previousIntervalLabel={st("Previous interval")}
+      changeLabel={st("Change vs previous interval")}
+      changePercentLabel={st("Change % vs previous interval")}
+      periodShareLabel={st("Share of current period")}
+      intervalPositionLabel={st("Interval")}
+      expandChartLabel={st("Expand revenue chart")}
+      closeExpandedChartLabel={st("Close expanded revenue chart")}
+      selectPeriodLabel={st("Selected revenue period")}
+      axisValueFormatter={formatRevenueAxisValue}
+      height={280}
+    />
   );
 }
 
@@ -1086,6 +1027,17 @@ function OverviewTab({
             overline={st("OPERATIONS")}
             title={st("Booking Status")}
             subtitle={st("A clean view of appointment flow.")}
+            action={
+              <AnalyticsImmersivePanelV2
+                kind="booking-status"
+                overline={st("OPERATIONS")}
+                title={st("Booking Status")}
+                subtitle={st("A clean view of appointment flow.")}
+                openLabel={`${st("Open intelligence details")}: ${st("Booking Status")}`}
+                closeLabel={st("Close intelligence details")}
+                statuses={model.statuses}
+              />
+            }
           />
           <StatusRing statuses={model.statuses} />
         </Card>
@@ -1095,6 +1047,17 @@ function OverviewTab({
             overline={st("SERVICE INTELLIGENCE")}
             title={st("Top Services")}
             subtitle={st("Revenue and demand contribution.")}
+            action={
+              <AnalyticsImmersivePanelV2
+                kind="top-services"
+                overline={st("SERVICE INTELLIGENCE")}
+                title={st("Top Services")}
+                subtitle={st("Revenue and demand contribution.")}
+                openLabel={`${st("Open intelligence details")}: ${st("Top Services")}`}
+                closeLabel={st("Close intelligence details")}
+                services={model.services}
+              />
+            }
           />
           <ServiceRanking services={model.services} />
         </Card>
@@ -1111,6 +1074,17 @@ function OverviewTab({
             overline={st("CLIENT INTELLIGENCE")}
             title={st("Client Health")}
             subtitle={st("Retention, acquisition and risk signals.")}
+            action={
+              <AnalyticsImmersivePanelV2
+                kind="client-health"
+                overline={st("CLIENT INTELLIGENCE")}
+                title={st("Client Health")}
+                subtitle={st("Retention, acquisition and risk signals.")}
+                openLabel={`${st("Open intelligence details")}: ${st("Client Health")}`}
+                closeLabel={st("Close intelligence details")}
+                clientSignals={model.clientSignals}
+              />
+            }
           />
           <ClientSignals model={model} />
         </Card>
@@ -1120,6 +1094,17 @@ function OverviewTab({
             overline={st("OPERATIONS INTELLIGENCE")}
             title={st("Demand Heatmap")}
             subtitle={st("Appointment intensity by weekday and hour.")}
+            action={
+              <AnalyticsImmersivePanelV2
+                kind="demand-heatmap"
+                overline={st("OPERATIONS INTELLIGENCE")}
+                title={st("Demand Heatmap")}
+                subtitle={st("Appointment intensity by weekday and hour.")}
+                openLabel={`${st("Open intelligence details")}: ${st("Demand Heatmap")}`}
+                closeLabel={st("Close intelligence details")}
+                heatmap={model.heatmap}
+              />
+            }
           />
           <Heatmap rows={model.heatmap} />
         </Card>
@@ -1538,9 +1523,11 @@ export default function AnalyticsCommandCenterV2({
       : "48.2%";
 
   return (
-    <RoyalCosmosBackground style={styles.root}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
+    <DashboardThemeBackground style={styles.root}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.scroll}
+          showsVerticalScrollIndicator={true}
         contentContainerStyle={[
           styles.content,
           wide && styles.contentWide,
@@ -1826,7 +1813,8 @@ export default function AnalyticsCommandCenterV2({
             </Text>
           </View>
         ) : null}
-      </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
 
       {dataMode === "live" ? (
         <AnalyticsLiveInsightSheetV2
@@ -1854,7 +1842,7 @@ export default function AnalyticsCommandCenterV2({
         onClose={() => setExportOpen(false)}
       />
 
-    </RoyalCosmosBackground>
+    </DashboardThemeBackground>
   );
 }
 
@@ -1863,7 +1851,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.canvas,
   },
+  safeArea: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+    minHeight: 0,
+    pointerEvents: "auto",
+  },
   content: {
+    flexGrow: 1,
     width: "100%",
     paddingHorizontal: 14,
     paddingTop: 16,
