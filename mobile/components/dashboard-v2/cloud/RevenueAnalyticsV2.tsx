@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
+import DashboardThemeBackground from './DashboardThemeBackground';
 import {
   View,
   Text,
@@ -24,6 +25,10 @@ import Svg, {
 } from 'react-native-svg';
 
 export type TrendDirection = 'up' | 'down' | 'flat';
+
+export type RevenueVisualVariant =
+  | 'dashboardRoyal'
+  | 'analyticsEmerald';
 
 export interface RevenueSeriesPoint {
   label: string; // x-axis tick label, e.g. "May 6"
@@ -50,6 +55,15 @@ export interface RevenueAnalyticsV2Props {
   currentSeriesLabel?: string; // default "This Month"
   comparisonSeriesLabel?: string; // default "Last Month"
   axisValueFormatter?: (value: number) => string;
+  visualVariant?: RevenueVisualVariant;
+  previousIntervalLabel?: string;
+  changeLabel?: string;
+  changePercentLabel?: string;
+  periodShareLabel?: string;
+  intervalPositionLabel?: string;
+  expandChartLabel?: string;
+  closeExpandedChartLabel?: string;
+  selectPeriodLabel?: string;
   /** Plot height in px — width is always measured/fluid */
   height?: number;
 }
@@ -69,6 +83,50 @@ const colors = {
   danger: '#F2617A',
   gridLine: 'rgba(255,255,255,0.06)',
 } as const;
+
+type RevenueVisualPalette = {
+  primary: string;
+  lineStart: string;
+  lineMid: string;
+  lineEnd: string;
+  beacon: string;
+  peak: string;
+  crosshair: string;
+  comparison: string;
+  readoutBorder: string;
+  readoutValue: string;
+};
+
+const REVENUE_VISUAL_PALETTES: Record<
+  RevenueVisualVariant,
+  RevenueVisualPalette
+> = {
+  dashboardRoyal: {
+    primary: colors.royal,
+    lineStart: colors.cosmosBlue,
+    lineMid: colors.cosmosViolet,
+    lineEnd: colors.cosmosMagenta,
+    beacon: '#7DF1FF',
+    peak: '#90F4FF',
+    crosshair: '#BFF9FF',
+    comparison: colors.textTertiary,
+    readoutBorder: 'rgba(125,241,255,0.17)',
+    readoutValue: '#E8FCFF',
+  },
+  analyticsEmerald: {
+    primary: '#35E89A',
+    lineStart: '#18DC91',
+    lineMid: '#45F2A7',
+    lineEnd: '#B4FF72',
+    beacon: '#D9FFEB',
+    peak: '#86FFB8',
+    crosshair: '#BFFFE0',
+    comparison: '#6FAF98',
+    readoutBorder: 'rgba(69,242,167,0.28)',
+    readoutValue: '#DCFFEC',
+  },
+};
+
 
 const trendColorMap: Record<TrendDirection, string> = {
   up: colors.positive,
@@ -220,6 +278,12 @@ interface ImmersiveRevenueStageProps {
   min: number;
   max: number;
   height: number;
+  visualVariant: RevenueVisualVariant;
+  previousIntervalLabel?: string;
+  changeLabel?: string;
+  changePercentLabel?: string;
+  periodShareLabel?: string;
+  intervalPositionLabel?: string;
   axisValueFormatter: (value: number) => string;
 }
 
@@ -230,8 +294,16 @@ function ImmersiveRevenueStage({
   min,
   max,
   height,
+  visualVariant,
+  previousIntervalLabel,
+  changeLabel,
+  changePercentLabel,
+  periodShareLabel,
+  intervalPositionLabel,
   axisValueFormatter,
 }: ImmersiveRevenueStageProps) {
+  const palette = REVENUE_VISUAL_PALETTES[visualVariant];
+  const isEmerald = visualVariant === 'analyticsEmerald';
   const [chartWidth, setChartWidth] = useState(0);
   const [activeIndex, setActiveIndex] =
     useState<number | null>(null);
@@ -417,7 +489,7 @@ function ImmersiveRevenueStage({
   const activeDeltaColor =
     activeDelta === null ||
     activeDelta === 0
-      ? colors.cosmosBlue
+      ? palette.lineStart
       : activeDelta > 0
         ? colors.positive
         : colors.danger;
@@ -433,7 +505,7 @@ function ImmersiveRevenueStage({
   const activePercentColor =
     activeDeltaPercent === null ||
     activeDeltaPercent === 0
-      ? colors.cosmosBlue
+      ? palette.lineStart
       : activeDeltaPercent > 0
         ? colors.positive
         : colors.danger;
@@ -525,12 +597,12 @@ function ImmersiveRevenueStage({
                 >
                   <Stop
                     offset="0%"
-                    stopColor={colors.cosmosBlue}
+                    stopColor={palette.lineStart}
                     stopOpacity={0.13}
                   />
                   <Stop
                     offset="38%"
-                    stopColor={colors.cosmosViolet}
+                    stopColor={palette.lineMid}
                     stopOpacity={0.07}
                   />
                   <Stop
@@ -549,7 +621,7 @@ function ImmersiveRevenueStage({
                 >
                   <Stop
                     offset="0%"
-                    stopColor={colors.cosmosBlue}
+                    stopColor={palette.lineStart}
                   />
                   <Stop
                     offset="48%"
@@ -557,11 +629,11 @@ function ImmersiveRevenueStage({
                   />
                   <Stop
                     offset="72%"
-                    stopColor={colors.cosmosViolet}
+                    stopColor={palette.lineMid}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={colors.cosmosMagenta}
+                    stopColor={palette.lineEnd}
                   />
                 </LinearGradient>
 
@@ -574,17 +646,17 @@ function ImmersiveRevenueStage({
                 >
                   <Stop
                     offset="0%"
-                    stopColor={colors.cosmosBlue}
+                    stopColor={palette.lineStart}
                     stopOpacity={0.38}
                   />
                   <Stop
                     offset="44%"
-                    stopColor={colors.cosmosViolet}
+                    stopColor={palette.lineMid}
                     stopOpacity={0.19}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={colors.cosmosMagenta}
+                    stopColor={palette.lineEnd}
                     stopOpacity={0.025}
                   />
                 </LinearGradient>
@@ -598,12 +670,12 @@ function ImmersiveRevenueStage({
                 >
                   <Stop
                     offset="0%"
-                    stopColor={colors.cosmosMagenta}
+                    stopColor={palette.lineEnd}
                     stopOpacity={0.22}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={colors.cosmosViolet}
+                    stopColor={palette.lineMid}
                     stopOpacity={0}
                   />
                 </LinearGradient>
@@ -617,12 +689,12 @@ function ImmersiveRevenueStage({
                 >
                   <Stop
                     offset="0%"
-                    stopColor={colors.cosmosViolet}
+                    stopColor={palette.lineMid}
                     stopOpacity={0.20}
                   />
                   <Stop
                     offset="100%"
-                    stopColor={colors.cosmosBlue}
+                    stopColor={palette.lineStart}
                     stopOpacity={0.015}
                   />
                 </LinearGradient>
@@ -662,7 +734,7 @@ function ImmersiveRevenueStage({
                 y1={floorTop}
                 x2={chartWidth}
                 y2={floorTop}
-                stroke={colors.cosmosViolet}
+                stroke={palette.lineMid}
                 strokeWidth={1.2}
                 opacity={0.22}
               />
@@ -686,7 +758,7 @@ function ImmersiveRevenueStage({
                       y1={floorTop}
                       x2={bottomX}
                       y2={height}
-                      stroke={colors.cosmosBlue}
+                      stroke={palette.lineStart}
                       strokeWidth={1}
                       opacity={0.075}
                     />
@@ -714,7 +786,7 @@ function ImmersiveRevenueStage({
                 <SvgPath
                   d={comparisonPath}
                   fill="none"
-                  stroke={colors.textTertiary}
+                  stroke={palette.comparison}
                   strokeWidth={2}
                   strokeDasharray="8 8"
                   strokeLinecap="round"
@@ -728,8 +800,8 @@ function ImmersiveRevenueStage({
                   <SvgPath
                     d={currentPath}
                     fill="none"
-                    stroke={colors.cosmosViolet}
-                    strokeWidth={22}
+                    stroke={palette.lineMid}
+                    strokeWidth={isEmerald ? 24 : 22}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     opacity={0.055}
@@ -738,8 +810,8 @@ function ImmersiveRevenueStage({
                   <SvgPath
                     d={currentPath}
                     fill="none"
-                    stroke={colors.cosmosBlue}
-                    strokeWidth={12}
+                    stroke={palette.lineStart}
+                    strokeWidth={isEmerald ? 14 : 12}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     opacity={0.12}
@@ -748,8 +820,8 @@ function ImmersiveRevenueStage({
                   <SvgPath
                     d={currentPath}
                     fill="none"
-                    stroke="#7DF1FF"
-                    strokeWidth={5.4}
+                    stroke={palette.beacon}
+                    strokeWidth={isEmerald ? 6.4 : 5.4}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     opacity={0.22}
@@ -759,7 +831,7 @@ function ImmersiveRevenueStage({
                     d={currentPath}
                     fill="none"
                     stroke={`url(#${IMMERSIVE_LINE_GRADIENT_ID})`}
-                    strokeWidth={3.2}
+                    strokeWidth={isEmerald ? 3.8 : 3.2}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
@@ -773,7 +845,7 @@ function ImmersiveRevenueStage({
                     y1={0}
                     x2={activeScaledPoint.x}
                     y2={height}
-                    stroke="#BFF9FF"
+                    stroke={palette.crosshair}
                     strokeWidth={1}
                     strokeDasharray="4 6"
                     opacity={0.34}
@@ -784,7 +856,7 @@ function ImmersiveRevenueStage({
                     y1={activeScaledPoint.y}
                     x2={chartWidth}
                     y2={activeScaledPoint.y}
-                    stroke={colors.cosmosViolet}
+                    stroke={palette.lineMid}
                     strokeWidth={1}
                     strokeDasharray="3 8"
                     opacity={0.18}
@@ -794,7 +866,7 @@ function ImmersiveRevenueStage({
                     cx={activeScaledPoint.x}
                     cy={activeScaledPoint.y}
                     r={22}
-                    fill={colors.cosmosBlue}
+                    fill={palette.lineStart}
                     opacity={0.045}
                   />
 
@@ -802,7 +874,7 @@ function ImmersiveRevenueStage({
                     cx={activeScaledPoint.x}
                     cy={activeScaledPoint.y}
                     r={12}
-                    fill={colors.cosmosViolet}
+                    fill={palette.lineMid}
                     opacity={0.10}
                   />
 
@@ -810,7 +882,7 @@ function ImmersiveRevenueStage({
                     cx={activeScaledPoint.x}
                     cy={activeScaledPoint.y}
                     r={6}
-                    fill="#7DF1FF"
+                    fill={palette.beacon}
                     opacity={0.30}
                   />
 
@@ -829,21 +901,21 @@ function ImmersiveRevenueStage({
                     cx={peakPoint.x}
                     cy={peakPoint.y}
                     r={20}
-                    fill={colors.cosmosBlue}
+                    fill={palette.lineStart}
                     opacity={0.045}
                   />
                   <Circle
                     cx={peakPoint.x}
                     cy={peakPoint.y}
                     r={11}
-                    fill={colors.cosmosBlue}
+                    fill={palette.lineStart}
                     opacity={0.09}
                   />
                   <Circle
                     cx={peakPoint.x}
                     cy={peakPoint.y}
                     r={5}
-                    fill="#90F4FF"
+                    fill={palette.peak}
                     opacity={0.30}
                   />
                   <Circle
@@ -861,14 +933,14 @@ function ImmersiveRevenueStage({
                     cx={lastPoint.x}
                     cy={lastPoint.y}
                     r={14}
-                    fill={colors.cosmosMagenta}
+                    fill={palette.lineEnd}
                     opacity={0.08}
                   />
                   <Circle
                     cx={lastPoint.x}
                     cy={lastPoint.y}
                     r={6}
-                    fill={colors.royal}
+                    fill={palette.lineMid}
                     opacity={0.28}
                   />
                   <Circle
@@ -962,6 +1034,15 @@ function ImmersiveRevenueStage({
                 )}
               </Text>
 
+              {previousPoint && previousIntervalLabel ? (
+                <Text
+                  style={styles.interactionReference}
+                  numberOfLines={2}
+                >
+                  {previousIntervalLabel}: {previousPoint.label} · {axisValueFormatter(previousPoint.value)}
+                </Text>
+              ) : null}
+
               <View
                   style={[
                     styles.interactionStats,
@@ -996,7 +1077,7 @@ function ImmersiveRevenueStage({
                         letterSpacing: 0.55,
                       }}
                     >
-                      Δ
+                      {changeLabel ?? 'Δ'}
                     </Text>
                     <Text
                       style={{
@@ -1045,7 +1126,7 @@ function ImmersiveRevenueStage({
                         letterSpacing: 0.55,
                       }}
                     >
-                      Δ%
+                      {changePercentLabel ?? 'Δ%'}
                     </Text>
                     <Text
                       style={{
@@ -1079,7 +1160,7 @@ function ImmersiveRevenueStage({
                       borderRadius: 11,
                       borderWidth: 1,
                       borderColor:
-                        colors.cosmosBlue,
+                        palette.lineStart,
                       backgroundColor:
                         'rgba(75,190,255,0.10)',
                     }}
@@ -1094,12 +1175,12 @@ function ImmersiveRevenueStage({
                         letterSpacing: 0.55,
                       }}
                     >
-                      Σ
+                      {periodShareLabel ?? 'Σ'}
                     </Text>
                     <Text
                       style={{
                         color:
-                          colors.cosmosBlue,
+                          palette.lineStart,
                         fontSize: 12,
                         lineHeight: 17,
                         fontWeight: '900',
@@ -1124,9 +1205,11 @@ function ImmersiveRevenueStage({
                       borderRadius: 11,
                       borderWidth: 1,
                       borderColor:
-                        colors.royal,
+                        palette.lineMid,
                       backgroundColor:
-                        'rgba(124,92,255,0.10)',
+                        isEmerald
+                          ? 'rgba(69,242,167,0.10)'
+                          : 'rgba(124,92,255,0.10)',
                     }}
                   >
                     <Text
@@ -1139,12 +1222,12 @@ function ImmersiveRevenueStage({
                         letterSpacing: 0.55,
                       }}
                     >
-                      #
+                      {intervalPositionLabel ?? '#'}
                     </Text>
                     <Text
                       style={{
                         color:
-                          colors.cosmosViolet,
+                          palette.lineMid,
                         fontSize: 12,
                         lineHeight: 17,
                         fontWeight: '900',
@@ -1270,8 +1353,19 @@ function RevenueAnalyticsV2({
   currentSeriesLabel = 'This Month',
   comparisonSeriesLabel = 'Last Month',
   axisValueFormatter = defaultFormatAxisValue,
+  visualVariant = 'dashboardRoyal',
+  previousIntervalLabel,
+  changeLabel,
+  changePercentLabel,
+  periodShareLabel,
+  intervalPositionLabel,
+  expandChartLabel,
+  closeExpandedChartLabel,
+  selectPeriodLabel,
   height = 200,
 }: RevenueAnalyticsV2Props) {
+  const palette = REVENUE_VISUAL_PALETTES[visualVariant];
+  const isEmerald = visualVariant === 'analyticsEmerald';
   const { theme } = useDashboardTheme();
   const [chartWidth, setChartWidth] = useState(0);
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
@@ -1367,8 +1461,12 @@ function RevenueAnalyticsV2({
       style={[
         styles.card,
         {
-          backgroundColor: theme.palette.surface,
-          borderColor: theme.palette.border,
+          backgroundColor: isEmerald
+            ? 'rgba(7,11,32,0.74)'
+            : theme.palette.surface,
+          borderColor: isEmerald
+            ? palette.readoutBorder
+            : theme.palette.border,
         },
       ]}
     >
@@ -1378,7 +1476,9 @@ function RevenueAnalyticsV2({
         <View style={styles.headerActions}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${title}: expand chart`}
+            accessibilityLabel={
+              expandChartLabel ?? `${title}: expand chart`
+            }
             onPress={() => setImmersiveOpen(true)}
             style={({ pressed }) => [
               styles.expandButton,
@@ -1415,7 +1515,11 @@ function RevenueAnalyticsV2({
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Select revenue period. Current: ${periodLabel}`}
+            accessibilityLabel={
+              selectPeriodLabel
+                ? `${selectPeriodLabel}: ${periodLabel}`
+                : `Select revenue period. Current: ${periodLabel}`
+            }
             disabled={!canSelectPeriod}
             onPress={() =>
               setPeriodMenuOpen((open) => !open)
@@ -1485,14 +1589,19 @@ function RevenueAnalyticsV2({
 
         <View style={styles.legend}>
           <View style={styles.legendRow}>
-            <View style={[styles.legendDot, { backgroundColor: colors.royal }]} />
+            <View style={[styles.legendDot, { backgroundColor: palette.primary }]} />
             <Text style={styles.legendText} numberOfLines={1}>
               {currentSeriesLabel}
             </Text>
           </View>
           {!!comparisonSeries && (
             <View style={styles.legendRow}>
-              <View style={styles.legendDashDot} />
+              <View
+              style={[
+                styles.legendDashDot,
+                { backgroundColor: palette.comparison },
+              ]}
+            />
               <Text style={styles.legendText} numberOfLines={1}>
                 {comparisonSeriesLabel}
               </Text>
@@ -1537,15 +1646,15 @@ function RevenueAnalyticsV2({
                   >
                     <Stop
                       offset="0%"
-                      stopColor={colors.cosmosBlue}
+                      stopColor={palette.lineStart}
                     />
                     <Stop
                       offset="55%"
-                      stopColor={colors.cosmosViolet}
+                      stopColor={palette.lineMid}
                     />
                     <Stop
                       offset="100%"
-                      stopColor={colors.cosmosMagenta}
+                      stopColor={palette.lineEnd}
                     />
                   </LinearGradient>
 
@@ -1558,17 +1667,17 @@ function RevenueAnalyticsV2({
                   >
                     <Stop
                       offset="0%"
-                      stopColor={colors.cosmosBlue}
+                      stopColor={palette.lineStart}
                       stopOpacity={0.30}
                     />
                     <Stop
                       offset="48%"
-                      stopColor={colors.cosmosViolet}
+                      stopColor={palette.lineMid}
                       stopOpacity={0.16}
                     />
                     <Stop
                       offset="100%"
-                      stopColor={colors.cosmosViolet}
+                      stopColor={palette.lineMid}
                       stopOpacity={0.02}
                     />
                   </LinearGradient>
@@ -1582,12 +1691,12 @@ function RevenueAnalyticsV2({
                   >
                     <Stop
                       offset="0%"
-                      stopColor={colors.cosmosMagenta}
+                      stopColor={palette.lineEnd}
                       stopOpacity={0.15}
                     />
                     <Stop
                       offset="100%"
-                      stopColor={colors.cosmosViolet}
+                      stopColor={palette.lineMid}
                       stopOpacity={0}
                     />
                   </LinearGradient>
@@ -1601,12 +1710,12 @@ function RevenueAnalyticsV2({
                   >
                     <Stop
                       offset="0%"
-                      stopColor={colors.cosmosViolet}
+                      stopColor={palette.lineMid}
                       stopOpacity={0.12}
                     />
                     <Stop
                       offset="100%"
-                      stopColor={colors.cosmosBlue}
+                      stopColor={palette.lineStart}
                       stopOpacity={0.015}
                     />
                   </LinearGradient>
@@ -1637,7 +1746,7 @@ function RevenueAnalyticsV2({
                   <SvgPath
                     d={comparisonPath}
                     fill="none"
-                    stroke={colors.textTertiary}
+                    stroke={palette.comparison}
                     strokeWidth={1.6}
                     strokeDasharray="6 6"
                     strokeLinecap="round"
@@ -1651,8 +1760,8 @@ function RevenueAnalyticsV2({
                     <SvgPath
                       d={currentPath}
                       fill="none"
-                      stroke={colors.cosmosViolet}
-                      strokeWidth={12}
+                      stroke={palette.lineMid}
+                      strokeWidth={isEmerald ? 14 : 12}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       opacity={0.07}
@@ -1661,8 +1770,8 @@ function RevenueAnalyticsV2({
                     <SvgPath
                       d={currentPath}
                       fill="none"
-                      stroke={colors.cosmosBlue}
-                      strokeWidth={7}
+                      stroke={palette.lineStart}
+                      strokeWidth={isEmerald ? 8.5 : 7}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       opacity={0.12}
@@ -1672,7 +1781,7 @@ function RevenueAnalyticsV2({
                       d={currentPath}
                       fill="none"
                       stroke={`url(#${REVENUE_LINE_GRADIENT_ID})`}
-                      strokeWidth={2.8}
+                      strokeWidth={isEmerald ? 3.4 : 2.8}
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -1685,14 +1794,14 @@ function RevenueAnalyticsV2({
                       cx={peakPoint.x}
                       cy={peakPoint.y}
                       r={10}
-                      fill={colors.cosmosBlue}
+                      fill={palette.lineStart}
                       opacity={0.08}
                     />
                     <Circle
                       cx={peakPoint.x}
                       cy={peakPoint.y}
                       r={5}
-                      fill={colors.cosmosBlue}
+                      fill={palette.lineStart}
                       opacity={0.22}
                     />
                     <Circle
@@ -1710,14 +1819,14 @@ function RevenueAnalyticsV2({
                       cx={lastPoint.x}
                       cy={lastPoint.y}
                       r={9}
-                      fill={colors.cosmosViolet}
+                      fill={palette.lineMid}
                       opacity={0.16}
                     />
                     <Circle
                       cx={lastPoint.x}
                       cy={lastPoint.y}
                       r={4.5}
-                      fill={colors.royal}
+                      fill={palette.lineMid}
                       stroke={colors.surface}
                       strokeWidth={2}
                     />
@@ -1751,7 +1860,13 @@ function RevenueAnalyticsV2({
         statusBarTranslucent
         onRequestClose={() => setImmersiveOpen(false)}
       >
-        <SafeAreaView style={styles.immersiveRoot}>
+        <DashboardThemeBackground style={styles.immersiveBackdrop}>
+        <SafeAreaView
+          style={[
+            styles.immersiveRoot,
+            isEmerald && styles.immersiveRootEmerald,
+          ]}
+        >
           <View
             pointerEvents="none"
             style={styles.immersiveHaloBlue}
@@ -1806,7 +1921,10 @@ function RevenueAnalyticsV2({
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`${title}: close expanded chart`}
+              accessibilityLabel={
+                closeExpandedChartLabel ??
+                `${title}: close expanded chart`
+              }
               onPress={() => setImmersiveOpen(false)}
               style={({ pressed }) => [
                 styles.immersiveClose,
@@ -1868,24 +1986,47 @@ function RevenueAnalyticsV2({
               max={max}
               height={immersiveHeight}
               axisValueFormatter={axisValueFormatter}
+              visualVariant={visualVariant}
+              previousIntervalLabel={previousIntervalLabel}
+              changeLabel={changeLabel}
+              changePercentLabel={changePercentLabel}
+              periodShareLabel={periodShareLabel}
+              intervalPositionLabel={intervalPositionLabel}
             />
           </View>
 
           <View style={styles.immersiveFooter}>
-            <View
-              style={[
-                styles.legendDot,
-                {
-                  backgroundColor:
-                    colors.cosmosBlue,
-                },
-              ]}
-            />
-            <Text style={styles.immersiveFooterText}>
-              {currentSeriesLabel}
-            </Text>
+            <View style={styles.immersiveFooterItem}>
+              <View
+                style={[
+                  styles.legendDot,
+                  {
+                    backgroundColor:
+                      palette.lineStart,
+                  },
+                ]}
+              />
+              <Text style={styles.immersiveFooterText}>
+                {currentSeriesLabel}
+              </Text>
+            </View>
+
+            {!!comparisonSeries && (
+              <View style={styles.immersiveFooterItem}>
+                <View
+                  style={[
+                    styles.legendDashDot,
+                    { backgroundColor: palette.comparison },
+                  ]}
+                />
+                <Text style={styles.immersiveFooterText}>
+                  {comparisonSeriesLabel}
+                </Text>
+              </View>
+            )}
           </View>
         </SafeAreaView>
+        </DashboardThemeBackground>
       </Modal>
     </View>
   );
@@ -2174,6 +2315,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
   },
 
+  immersiveBackdrop: {
+    flex: 1,
+  },
+
   immersiveRoot: {
     flex: 1,
     overflow: 'hidden',
@@ -2181,6 +2326,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 16,
+  },
+
+  immersiveRootEmerald: {
+    backgroundColor: 'rgba(5,9,24,0.72)',
   },
 
   immersiveHaloBlue: {
@@ -2369,6 +2518,14 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
 
+  interactionReference: {
+    marginTop: 7,
+    color: 'rgba(220,232,255,0.60)',
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '700',
+  },
+
   interactionStats: {
     marginTop: 8,
     flexDirection: 'row',
@@ -2405,7 +2562,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 14,
     zIndex: 2,
+  },
+
+  immersiveFooterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   immersiveFooterText: {

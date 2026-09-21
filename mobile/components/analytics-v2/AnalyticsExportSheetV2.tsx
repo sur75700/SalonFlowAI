@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -9,8 +10,11 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 import { analyticsV2SurfaceT } from "./analytics-v2-i18n";
 import type {
   AnalyticsPreviewModel,
@@ -89,6 +93,115 @@ const COLORS = {
   border: "rgba(255,255,255,0.09)",
 } as const;
 
+const EXPORT_BACKGROUND_MODULES = {
+  royal_cosmos: require("../../assets/backgrounds/royal-cosmos.jpg"),
+  royal_gold_cosmos: require("../../assets/backgrounds/royal-gold-cosmos.jpg"),
+} as const;
+
+type ExportBackgroundThemeId = keyof typeof EXPORT_BACKGROUND_MODULES;
+
+function normalizeExportThemeId(
+  value: string | null | undefined
+): ExportBackgroundThemeId {
+  return value === "royal_gold_cosmos"
+    ? "royal_gold_cosmos"
+    : "royal_cosmos";
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error ?? new Error("background-read-failed"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function resolveExportBackgroundDataUrl(
+  selectedThemeId: string | null | undefined
+): Promise<{ dataUrl: string; themeId: ExportBackgroundThemeId }> {
+  const themeId = normalizeExportThemeId(selectedThemeId);
+  const assetModule =
+    EXPORT_BACKGROUND_MODULES[themeId];
+
+  if (Platform.OS === "web") {
+    const uri =
+      typeof assetModule === "string"
+        ? assetModule
+        : assetModule?.uri;
+
+    if (!uri) {
+      throw new Error(
+        "analytics-export-web-background-uri-unavailable"
+      );
+    }
+
+    const response = await fetch(uri);
+
+    if (!response.ok) {
+      throw new Error(
+        "analytics-export-web-background-fetch-failed"
+      );
+    }
+
+    return {
+      dataUrl: await blobToDataUrl(
+        await response.blob()
+      ),
+      themeId,
+    };
+  }
+
+  const resolved = Image.resolveAssetSource(
+    assetModule
+  );
+
+  const uri = resolved?.uri;
+
+  if (!uri) {
+    throw new Error(
+      "analytics-export-background-uri-unavailable"
+    );
+  }
+
+  let readableUri = uri;
+
+  if (/^https?:\/\//i.test(uri)) {
+    const directory =
+      FileSystem.cacheDirectory ??
+      FileSystem.documentDirectory;
+
+    if (!directory) {
+      throw new Error(
+        "analytics-export-background-cache-unavailable"
+      );
+    }
+
+    const download =
+      await FileSystem.downloadAsync(
+        uri,
+        `${directory}salonflowai-analytics-${themeId}.jpg`
+      );
+
+    readableUri = download.uri;
+  }
+
+  const base64 =
+    await FileSystem.readAsStringAsync(
+      readableUri,
+      {
+        encoding:
+          FileSystem.EncodingType.Base64,
+      }
+    );
+
+  return {
+    dataUrl:
+      `data:image/jpeg;base64,${base64}`,
+    themeId,
+  };
+}
+
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -97,21 +210,48 @@ function escapeHtml(value: unknown): string {
     .replaceAll('"', "&quot;");
 }
 
+const CSV_FORMULA_PREFIX_PATTERN =
+  /^[\s\uFEFF]*[=+\-@\uFF1D\uFF0B\uFF0D\uFF20]/u;
+const CSV_NUMERIC_TEXT_PATTERN =
+  /^-?\d+(?:[.,]\d+)?%?$/;
+
 function escapeCsv(value: unknown): string {
-  return `"${String(value ?? "").replaceAll('"', '""')}"`;
+  const raw = String(value ?? "");
+  const trustedNumeric =
+    typeof value === "number" ||
+    CSV_NUMERIC_TEXT_PATTERN.test(raw.trim());
+
+  const protectedText =
+    !trustedNumeric &&
+    CSV_FORMULA_PREFIX_PATTERN.test(raw)
+      ? `'${raw}`
+      : raw;
+
+  return `"${protectedText.replaceAll('"', '""')}"`;
 }
 
 function buildCsv(
   model: AnalyticsPreviewModel,
+  periodLabel: string,
   sections: Record<ExportSectionKey, boolean>,
-  locale: string | null | undefined
+  dataMode: "preview" | "live",
+  locale: string | null | undefined,
+  generatedAtIso: string
 ): string {
   const t = (
     source: string,
     params: Record<string, string | number> = {}
   ) => analyticsV2SurfaceT(locale, source, params);
 
-  const rows: string[][] = [
+  const rows: unknown[][] = [
+    ["SalonFlowAI Analytics"],
+    [t("Selected period"), periodLabel],
+    [
+      t("Data mode"),
+      dataMode === "live" ? t("Live") : t("Preview"),
+    ],
+    [t("Generated at"), generatedAtIso],
+    [],
     [
       t("Section"),
       t("Metric"),
@@ -143,7 +283,7 @@ function buildCsv(
       rows.push([
         t("Revenue"),
         item.label,
-        String(item.current),
+        item.current,
         t("Previous: {value}", { value: item.previous }),
       ]);
     });
@@ -166,7 +306,10 @@ function buildCsv(
         t("Services"),
         item.name,
         item.revenue,
-        t("{count} bookings · {share}% demand", { count: item.bookings, share: item.share }),
+        t(
+          "{count} bookings · {share}% vs the most-booked service",
+          { count: item.bookings, share: item.share }
+        ),
       ]);
     });
   }
@@ -176,7 +319,7 @@ function buildCsv(
       rows.push([
         t("Operations"),
         item.label,
-        String(item.value),
+        item.value,
         t("Booking status"),
       ]);
     });
@@ -193,9 +336,9 @@ function buildCsv(
     });
   }
 
-  return rows
+  return "\uFEFF" + rows
     .map((row) => row.map(escapeCsv).join(","))
-    .join("\n");
+    .join("\r\n");
 }
 
 function buildHtml(
@@ -203,7 +346,10 @@ function buildHtml(
   periodLabel: string,
   sections: Record<ExportSectionKey, boolean>,
   dataMode: "preview" | "live",
-  locale: string | null | undefined
+  locale: string | null | undefined,
+  generatedAtIso: string,
+  backgroundDataUrl: string,
+  backgroundThemeId: ExportBackgroundThemeId
 ): string {
   const t = (
     source: string,
@@ -239,6 +385,33 @@ function buildHtml(
         .join("")
     : "";
 
+  const revenueRows = sections.revenue
+    ? model.revenueSeries
+        .map(
+          (item) => `
+            <tr>
+              <td>${escapeHtml(item.label)}</td>
+              <td>${escapeHtml(item.current)}</td>
+              <td>${escapeHtml(item.previous)}</td>
+            </tr>
+          `
+        )
+        .join("")
+    : "";
+
+  const operationRows = sections.operations
+    ? model.statuses
+        .map(
+          (item) => `
+            <tr>
+              <td>${escapeHtml(item.label)}</td>
+              <td>${escapeHtml(item.value)}</td>
+            </tr>
+          `
+        )
+        .join("")
+    : "";
+
   const clients = sections.clients
     ? model.clientSignals
         .map(
@@ -268,57 +441,117 @@ function buildHtml(
         .join("")
     : "";
 
+  const goldTheme =
+    backgroundThemeId === "royal_gold_cosmos";
+  const accent = goldTheme ? "#FFD36A" : "#8C7CFF";
+  const metricAccent = goldTheme ? "#FFE6A3" : "#39F5A6";
+  const borderAccent = goldTheme
+    ? "rgba(255,211,106,0.34)"
+    : "rgba(140,124,255,0.34)";
+
   return `<!doctype html>
 <html lang="${escapeHtml(String(locale ?? "en"))}">
 <head>
 <meta charset="utf-8">
-<title>${escapeHtml(t("SalonFlowAI Analytics Preview"))}</title>
+<title>${escapeHtml(`SalonFlowAI Analytics · ${periodLabel} · ${generatedAtIso.slice(0, 10)}`)}</title>
 <style>
-  * { box-sizing: border-box; }
+  :root {
+    --accent: ${accent};
+    --metric-accent: ${metricAccent};
+    --accent-border: ${borderAccent};
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  html {
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   body {
+    min-height: 100vh;
+    height: auto;
     margin: 0;
     padding: 42px;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: #050711;
     color: #f7f8ff;
-    font-family: Inter, Arial, sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  }
+  .cosmos-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .cosmos-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  .cosmos-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 15%, rgba(140,124,255,0.13), transparent 34%),
+      linear-gradient(180deg, rgba(4,6,18,0.30), rgba(4,6,18,0.72) 72%, rgba(4,6,18,0.86));
+  }
+  .report-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1180px;
+    min-height: 100vh;
+    margin: 0 auto;
   }
   header {
     padding: 30px;
-    border: 1px solid #34305f;
+    border: 1px solid var(--accent-border);
     border-radius: 24px;
-    background: #0d1324;
+    background: rgba(8,13,31,0.90);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.34);
   }
   .overline {
-    color: #ffd36a;
+    color: var(--accent);
     font-weight: 900;
     letter-spacing: 2px;
     font-size: 12px;
   }
   h1 { margin: 10px 0 6px; font-size: 38px; }
-  p, small, span { color: #aab3ca; }
+  h2 { margin-top: 0; }
+  p, small, span { color: #b5bfd6; }
   section {
     margin-top: 24px;
     padding: 24px;
     border-radius: 20px;
-    background: #0d1324;
-    border: 1px solid #252d44;
+    background: rgba(8,13,31,0.91);
+    border: 1px solid rgba(112,128,175,0.25);
+    box-shadow: 0 18px 58px rgba(0,0,0,0.26);
+    break-inside: avoid;
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
   }
   .metric, .signal, .action {
     padding: 18px;
     border-radius: 16px;
-    background: #111a2f;
-    border: 1px solid #2a3652;
+    background: rgba(16,26,50,0.88);
+    border: 1px solid rgba(85,105,153,0.34);
+    break-inside: avoid;
   }
   .metric strong, .signal strong {
     display: block;
     margin: 8px 0;
     font-size: 24px;
-    color: #39f5a6;
+    color: var(--metric-accent);
   }
   .action strong { color: #ffd36a; }
   table {
@@ -327,26 +560,55 @@ function buildHtml(
   }
   th, td {
     padding: 12px;
-    border-bottom: 1px solid #273047;
+    border-bottom: 1px solid rgba(85,105,153,0.28);
     text-align: left;
   }
+  th { color: #f4f7ff; }
   footer {
     margin-top: 28px;
-    color: #75809a;
+    padding: 14px 4px 4px;
+    color: #8d98b3;
     font-size: 12px;
   }
+  @media (max-width: 760px) {
+    body { padding: 18px; }
+    .grid { grid-template-columns: 1fr; }
+    h1 { font-size: 30px; }
+  }
+  @page { size: auto; margin: 0; }
   @media print {
-    body { background: white; color: #111827; }
-    header, section, .metric, .signal, .action {
-      background: white;
-      color: #111827;
-      border-color: #d1d5db;
+    html,
+    body {
+      width: auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
     }
-    p, small, span { color: #4b5563; }
+    body {
+      padding: 12mm;
+      background: #050711 !important;
+      color: #f7f8ff !important;
+    }
+    .report-content {
+      width: 100% !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+    }
+    .cosmos-background { position: fixed; }
+    header, section, .metric, .signal, .action {
+      color: #f7f8ff !important;
+      box-shadow: none;
+    }
+    p, small, span { color: #b5bfd6 !important; }
   }
 </style>
 </head>
 <body>
+  <div class="cosmos-background" aria-hidden="true">
+    <img src="${backgroundDataUrl}" alt="">
+    <div class="cosmos-overlay"></div>
+  </div>
+  <main class="report-content">
   <header>
     <div class="overline">SALONFLOW AI</div>
     <h1>${escapeHtml(t("Salon Intelligence"))}</h1>
@@ -361,6 +623,26 @@ function buildHtml(
           <div class="grid">${kpis}</div>
           <p><strong>${escapeHtml(t("Salon Health Index"))}:</strong> ${model.aiScore}/100 · ${escapeHtml(model.aiStatus)}</p>
           <p>${escapeHtml(model.primarySignal)}</p>
+        </section>
+      `
+      : ""
+  }
+
+  ${
+    sections.revenue
+      ? `
+        <section>
+          <h2>${escapeHtml(t("Revenue Intelligence"))}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>${escapeHtml(t("Metric"))}</th>
+                <th>${escapeHtml(t("Current Period Revenue"))}</th>
+                <th>${escapeHtml(t("Previous Period Revenue"))}</th>
+              </tr>
+            </thead>
+            <tbody>${revenueRows}</tbody>
+          </table>
         </section>
       `
       : ""
@@ -400,6 +682,25 @@ function buildHtml(
   }
 
   ${
+    sections.operations
+      ? `
+        <section>
+          <h2>${escapeHtml(t("Booking Status"))}</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>${escapeHtml(t("Booking status"))}</th>
+                <th>${escapeHtml(t("Bookings"))}</th>
+              </tr>
+            </thead>
+            <tbody>${operationRows}</tbody>
+          </table>
+        </section>
+      `
+      : ""
+  }
+
+  ${
     sections.ai
       ? `
         <section>
@@ -413,38 +714,179 @@ function buildHtml(
   <footer>
     SalonFlowAI Analytics V2 · ${escapeHtml(dataMode === "live" ? t("Live selected-period export") : t("Preview-only export"))} · ${escapeHtml(t("Generated locally"))}
   </footer>
+  </main>
 </body>
 </html>`;
 }
 
-function downloadFile(
+type ExportDelivery =
+  | "web-downloaded"
+  | "native-shared"
+  | "native-share-unavailable"
+  | "unavailable";
+
+function sanitizeFilenamePart(value: string): string {
+  return (
+    value
+      .normalize("NFKC")
+      .trim()
+      .replace(/[\/:*?"<>|\u0000-\u001F]+/g, "-")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "export"
+  );
+}
+
+function buildProfessionalFilename(
+  format: ExportFormat,
+  periodLabel: string,
+  locale: string | null | undefined,
+  dataMode: "preview" | "live",
+  generatedAtIso: string
+): string {
+  const period = sanitizeFilenamePart(periodLabel);
+  const language = sanitizeFilenamePart(
+    String(locale ?? "en")
+  ).toUpperCase();
+  const mode = dataMode === "live" ? "Live" : "Preview";
+  const date = generatedAtIso.slice(0, 10);
+  const extension = format === "csv" ? "csv" : "html";
+
+  return (
+    `SalonFlowAI-Analytics-${mode}-${period}-` +
+    `${date}-${language}.${extension}`
+  );
+}
+
+function fillPrintWindow(
+  printWindow: Window,
+  html: string
+): boolean {
+  try {
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    let printTriggered = false;
+
+    const triggerPrint = () => {
+      if (printTriggered) return;
+
+      printTriggered = true;
+
+      try {
+        printWindow.focus();
+
+        if (
+          typeof printWindow.print === "function"
+        ) {
+          printWindow.print();
+        }
+      } catch (error) {
+        console.error(
+          "PRINT_DIALOG_ERROR",
+          error
+        );
+      }
+    };
+
+    const schedulePrint = () => {
+      printWindow.setTimeout(
+        triggerPrint,
+        300
+      );
+    };
+
+    if (
+      printWindow.document.readyState ===
+      "complete"
+    ) {
+      schedulePrint();
+    } else {
+      printWindow.addEventListener(
+        "load",
+        schedulePrint,
+        { once: true }
+      );
+
+      // Fail-safe for browsers whose document.write()
+      // lifecycle does not surface the load event reliably.
+      printWindow.setTimeout(
+        triggerPrint,
+        1800
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error(
+      "PRINT_RENDER_ERROR",
+      error
+    );
+
+    return false;
+  }
+}
+
+
+async function deliverExport(
   content: string,
   mimeType: string,
   filename: string
-): boolean {
-  if (
-    Platform.OS !== "web" ||
-    typeof document === "undefined" ||
-    typeof URL === "undefined"
-  ) {
-    return false;
+): Promise<ExportDelivery> {
+  if (Platform.OS === "web") {
+    if (
+      typeof document === "undefined" ||
+      typeof URL === "undefined" ||
+      typeof Blob === "undefined"
+    ) {
+      return "unavailable";
+    }
+
+    const blob = new Blob([content], {
+      type: `${mimeType};charset=utf-8`,
+    });
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    return "web-downloaded";
   }
 
-  const blob = new Blob([content], {
-    type: `${mimeType};charset=utf-8`,
+  const directory =
+    FileSystem.cacheDirectory ??
+    FileSystem.documentDirectory;
+
+  if (!directory) {
+    return "unavailable";
+  }
+
+  const uri = `${directory}${filename}`;
+
+  await FileSystem.writeAsStringAsync(
+    uri,
+    content,
+    { encoding: FileSystem.EncodingType.UTF8 }
+  );
+
+  if (!(await Sharing.isAvailableAsync())) {
+    return "native-share-unavailable";
+  }
+
+  await Sharing.shareAsync(uri, {
+    mimeType,
+    dialogTitle: filename,
   });
 
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-
-  URL.revokeObjectURL(url);
-  return true;
+  return "native-shared";
 }
 
 export default function AnalyticsExportSheetV2({
@@ -455,6 +897,7 @@ export default function AnalyticsExportSheetV2({
   onClose,
 }: Props) {
   const { locale } = useAppPreferences();
+  const { selectedThemeId } = useDashboardTheme();
   const t = (
     source: string,
     params: Record<string, string | number> = {}
@@ -491,46 +934,156 @@ export default function AnalyticsExportSheetV2({
     setStatus(null);
   };
 
-  const prepareExport = () => {
+  const prepareExport = async () => {
     if (preparing || selectedCount === 0) return;
+
+    const printWindow =
+      format === "report" &&
+      Platform.OS === "web" &&
+      typeof window !== "undefined"
+        ? window.open(
+            "",
+            "_blank",
+            "width=1200,height=900"
+          )
+        : null;
+
+    if (
+      format === "report" &&
+      Platform.OS === "web" &&
+      !printWindow
+    ) {
+      setStatus(
+        t("Unable to open print preview.")
+      );
+
+      return;
+    }
 
     setPreparing(true);
     setStatus(t("Preparing export package…"));
 
-    window.setTimeout(() => {
-      const slug = periodLabel.toLowerCase();
+    try {
+
+      const generatedAtIso = new Date().toISOString();
+      const reportBackground =
+        format === "report"
+          ? await resolveExportBackgroundDataUrl(
+              selectedThemeId
+            )
+          : null;
 
       const content =
         format === "csv"
-          ? buildCsv(model, sections, locale)
+          ? buildCsv(
+              model,
+              periodLabel,
+              sections,
+              dataMode,
+              locale,
+              generatedAtIso
+            )
           : buildHtml(
               model,
               periodLabel,
               sections,
               dataMode,
-              locale
+              locale,
+              generatedAtIso,
+              reportBackground?.dataUrl ?? "",
+              reportBackground?.themeId ??
+                "royal_cosmos"
             );
 
-      const downloaded = downloadFile(
-        content,
+      const mimeType =
         format === "csv"
           ? "text/csv"
-          : "text/html",
-        format === "csv"
-          ? `salonflowai-analytics-${slug}.csv`
-          : `salonflowai-analytics-${slug}.html`
+          : "text/html";
+
+      const filename = buildProfessionalFilename(
+        format,
+        periodLabel,
+        locale,
+        dataMode,
+        generatedAtIso
       );
 
-      setPreparing(false);
+      if (
+        format === "report" &&
+        Platform.OS === "web"
+      ) {
+        const printed = printWindow
+          ? fillPrintWindow(
+              printWindow,
+              content
+            )
+          : false;
+
+        if (
+          !printed &&
+          printWindow &&
+          !printWindow.closed
+        ) {
+          printWindow.close();
+        }
+
+        setStatus(
+          printed
+            ? t("Print preview opened. Save as PDF.")
+            : t("Unable to open print preview.")
+        );
+
+        return;
+      }
+
+      const delivery = await deliverExport(
+        content,
+        mimeType,
+        filename
+      );
+
+      if (delivery === "web-downloaded") {
+        setStatus(
+          format === "csv"
+            ? t("CSV export downloaded successfully.")
+            : t(
+                "Print-ready report downloaded successfully."
+              )
+        );
+      } else if (delivery === "native-shared") {
+        setStatus(
+          t("Export ready in the system share sheet.")
+        );
+      } else if (
+        delivery === "native-share-unavailable"
+      ) {
+        setStatus(
+          t(
+            "Export prepared, but sharing is unavailable on this device."
+          )
+        );
+      } else {
+        setStatus(t("Export could not be prepared."));
+      }
+    } catch (error) {
+      if (
+        printWindow &&
+        !printWindow.closed
+      ) {
+        printWindow.close();
+      }
+
+      console.error(
+        "ANALYTICS_EXPORT_FATAL",
+        error
+      );
 
       setStatus(
-        downloaded
-          ? format === "csv"
-            ? t("CSV export downloaded successfully.")
-            : t("Print-ready report downloaded successfully.")
-          : t("Preview export is currently downloadable on web.")
+        t("Export could not be prepared.")
       );
-    }, 650);
+    } finally {
+      setPreparing(false);
+    }
   };
 
   return (

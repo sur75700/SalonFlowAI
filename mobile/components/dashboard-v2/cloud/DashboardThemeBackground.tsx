@@ -61,7 +61,6 @@ export default function DashboardThemeBackground({
         style={styles.image}
       >
         <View
-          pointerEvents="none"
           style={styles.overlay}
         >
           <View
@@ -95,7 +94,10 @@ export default function DashboardThemeBackground({
           />
         </View>
 
-        <View style={styles.content}>
+        <View
+          style={styles.content}
+          pointerEvents="auto"
+        >
           {children}
         </View>
       </ImageBackground>
@@ -117,6 +119,7 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    pointerEvents: "none",
   },
 
   fullLayer: {
