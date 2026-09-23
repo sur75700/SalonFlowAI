@@ -13,6 +13,7 @@ import type {
   ReportCatalog,
   ReportCatalogEntry,
   ReportFiatCurrency,
+  ReportValuationCurrency,
   ReportLocale,
   ReportStatus,
 } from "../../lib/reports/contracts";
@@ -24,6 +25,7 @@ export type ReportFilterState = {
   clientIds: string;
   serviceIds: string;
   currency?: ReportFiatCurrency;
+  valuationCurrency?: ReportValuationCurrency;
 };
 
 type Props = {

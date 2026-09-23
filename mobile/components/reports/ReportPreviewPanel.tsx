@@ -5,6 +5,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { UI } from "../../lib/theme/tokens";
 
 import { t } from "../../lib/i18n";
 
@@ -158,6 +159,188 @@ const METRIC_ACCENTS = [
   "#8B72FF",
 ];
 
+const EXPLICIT_LABELS: Record<
+  ReportLocale,
+  Record<string, string>
+> = {
+  en: {
+    currency: "Currency",
+    completed_booking_count: "Completed bookings",
+    gross_revenue_minor: "Gross revenue",
+    previous_gross_revenue_minor: "Previous period revenue",
+    average_ticket_minor: "Average ticket",
+    total_client_count: "Total clients",
+    new_client_count: "New clients",
+    active_client_count: "Active clients",
+    returning_client_count: "Returning clients",
+    historically_active_client_count: "Historically active clients",
+    at_risk_client_count: "At-risk clients",
+    high_value_client_count: "High-value clients",
+    completed_revenue_minor: "Completed revenue",
+    total_service_count: "Total services",
+    active_service_count: "Active services",
+    total_slots: "Total capacity slots",
+    booked_slots: "Booked slots",
+    active_staff_count: "Active staff",
+    available_minutes: "Available minutes",
+    booked_minutes: "Booked minutes",
+    start: "Start",
+    client: "Client",
+    service: "Service",
+    status: "Status",
+    notes: "Notes",
+    service_id: "Service ID",
+    name: "Service",
+    catalog_present: "In catalog",
+    is_active: "Active",
+    duration_minutes: "Duration",
+    configured_price_minor: "Listed price",
+    appointment_count: "Appointments",
+    scheduled_booking_count: "Scheduled bookings",
+    cancelled_booking_count: "Cancelled bookings",
+  },
+  hy: {
+    currency: "Արժույթ",
+    completed_booking_count: "Ավարտված ամրագրումներ",
+    gross_revenue_minor: "Համախառն եկամուտ",
+    previous_gross_revenue_minor: "Նախորդ ժամանակահատվածի եկամուտ",
+    average_ticket_minor: "Միջին չեկ",
+    total_client_count: "Ընդհանուր հաճախորդներ",
+    new_client_count: "Նոր հաճախորդներ",
+    active_client_count: "Ակտիվ հաճախորդներ",
+    returning_client_count: "Վերադարձող հաճախորդներ",
+    historically_active_client_count: "Պատմականորեն ակտիվ հաճախորդներ",
+    at_risk_client_count: "Ռիսկային խմբի հաճախորդներ",
+    high_value_client_count: "Բարձր արժեք ունեցող հաճախորդներ",
+    completed_revenue_minor: "Ավարտված եկամուտ",
+    total_service_count: "Ընդհանուր ծառայություններ",
+    active_service_count: "Ակտիվ ծառայություններ",
+    total_slots: "Հզորության ընդհանուր տեղեր",
+    booked_slots: "Ամրագրված տեղեր",
+    active_staff_count: "Ակտիվ աշխատակիցներ",
+    available_minutes: "Հասանելի րոպեներ",
+    booked_minutes: "Ամրագրված րոպեներ",
+    start: "Սկիզբ",
+    client: "Հաճախորդ",
+    service: "Ծառայություն",
+    status: "Կարգավիճակ",
+    notes: "Նշումներ",
+    service_id: "Ծառայության ID",
+    name: "Ծառայություն",
+    catalog_present: "Կատալոգում",
+    is_active: "Ակտիվ",
+    duration_minutes: "Տևողություն",
+    configured_price_minor: "Սահմանված գին",
+    appointment_count: "Ամրագրումներ",
+    scheduled_booking_count: "Պլանավորված ամրագրումներ",
+    cancelled_booking_count: "Չեղարկված ամրագրումներ",
+  },
+  ru: {
+    currency: "Валюта",
+    completed_booking_count: "Завершенные записи",
+    gross_revenue_minor: "Валовая выручка",
+    previous_gross_revenue_minor: "Выручка за прошлый период",
+    average_ticket_minor: "Средний чек",
+    total_client_count: "Всего клиентов",
+    new_client_count: "Новые клиенты",
+    active_client_count: "Активные клиенты",
+    returning_client_count: "Вернувшиеся клиенты",
+    historically_active_client_count: "Исторически активные клиенты",
+    at_risk_client_count: "Клиенты группы риска",
+    high_value_client_count: "Ценные клиенты",
+    completed_revenue_minor: "Завершенная выручка",
+    total_service_count: "Всего услуг",
+    active_service_count: "Активные услуги",
+    total_slots: "Всего доступных слотов",
+    booked_slots: "Занятые слоты",
+    active_staff_count: "Активные сотрудники",
+    available_minutes: "Доступные минуты",
+    booked_minutes: "Занятые минуты",
+    start: "Начало",
+    client: "Клиент",
+    service: "Услуга",
+    status: "Статус",
+    notes: "Заметки",
+    service_id: "ID услуги",
+    name: "Услуга",
+    catalog_present: "В каталоге",
+    is_active: "Активна",
+    duration_minutes: "Длительность",
+    configured_price_minor: "Указанная цена",
+    appointment_count: "Записи",
+    scheduled_booking_count: "Запланированные записи",
+    cancelled_booking_count: "Отмененные записи",
+  },
+  fr: {
+    currency: "Devise",
+    completed_booking_count: "Rendez-vous terminés",
+    gross_revenue_minor: "Revenus bruts",
+    previous_gross_revenue_minor: "Revenus de la période précédente",
+    average_ticket_minor: "Panier moyen",
+    total_client_count: "Nombre total de clients",
+    new_client_count: "Nouveaux clients",
+    active_client_count: "Clients actifs",
+    returning_client_count: "Clients de retour",
+    historically_active_client_count: "Clients historiquement actifs",
+    at_risk_client_count: "Clients à risque",
+    high_value_client_count: "Clients à forte valeur",
+    completed_revenue_minor: "Revenus terminés",
+    total_service_count: "Nombre total de services",
+    active_service_count: "Services actifs",
+    total_slots: "Créneaux disponibles",
+    booked_slots: "Créneaux réservés",
+    active_staff_count: "Personnel actif",
+    available_minutes: "Minutes disponibles",
+    booked_minutes: "Minutes réservées",
+    start: "Début",
+    client: "Client",
+    service: "Service",
+    status: "Statut",
+    notes: "Notes",
+    service_id: "ID du service",
+    name: "Service",
+    catalog_present: "Dans le catalogue",
+    is_active: "Actif",
+    duration_minutes: "Durée",
+    configured_price_minor: "Prix affiché",
+    appointment_count: "Rendez-vous",
+    scheduled_booking_count: "Rendez-vous planifiés",
+    cancelled_booking_count: "Rendez-vous annulés",
+  },
+};
+
+const BOOLEAN_LABELS: Record<
+  ReportLocale,
+  { true: string; false: string }
+> = {
+  en: { true: "Yes", false: "No" },
+  hy: { true: "Այո", false: "Ոչ" },
+  ru: { true: "Да", false: "Нет" },
+  fr: { true: "Oui", false: "Non" },
+};
+
+const WARNING_LABELS: Record<
+  ReportLocale,
+  Record<string, string>
+> = {
+  en: {
+    timezone_fallback_utc:
+      "Salon timezone unavailable; UTC was used.",
+  },
+  hy: {
+    timezone_fallback_utc:
+      "Սրահի ժամային գոտին հասանելի չէր․ կիրառվել է UTC։",
+  },
+  ru: {
+    timezone_fallback_utc:
+      "Часовой пояс салона недоступен; использовано UTC.",
+  },
+  fr: {
+    timezone_fallback_utc:
+      "Le fuseau du salon est indisponible ; UTC a été utilisé.",
+  },
+};
+
 function localizeStatus(
   value: string,
   locale: ReportLocale,
@@ -208,10 +391,59 @@ function displayValue(
   }
 }
 
+function displayMetricValue(
+  key: string,
+  value: unknown,
+  locale: ReportLocale,
+  currency?: string,
+): string {
+  if (typeof value === "number") {
+    const formatted = new Intl.NumberFormat(
+      locale === "hy" ? "en-US" : locale,
+    ).format(value);
+
+    return key.endsWith("_minor") && currency
+      ? `${formatted} ${currency}`
+      : formatted;
+  }
+
+  return displayValue(value, locale);
+}
+
+function displayRowValue(
+  key: string,
+  value: unknown,
+  locale: ReportLocale,
+  currency?: string,
+): string {
+  if (typeof value === "boolean") {
+    return BOOLEAN_LABELS[locale][String(value) as "true" | "false"];
+  }
+
+  return displayMetricValue(
+    key,
+    value,
+    locale,
+    currency,
+  );
+}
+
+function localizeWarning(
+  warning: string,
+  locale: ReportLocale,
+): string {
+  return WARNING_LABELS[locale][warning] ?? warning;
+}
+
 function dataLabel(
   key: string,
   locale: ReportLocale,
 ): string {
+  const explicit = EXPLICIT_LABELS[locale][key];
+  if (explicit) {
+    return explicit;
+  }
+
   const translated = key
     .split("_")
     .filter(Boolean)
@@ -427,9 +659,14 @@ export default function ReportPreviewPanel({
                         },
                       ]}
                     >
-                      {displayValue(
+                      {displayMetricValue(
+                        key,
                         value,
                         locale,
+                        typeof document.metrics.currency ===
+                          "string"
+                          ? document.metrics.currency
+                          : undefined,
                       )}
                     </Text>
                   </View>
@@ -459,7 +696,7 @@ export default function ReportPreviewPanel({
                 key={`${warning}-${index}`}
                 style={styles.warningText}
               >
-                • {warning}
+                • {localizeWarning(warning, locale)}
               </Text>
             ),
           )}
@@ -556,9 +793,14 @@ export default function ReportPreviewPanel({
                               3
                             }
                           >
-                            {displayValue(
+                            {displayRowValue(
+                              document.columns[cellIndex],
                               cell,
                               locale,
+                              typeof document.metrics.currency ===
+                                "string"
+                                ? document.metrics.currency
+                                : undefined,
                             )}
                           </Text>
                         </View>
@@ -838,7 +1080,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 0.5,
     borderColor:
-      "rgba(255,255,255,0.07)",
+      UI.surface.border,
 
     paddingHorizontal: 10,
     paddingVertical: 7,

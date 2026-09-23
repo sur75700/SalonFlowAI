@@ -21,6 +21,7 @@ REPORT_FORMATS_V2 = ("pdf", "txt", "csv", "xlsx", "docx")
 REPORT_STATUS_VALUES = ("scheduled", "completed", "cancelled")
 REPORT_FIAT_CURRENCIES = ("AMD", "USD", "EUR", "RUB")
 REPORT_MARKET_ASSETS = ("BTC",)
+REPORT_THEME_IDS = ("royal_cosmos", "royal_gold_cosmos")
 REPORT_CURRENCY_REPORT_TYPES = frozenset(
     {"revenue-summary", "client-summary", "service-performance"}
 )
@@ -39,6 +40,7 @@ ReportTypeName = Literal[
     "capacity-utilization",
 ]
 ReportFormatName = Literal["pdf", "txt", "csv", "xlsx", "docx"]
+ReportThemeId = Literal["royal_cosmos", "royal_gold_cosmos"]
 
 REPORT_SUPPORTED_FILTERS: Mapping[str, frozenset[str]] = MappingProxyType(
     {
@@ -57,6 +59,13 @@ class ReportContractError(ValueError):
         super().__init__(code)
         self.code = code
         self.status_code = status_code
+
+
+def normalize_report_theme(value: str | None) -> ReportThemeId:
+    normalized = value.strip().lower() if isinstance(value, str) else ""
+    if normalized in REPORT_THEME_IDS:
+        return normalized  # type: ignore[return-value]
+    return "royal_cosmos"
 
 
 def _utc_iso(value: datetime) -> str:
@@ -167,6 +176,7 @@ class ReportDocument:
     warnings: tuple[str, ...]
     total_rows: int
     schema_version: int = REPORT_SCHEMA_VERSION
+    theme_id: ReportThemeId = "royal_cosmos"
 
     def __post_init__(self) -> None:
         owner = self.owner_id.strip() if isinstance(self.owner_id, str) else ""
@@ -178,6 +188,8 @@ class ReportDocument:
             raise ValueError("title_key is required")
         if self.locale not in {"en", "hy", "ru", "fr"}:
             raise ValueError("unsupported locale")
+        if self.theme_id not in REPORT_THEME_IDS:
+            raise ValueError("unsupported theme_id")
         if (
             not isinstance(self.generated_at, datetime)
             or self.generated_at.utcoffset() is None
@@ -208,6 +220,11 @@ class ReportDocument:
         )
         object.__setattr__(
             self,
+            "theme_id",
+            normalize_report_theme(self.theme_id),
+        )
+        object.__setattr__(
+            self,
             "applied_filters",
             _freeze_value(self.applied_filters),
         )
@@ -221,16 +238,48 @@ class ReportDocument:
         )
 
     def public_dict(self, *, row_limit: int | None = None) -> dict[str, Any]:
-        rows = self.rows if row_limit is None else self.rows[: max(row_limit, 0)]
+        _report_public_metrics = self.metrics
+        _report_public_rows = self.rows
+
+        _presentation = self.metrics.get(
+            "__presentation__"
+        )
+
+        if isinstance(_presentation, Mapping):
+            _candidate_metrics = _presentation.get(
+                "public_metrics"
+            )
+            _candidate_rows = _presentation.get(
+                "public_rows"
+            )
+
+            if isinstance(
+                _candidate_metrics,
+                Mapping,
+            ):
+                _report_public_metrics = (
+                    _candidate_metrics
+                )
+
+            if isinstance(
+                _candidate_rows,
+                (tuple, list),
+            ):
+                _report_public_rows = (
+                    _candidate_rows
+                )
+
+        rows = _report_public_rows if row_limit is None else _report_public_rows[: max(row_limit, 0)]
         return {
             "schema_version": self.schema_version,
             "report_type": self.report_type,
             "title_key": self.title_key,
             "period": self.period.public_dict(),
             "locale": self.locale,
+            "theme_id": self.theme_id,
             "generated_at": _utc_iso(self.generated_at),
             "applied_filters": _public_value(self.applied_filters),
-            "metrics": _public_value(self.metrics),
+            "metrics": _public_value(_report_public_metrics),
             "columns": list(self.columns),
             "rows": _public_value(rows),
             "warnings": list(self.warnings),

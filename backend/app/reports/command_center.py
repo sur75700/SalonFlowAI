@@ -22,6 +22,12 @@ from app.intelligence.providers.mongo_capacity_provider import (
 from app.intelligence.providers.mongo_client_provider import MongoClientProvider
 from app.intelligence.providers.mongo_revenue_provider import MongoRevenueProvider
 from app.intelligence.providers.mongo_service_provider import MongoServiceProvider
+from app.market.service import get_market_pulse_service
+from app.reports.market_valuation import (
+    ReportValuationError,
+    normalize_report_valuation_asset,
+    resolve_report_valuation_rate,
+)
 from app.reports.contracts import (
     REPORT_EXPORT_ROW_LIMIT,
     REPORT_MAX_RANGE_DAYS,
@@ -30,9 +36,12 @@ from app.reports.contracts import (
     ReportDocument,
     ReportFilters,
     ReportPeriod,
+    ReportThemeId,
+    normalize_report_theme,
     normalize_report_currency,
 )
 from app.reports.daily_summary import build_daily_summary_report
+from app.reports.money_presentation import build_report_money_presentation
 from app.reports.models import normalize_report_locale
 
 
@@ -300,9 +309,28 @@ def _document(
     columns: tuple[str, ...] = (),
     rows: tuple[tuple[Any, ...], ...] = (),
     warnings: tuple[str, ...] = (),
+    valuation_metadata: dict[str, object] | None = None,
+    theme_id: ReportThemeId = "royal_cosmos",
 ) -> ReportDocument:
     if len(rows) > REPORT_EXPORT_ROW_LIMIT:
         raise ReportContractError("413_report_too_large", 413)
+    public_metrics = dict(metrics)
+
+    if valuation_metadata is not None:
+        public_metrics["reporting_valuation"] = dict(
+            valuation_metadata
+        )
+
+    presentation = build_report_money_presentation(
+        metrics=metrics,
+        columns=columns,
+        rows=rows,
+        locale=locale,
+        valuation_metadata=valuation_metadata,
+    )
+
+    public_metrics["__presentation__"] = presentation
+
     return ReportDocument(
         owner_id=owner_id,
         report_type=report_type,
@@ -311,11 +339,12 @@ def _document(
         locale=locale,
         generated_at=generated_at,
         applied_filters=filters.public_dict(),
-        metrics=metrics,
+        metrics=public_metrics,
         columns=columns,
         rows=rows,
         warnings=tuple(dict.fromkeys(warnings)),
         total_rows=len(rows),
+        theme_id=theme_id,
     )
 
 
@@ -329,6 +358,8 @@ async def build_report_document(
     locale: str | None,
     filters: ReportFilters,
     currency: str | None = None,
+    valuation_currency: str | None = None,
+    theme_id: str | None = None,
     generated_at: datetime | None = None,
 ) -> ReportDocument:
     if database is None:
@@ -339,6 +370,7 @@ async def build_report_document(
     owner = _owner_id(owner_id)
     generated = _generated_at(generated_at)
     normalized_locale = normalize_report_locale(locale)
+    normalized_theme = normalize_report_theme(theme_id)
     timezone_name, timezone_warnings = await _resolve_timezone(
         database=database,
         owner_id=owner,
@@ -354,6 +386,47 @@ async def build_report_document(
         report_type=report_type,
         currency=currency,
     )
+
+    try:
+        normalized_valuation = (
+            normalize_report_valuation_asset(
+                valuation_currency
+            )
+        )
+    except ReportValuationError as exc:
+        raise ReportContractError(
+            "422_invalid_report_filter",
+            422,
+        ) from exc
+
+    valuation_metadata: dict[str, object] | None = None
+
+    if normalized_valuation is not None:
+        if report_currency is None:
+            raise ReportContractError(
+                "422_invalid_report_filter",
+                422,
+            )
+
+        try:
+            pulse = await (
+                get_market_pulse_service().get_pulse()
+            )
+
+            valuation = resolve_report_valuation_rate(
+                pulse,
+                source_currency=report_currency,
+                target_asset=normalized_valuation,
+            )
+
+        except ReportValuationError as exc:
+            raise ReportContractError(
+                "503_report_valuation_unavailable",
+                503,
+            ) from exc
+
+        valuation_metadata = valuation.public_dict()
+
 
     if report_type in {"daily-summary", "appointments"}:
         documents = await _appointment_documents(
@@ -391,6 +464,8 @@ async def build_report_document(
             columns=("start", "client", "service", "status", "notes"),
             rows=_appointment_rows(documents),
             warnings=timezone_warnings,
+            theme_id=normalized_theme,
+            valuation_metadata=valuation_metadata,
         )
 
     context = _context(
@@ -430,6 +505,8 @@ async def build_report_document(
                 "average_ticket_minor": snapshot.average_ticket_minor,
             },
             warnings=warnings,
+            theme_id=normalized_theme,
+            valuation_metadata=valuation_metadata,
         )
 
     if report_type == "client-summary":
@@ -464,6 +541,8 @@ async def build_report_document(
                 "completed_revenue_minor": snapshot.completed_revenue_minor,
             },
             warnings=warnings,
+            theme_id=normalized_theme,
+            valuation_metadata=valuation_metadata,
         )
 
     if report_type == "service-performance":
@@ -527,6 +606,8 @@ async def build_report_document(
             ),
             rows=rows,
             warnings=warnings,
+            theme_id=normalized_theme,
+            valuation_metadata=valuation_metadata,
         )
 
     try:
@@ -565,4 +646,6 @@ async def build_report_document(
             "booked_minutes": snapshot.booked_minutes,
         },
         warnings=warnings,
+        theme_id=normalized_theme,
+        valuation_metadata=valuation_metadata,
     )

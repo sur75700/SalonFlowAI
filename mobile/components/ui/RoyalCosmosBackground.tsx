@@ -6,31 +6,100 @@ import {
   StyleSheet,
   View,
   ViewStyle,
+  type ImageSourcePropType,
 } from "react-native";
+
+import {
+  useDashboardTheme,
+} from "../../hooks/useDashboardTheme";
+
+import type {
+  DashboardThemeId,
+} from "../../lib/theme/dashboardThemes";
 
 type RoyalCosmosBackgroundProps = {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
+const backgroundSources:
+  Record<DashboardThemeId, ImageSourcePropType> = {
+    royal_cosmos:
+      require(
+        "../../assets/backgrounds/royal-cosmos.jpg"
+      ),
+
+    royal_gold_cosmos:
+      require(
+        "../../assets/backgrounds/royal-gold-cosmos.jpg"
+      ),
+  };
+
 export default function RoyalCosmosBackground({
   children,
   style,
 }: RoyalCosmosBackgroundProps) {
+  const {
+    selectedThemeId,
+    theme,
+  } = useDashboardTheme();
+
   return (
-    <SafeAreaView style={[styles.container, style]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor:
+            theme.backgroundFallback,
+        },
+        style,
+      ]}
+    >
       <ImageBackground
-        source={require("../../assets/backgrounds/royal-cosmos.jpg")}
+        source={
+          backgroundSources[selectedThemeId]
+        }
         resizeMode="cover"
         style={styles.image}
       >
-        <View pointerEvents="none" style={styles.overlay}>
-          <View style={styles.darkVeil} />
-          <View style={styles.blueCalmLayer} />
-          <View style={styles.bottomDepth} />
+        <View
+          pointerEvents="none"
+          style={styles.overlay}
+        >
+          <View
+            style={[
+              styles.fullLayer,
+              {
+                backgroundColor:
+                  theme.overlay.darkVeil,
+              },
+            ]}
+          />
+
+          <View
+            style={[
+              styles.fullLayer,
+              {
+                backgroundColor:
+                  theme.overlay.toneVeil,
+              },
+            ]}
+          />
+
+          <View
+            style={[
+              styles.bottomDepth,
+              {
+                backgroundColor:
+                  theme.overlay.bottomDepth,
+              },
+            ]}
+          />
         </View>
 
-        <View style={styles.content}>{children}</View>
+        <View style={styles.content}>
+          {children}
+        </View>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -39,33 +108,31 @@ export default function RoyalCosmosBackground({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#040508",
     overflow: "hidden",
   },
+
   image: {
     flex: 1,
     width: "100%",
     height: "100%",
   },
+
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
-  darkVeil: {
+
+  fullLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(3, 5, 12, 0.60)",
   },
-  blueCalmLayer: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(8, 16, 36, 0.27)",
-  },
+
   bottomDepth: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
     height: "42%",
-    backgroundColor: "rgba(10, 18, 42, 0.18)",
   },
+
   content: {
     flex: 1,
   },
