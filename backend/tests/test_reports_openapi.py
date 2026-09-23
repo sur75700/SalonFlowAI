@@ -18,7 +18,11 @@ from app.reports.renderers.xlsx import render_report_document_xlsx
 OWNER = "64b64c64b64c64b64c64b64c"
 
 
-def document() -> ReportDocument:
+def document(
+    *,
+    locale: str = "en",
+    theme_id: str = "royal_cosmos",
+) -> ReportDocument:
     return ReportDocument(
         owner_id=OWNER,
         report_type="appointments",
@@ -30,7 +34,8 @@ def document() -> ReportDocument:
             start_utc=datetime(2026, 8, 17, tzinfo=UTC),
             end_utc=datetime(2026, 8, 18, tzinfo=UTC),
         ),
-        locale="en",
+        locale=locale,
+        theme_id=theme_id,
         generated_at=datetime(2026, 8, 17, 12, tzinfo=UTC),
         applied_filters={},
         metrics={"appointments": 1},
@@ -67,6 +72,7 @@ class ReportOpenApiTests(unittest.IsolatedAsyncioTestCase):
                     names
                 )
             )
+            self.assertIn("theme", names)
             self.assertTrue(
                 {401, 403, 413, 422, 503}.issubset(
                     {int(code) for code in operation["responses"]}
@@ -127,7 +133,7 @@ class ReportOpenApiTests(unittest.IsolatedAsyncioTestCase):
         docx = render_report_document_docx(report)
 
         self.assertTrue(pdf.startswith(b"%PDF"))
-        self.assertIn("appointments", txt.decode("utf-8"))
+        self.assertIn("Appointments", txt.decode("utf-8"))
         self.assertTrue(csv.startswith(b"\xef\xbb\xbf"))
         self.assertIn(b"'=unsafe", csv)
         self.assertIn(b"'-formula", csv)
@@ -135,6 +141,28 @@ class ReportOpenApiTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn("xl/workbook.xml", archive.namelist())
         with ZipFile(BytesIO(docx)) as archive:
             self.assertIn("word/document.xml", archive.namelist())
+
+    def test_document_renderers_preserve_locale_and_theme(self) -> None:
+        report = document(locale="hy", theme_id="royal_gold_cosmos")
+        txt = render_report_document_txt(report).decode("utf-8")
+        self.assertIn("Ամրագրումներ", txt)
+        self.assertIn("Royal Gold Cosmos", txt)
+        self.assertNotIn("report_type", txt)
+        self.assertNotIn("appointments", txt)
+
+        csv = render_report_document_csv(report).decode("utf-8-sig")
+        self.assertIn("Ամրագրումներ", csv)
+        self.assertIn("Royal Gold Cosmos", csv)
+
+        xlsx = render_report_document_xlsx(report)
+        with ZipFile(BytesIO(xlsx)) as archive:
+            workbook_xml = archive.read("xl/worksheets/sheet1.xml")
+            self.assertNotIn(b"report_type", workbook_xml)
+
+        docx = render_report_document_docx(report)
+        with ZipFile(BytesIO(docx)) as archive:
+            document_xml = archive.read("word/document.xml")
+            self.assertNotIn(b"report_type", document_xml)
 
     async def test_export_builds_one_canonical_document_then_renders(self) -> None:
         report = document()
@@ -154,10 +182,15 @@ class ReportOpenApiTests(unittest.IsolatedAsyncioTestCase):
                 client_id=None,
                 service_id=None,
                 currency=None,
+                theme="royal_gold_cosmos",
                 auth={"admin_id": OWNER},
                 _entitlement=None,
             )
         build.assert_awaited_once()
+        self.assertEqual(
+            build.await_args.kwargs["theme"],
+            "royal_gold_cosmos",
+        )
         self.assertIn(
             "salonflow_appointments_2026-08-17_2026-08-17_en.txt",
             response.headers["content-disposition"],

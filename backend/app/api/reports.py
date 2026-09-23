@@ -332,6 +332,8 @@ async def _build_report_v2(
     client_id: list[str] | None,
     service_id: list[str] | None,
     currency: str | None,
+    valuation_currency: str | None,
+    theme: str | None,
     auth: dict,
 ):
     from app.reports.command_center import build_report_document
@@ -364,6 +366,8 @@ async def _build_report_v2(
             locale=locale,
             filters=filters,
             currency=currency,
+            valuation_currency=valuation_currency,
+            theme_id=theme,
         )
     except ReportContractError as error:
         _v2_raise_contract(error)
@@ -396,6 +400,8 @@ async def preview_report_v2(
     client_id: list[str] | None = Query(default=None),
     service_id: list[str] | None = Query(default=None),
     currency: str | None = Query(default=None),
+    valuation_currency: str | None = Query(default=None),
+    theme: str | None = Query(default=None),
     auth: dict = Depends(require_auth),
     _entitlement: None = Depends(require_reports_entitlement),
 ) -> dict:
@@ -410,6 +416,8 @@ async def preview_report_v2(
         client_id=client_id,
         service_id=service_id,
         currency=currency,
+        valuation_currency=valuation_currency,
+        theme=theme,
         auth=auth,
     )
     return document.public_dict(row_limit=REPORT_PREVIEW_ROW_LIMIT)
@@ -430,6 +438,8 @@ async def export_report_v2(
     client_id: list[str] | None = Query(default=None),
     service_id: list[str] | None = Query(default=None),
     currency: str | None = Query(default=None),
+    valuation_currency: str | None = Query(default=None),
+    theme: str | None = Query(default=None),
     auth: dict = Depends(require_auth),
     _entitlement: None = Depends(require_reports_entitlement),
 ):
@@ -452,6 +462,8 @@ async def export_report_v2(
         client_id=client_id,
         service_id=service_id,
         currency=currency,
+        valuation_currency=valuation_currency,
+        theme=theme,
         auth=auth,
     )
 

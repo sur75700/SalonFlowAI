@@ -49,33 +49,89 @@ def render_daily_summary_txt(report: DailySummaryReport) -> bytes:
 
 # PHASE_63D_REPORT_DOCUMENT_RENDERER
 def render_report_document_txt(document: object) -> bytes:
+    from app.reports.renderers import document_i18n as _presentation_i18n
     from app.reports.contracts import ReportDocument
+    from app.reports.renderers.document_i18n import (
+        format_value,
+        format_warning,
+        label_for,
+        report_title,
+        text,
+        theme_label,
+    )
 
     if not isinstance(document, ReportDocument):
         raise TypeError("document must be a ReportDocument")
 
+    currency = _presentation_i18n.presentation_currency(document)
+    currency_text = currency if isinstance(currency, str) else None
+    period = (
+        f"{document.period.start_date.isoformat()} - "
+        f"{document.period.end_date.isoformat()}"
+    )
     lines = [
-        document.report_type,
-        (
-            f"{document.period.start_date.isoformat()} .. "
-            f"{document.period.end_date.isoformat()}"
-        ),
-        f"timezone: {document.period.timezone}",
-        f"locale: {document.locale}",
-        "",
-        "metrics:",
+        f"{text(document.locale, 'brand')} · "
+        f"{report_title(document.locale, document.report_type)}",
+        f"{text(document.locale, 'period')}: {period}",
+        f"{text(document.locale, 'timezone')}: {document.period.timezone}",
+        f"{text(document.locale, 'generated_at')}: "
+        f"{document.generated_at.strftime('%Y-%m-%d %H:%M UTC')}",
+        f"{text(document.locale, 'locale')}: {document.locale.upper()}",
+        f"{text(document.locale, 'theme')}: "
+        f"{theme_label(document.locale, document.theme_id)}",
     ]
+    if document.applied_filters:
+        lines.append(
+            f"{text(document.locale, 'filters')}: "
+            + ", ".join(
+                f"{label_for(document.locale, str(key))}: "
+                f"{format_value(document.locale, str(key), value, currency=currency_text)}"
+                for key, value in document.applied_filters.items()
+            )
+        )
     lines.extend(
-        f"- {key}: {value}"
-        for key, value in document.metrics.items()
+        [
+            "",
+            text(document.locale, "metrics"),
+        ]
+    )
+    lines.extend(
+        f"- {label_for(document.locale, str(key))}: "
+        f"{format_value(document.locale, str(key), value, currency=currency_text)}"
+        for key, value in _presentation_i18n.presentation_metric_items(document)
     )
     if document.columns:
-        lines.extend(("", "\t".join(document.columns)))
         lines.extend(
-            "\t".join("" if value is None else str(value) for value in row)
-            for row in document.rows
+            [
+                "",
+                text(document.locale, "rows"),
+                "\t".join(
+                    label_for(document.locale, value)
+                    for value in document.columns
+                ),
+            ]
+        )
+        lines.extend(
+            "\t".join(
+                format_value(
+                    document.locale,
+                    document.columns[index],
+                    value,
+                    currency=currency_text,
+                )
+                for index, value in enumerate(row)
+            )
+            for row in _presentation_i18n.presentation_rows(document)
         )
     if document.warnings:
-        lines.extend(("", "warnings:"))
-        lines.extend(f"- {warning}" for warning in document.warnings)
+        lines.extend(
+            [
+                "",
+                text(document.locale, "warnings"),
+            ]
+        )
+        lines.extend(
+            f"- {format_warning(document.locale, warning)}"
+            for warning in document.warnings
+        )
     return ("\n".join(lines) + "\n").encode("utf-8")

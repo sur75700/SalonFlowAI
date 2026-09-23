@@ -99,6 +99,7 @@ def render_daily_summary_xlsx(report: DailySummaryReport) -> bytes:
 
 # PHASE_63D_REPORT_DOCUMENT_RENDERER
 def render_report_document_xlsx(document: object) -> bytes:
+    from app.reports.renderers import document_i18n as _presentation_i18n
     from datetime import UTC
     from io import BytesIO
     from zipfile import ZIP_DEFLATED, ZipFile
@@ -108,6 +109,14 @@ def render_report_document_xlsx(document: object) -> bytes:
     from openpyxl.writer.excel import ExcelWriter
 
     from app.reports.contracts import ReportDocument
+    from app.reports.renderers.document_i18n import (
+        export_value,
+        format_warning,
+        label_for,
+        report_title,
+        text,
+        theme_label,
+    )
 
     if not isinstance(document, ReportDocument):
         raise TypeError("document must be a ReportDocument")
@@ -126,25 +135,61 @@ def render_report_document_xlsx(document: object) -> bytes:
 
     overview = workbook.active
     overview.title = "Overview"
-    overview.append(["Report Type", safe(document.report_type)])
-    overview.append(["Start Date", document.period.start_date.isoformat()])
-    overview.append(["End Date", document.period.end_date.isoformat()])
-    overview.append(["Timezone", safe(document.period.timezone)])
-    overview.append(["Locale", safe(document.locale)])
+    report_title_text = report_title(document.locale, document.report_type)
+    overview.append([text(document.locale, "brand"), safe(report_title_text)])
+    overview.append([
+        text(document.locale, "period"),
+        safe(
+            f"{document.period.start_date.isoformat()} - "
+            f"{document.period.end_date.isoformat()}"
+        ),
+    ])
+    overview.append([text(document.locale, "timezone"), safe(document.period.timezone)])
+    overview.append([
+        text(document.locale, "generated_at"),
+        safe(document.generated_at.strftime("%Y-%m-%d %H:%M UTC")),
+    ])
+    overview.append([text(document.locale, "locale"), safe(document.locale.upper())])
+    overview.append([
+        text(document.locale, "theme"),
+        safe(theme_label(document.locale, document.theme_id)),
+    ])
+    if document.applied_filters:
+        for key, value in document.applied_filters.items():
+            overview.append([
+                label_for(document.locale, str(key)),
+                safe(export_value(document.locale, str(key), value)),
+            ])
     overview.append([])
-    overview.append(["Metric", "Value"])
-    for key, value in document.metrics.items():
-        overview.append([safe(str(key)), safe(value)])
-    for cell in overview[7]:
+    overview.append([text(document.locale, "metric"), text(document.locale, "value")])
+    for key, value in _presentation_i18n.presentation_metric_items(document):
+        overview.append([
+            label_for(document.locale, str(key)),
+            safe(export_value(document.locale, str(key), value)),
+        ])
+    header_row = next(
+        index
+        for index, row in enumerate(overview.iter_rows(), start=1)
+        if row[0].value == text(document.locale, "metric")
+    )
+    for cell in overview[header_row]:
         cell.font = Font(bold=True)
 
     rows_sheet = workbook.create_sheet("Rows")
     if document.columns:
-        rows_sheet.append([safe(value) for value in document.columns])
+        rows_sheet.append([label_for(document.locale, value) for value in document.columns])
         for cell in rows_sheet[1]:
             cell.font = Font(bold=True)
-        for row in document.rows:
-            rows_sheet.append([safe(value) for value in row])
+        for row in _presentation_i18n.presentation_rows(document):
+            rows_sheet.append([
+                safe(export_value(document.locale, document.columns[index], value))
+                for index, value in enumerate(row)
+            ])
+    if document.warnings:
+        rows_sheet.append([])
+        rows_sheet.append([text(document.locale, "warnings")])
+        for warning in document.warnings:
+            rows_sheet.append([format_warning(document.locale, warning)])
 
     buffer = BytesIO()
     archive = ZipFile(

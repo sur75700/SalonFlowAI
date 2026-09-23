@@ -11,6 +11,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { UI } from "../../lib/theme/tokens";
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 
 import { t } from "../../lib/i18n";
 
@@ -37,11 +39,13 @@ import type {
   ReportFormat,
   ReportLocale,
   ReportQuery,
+  ReportValuationCurrency,
   ReportType,
 } from "../../lib/reports/contracts";
 
 import ReportCatalogSelector from "./ReportCatalogSelector";
 import ReportFilterPanel from "./ReportFilterPanel";
+import ReportValuationSelector from "./ReportValuationSelector";
 
 import type {
   ReportFilterState,
@@ -71,6 +75,7 @@ const EMPTY_FILTERS: ReportFilterState = {
   clientIds: "",
   serviceIds: "",
   currency: undefined,
+  valuationCurrency: undefined,
 };
 
 function parseIds(
@@ -184,6 +189,7 @@ export default function ReportsCommandCenterV2({
   refreshKey,
   onAuthExpired,
 }: Props) {
+  const { selectedThemeId } = useDashboardTheme();
   const [catalog, setCatalog] =
     useState<ReportCatalog | null>(
       null,
@@ -337,6 +343,7 @@ export default function ReportsCommandCenterV2({
   }, [
     selectedReportType,
     locale,
+    selectedThemeId,
     refreshKey,
   ]);
 
@@ -359,6 +366,7 @@ export default function ReportsCommandCenterV2({
       if (!definition) {
         return {
           locale,
+          theme: selectedThemeId,
         };
       }
 
@@ -377,6 +385,7 @@ export default function ReportsCommandCenterV2({
         startDate,
         endDate,
         locale,
+        theme: selectedThemeId,
 
         status:
           definition.filters.includes(
@@ -407,6 +416,11 @@ export default function ReportsCommandCenterV2({
           definition.currency_mode ===
           "required_fiat"
             ? filters.currency
+            : undefined,
+        valuationCurrency:
+          definition.currency_mode ===
+          "required_fiat"
+            ? filters.valuationCurrency
             : undefined,
       };
     };
@@ -853,6 +867,29 @@ export default function ReportsCommandCenterV2({
           }}
         />
 
+        {definition.currency_mode ===
+        "required_fiat" ? (
+          <ReportValuationSelector
+            locale={locale}
+            sourceCurrency={
+              filters.currency
+            }
+            value={
+              filters.valuationCurrency
+            }
+            onChange={(next) => {
+              setFilters((current) => ({
+                ...current,
+                valuationCurrency: next,
+              }));
+
+              setPreview(null);
+              setError("");
+            }}
+          />
+        ) : null}
+
+
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t(
@@ -1108,20 +1145,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
 
     backgroundColor:
-      "#19163F",
+      UI.surface.cosmosStrong,
 
     borderRadius: 26,
 
     borderWidth: 1,
     borderColor:
-      "rgba(145,128,255,0.38)",
+      UI.surface.border,
 
     padding: 19,
     marginBottom: 17,
 
     shadowColor: "#02030D",
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -1198,7 +1235,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
     backgroundColor:
-      "#211D4D",
+      UI.surface.cosmos,
 
     borderWidth: 1,
     borderColor:
@@ -1446,13 +1483,13 @@ const styles = StyleSheet.create({
     gap: 10,
 
     backgroundColor:
-      "#211D4B",
+      UI.surface.cosmos,
 
     borderRadius: 17,
 
     borderWidth: 1,
     borderColor:
-      "rgba(255,255,255,0.07)",
+      UI.surface.border,
 
     padding: 13,
   },

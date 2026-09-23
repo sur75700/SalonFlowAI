@@ -7,12 +7,14 @@ from app.reports.contracts import (
     REPORT_FIAT_CURRENCIES,
     REPORT_FORMATS_V2,
     REPORT_MARKET_ASSETS,
+    REPORT_THEME_IDS,
     REPORT_TYPES,
     ReportContractError,
     ReportDocument,
     ReportPeriod,
     normalize_report_currency,
     normalize_report_filters,
+    normalize_report_theme,
 )
 
 
@@ -90,6 +92,34 @@ class ReportContractTests(unittest.TestCase):
             unsupported.exception.code,
             "422_unsupported_report_filter",
         )
+
+    def test_report_theme_contract_defaults_and_serializes(self) -> None:
+        self.assertEqual(
+            REPORT_THEME_IDS,
+            ("royal_cosmos", "royal_gold_cosmos"),
+        )
+        self.assertEqual(
+            normalize_report_theme("ROYAL_GOLD_COSMOS"),
+            "royal_gold_cosmos",
+        )
+        self.assertEqual(normalize_report_theme(None), "royal_cosmos")
+
+        document = ReportDocument(
+            owner_id=OWNER,
+            report_type="appointments",
+            title_key="reports.appointments.title",
+            period=period(),
+            locale="en",
+            generated_at=datetime(2026, 8, 17, 12, tzinfo=UTC),
+            applied_filters={},
+            metrics={"appointments": 0},
+            columns=(),
+            rows=(),
+            warnings=(),
+            total_rows=0,
+            theme_id="royal_gold_cosmos",
+        )
+        self.assertEqual(document.public_dict()["theme_id"], "royal_gold_cosmos")
 
     def test_filter_contract_validates_real_values(self) -> None:
         filters = normalize_report_filters(

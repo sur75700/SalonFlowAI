@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
 
     backgroundColor:
-      "#191746",
+      UI.surface.cosmosStrong,
 
     borderRadius: 28,
 

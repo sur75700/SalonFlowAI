@@ -29,4 +29,10 @@ export const UI = {
     card: "0px 10px 18px rgba(0,0,0,0.22)",
     soft: "0px 4px 12px rgba(0,0,0,0.18)",
   },
+  surface: {
+    cosmos: "rgba(18,16,48,0.88)",
+    cosmosStrong: "rgba(24,20,60,0.92)",
+    border: "rgba(214,205,255,0.32)",
+    overlay: "rgba(3,4,10,0.72)",
+  },
 };

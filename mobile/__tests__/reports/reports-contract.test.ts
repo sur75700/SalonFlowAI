@@ -176,6 +176,7 @@ describe("Phase 63D report client contract", () => {
         clientId: ["abc", "def"],
         serviceId: ["service-1"],
         currency: "AMD",
+        theme: "royal_gold_cosmos",
       }),
     ).toBe(
       "start_date=2026-08-01" +
@@ -186,7 +187,8 @@ describe("Phase 63D report client contract", () => {
         "&client_id=abc" +
         "&client_id=def" +
         "&service_id=service-1" +
-        "&currency=AMD",
+        "&currency=AMD" +
+        "&theme=royal_gold_cosmos",
     );
   });
 
@@ -239,6 +241,7 @@ describe("Phase 63D report client contract", () => {
           "2026-08-22T20:00:00Z",
       },
       locale: "en",
+      theme_id: "royal_gold_cosmos",
       generated_at:
         "2026-08-22T14:00:00Z",
       applied_filters: {},

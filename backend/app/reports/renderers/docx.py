@@ -74,11 +74,20 @@ def render_daily_summary_docx(report: DailySummaryReport) -> bytes:
 
 # PHASE_63D_REPORT_DOCUMENT_RENDERER
 def render_report_document_docx(document: object) -> bytes:
+    from app.reports.renderers import document_i18n as _presentation_i18n
     from io import BytesIO
 
     from docx import Document
 
     from app.reports.contracts import ReportDocument
+    from app.reports.renderers.document_i18n import (
+        export_value,
+        format_warning,
+        label_for,
+        report_title,
+        text,
+        theme_label,
+    )
 
     if not isinstance(document, ReportDocument):
         raise TypeError("document must be a ReportDocument")
@@ -89,36 +98,69 @@ def render_report_document_docx(document: object) -> bytes:
 
     output = BytesIO()
     report = Document()
-    report.core_properties.title = document.report_type
+    report_title_text = report_title(document.locale, document.report_type)
+    report.core_properties.title = report_title_text
     report.core_properties.author = "SalonFlowAI"
     generated = document.generated_at.replace(tzinfo=None)
     report.core_properties.created = generated
     report.core_properties.modified = generated
 
-    report.add_heading(document.report_type, level=0)
+    report.add_heading(
+        f"{text(document.locale, 'brand')} · {report_title_text}",
+        level=0,
+    )
     report.add_paragraph(
         (
-            f"{document.period.start_date.isoformat()} .. "
-            f"{document.period.end_date.isoformat()} "
-            f"({document.period.timezone})"
+            f"{text(document.locale, 'period')}: "
+            f"{document.period.start_date.isoformat()} - "
+            f"{document.period.end_date.isoformat()}"
         )
     )
+    report.add_paragraph(
+        f"{text(document.locale, 'timezone')}: {document.period.timezone}"
+    )
+    report.add_paragraph(
+        f"{text(document.locale, 'generated_at')}: "
+        f"{document.generated_at.strftime('%Y-%m-%d %H:%M UTC')}"
+    )
+    report.add_paragraph(
+        f"{text(document.locale, 'locale')}: {document.locale.upper()}"
+    )
+    report.add_paragraph(
+        f"{text(document.locale, 'theme')}: "
+        f"{theme_label(document.locale, document.theme_id)}"
+    )
+    if document.applied_filters:
+        report.add_paragraph(
+            f"{text(document.locale, 'filters')}: "
+            + ", ".join(
+                f"{label_for(document.locale, str(key))}: "
+                f"{safe(export_value(document.locale, str(key), value))}"
+                for key, value in document.applied_filters.items()
+            )
+        )
     metrics = report.add_table(rows=1, cols=2)
-    metrics.rows[0].cells[0].text = "Metric"
-    metrics.rows[0].cells[1].text = "Value"
-    for key, value in document.metrics.items():
+    metrics.rows[0].cells[0].text = text(document.locale, "metric")
+    metrics.rows[0].cells[1].text = text(document.locale, "value")
+    for key, value in _presentation_i18n.presentation_metric_items(document):
         cells = metrics.add_row().cells
-        cells[0].text = safe(key)
-        cells[1].text = safe(value)
+        cells[0].text = label_for(document.locale, str(key))
+        cells[1].text = safe(export_value(document.locale, str(key), value))
 
     if document.columns:
         table = report.add_table(rows=1, cols=len(document.columns))
         for index, value in enumerate(document.columns):
-            table.rows[0].cells[index].text = safe(value)
-        for row in document.rows:
+            table.rows[0].cells[index].text = label_for(document.locale, value)
+        for row in _presentation_i18n.presentation_rows(document):
             cells = table.add_row().cells
             for index, value in enumerate(row):
-                cells[index].text = safe(value)
+                cells[index].text = safe(
+                    export_value(document.locale, document.columns[index], value)
+                )
+    if document.warnings:
+        report.add_heading(text(document.locale, "warnings"), level=1)
+        for warning in document.warnings:
+            report.add_paragraph(format_warning(document.locale, warning))
 
     report.save(output)
     return output.getvalue()

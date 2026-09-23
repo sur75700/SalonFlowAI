@@ -1,3 +1,5 @@
+import type { DashboardThemeId } from "../theme/dashboardThemes";
+
 export const REPORT_TYPES = [
   "daily-summary",
   "appointments",
@@ -28,6 +30,14 @@ export const REPORT_FIAT_CURRENCIES = [
   "RUB",
 ] as const;
 
+export const REPORT_VALUATION_CURRENCIES = [
+  "AMD",
+  "USD",
+  "EUR",
+  "RUB",
+  "BTC",
+] as const;
+
 export const REPORT_LOCALES = [
   "en",
   "hy",
@@ -40,6 +50,8 @@ export type ReportFormat = (typeof REPORT_FORMATS)[number];
 export type ReportStatus = (typeof REPORT_STATUSES)[number];
 export type ReportFiatCurrency =
   (typeof REPORT_FIAT_CURRENCIES)[number];
+export type ReportValuationCurrency =
+  (typeof REPORT_VALUATION_CURRENCIES)[number];
 export type ReportLocale = (typeof REPORT_LOCALES)[number];
 
 export type ReportFilterName =
@@ -111,6 +123,7 @@ export type ReportDocument = {
   title_key: string;
   period: ReportPeriod;
   locale: ReportLocale;
+  theme_id?: DashboardThemeId;
   generated_at: string;
   applied_filters: Record<string, unknown>;
   metrics: Record<string, unknown>;
@@ -128,6 +141,8 @@ export type ReportQuery = {
   clientId?: string[];
   serviceId?: string[];
   currency?: ReportFiatCurrency;
+  valuationCurrency?: ReportValuationCurrency;
+  theme?: DashboardThemeId;
 };
 
 function isRecord(
@@ -420,6 +435,14 @@ export function assertReportDocument(
 
   if (!isReportLocale(value.locale)) {
     throw new Error("Invalid report locale");
+  }
+
+  if (
+    value.theme_id !== undefined &&
+    value.theme_id !== "royal_cosmos" &&
+    value.theme_id !== "royal_gold_cosmos"
+  ) {
+    throw new Error("Invalid report theme");
   }
 
   if (!isNonEmptyString(value.generated_at)) {
