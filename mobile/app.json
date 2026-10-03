@@ -4,7 +4,7 @@
     "slug": "salonflowai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/brand/salonflowai-app-icon.png",
     "scheme": "salonflowai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -24,19 +24,19 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/brand/salonflowai-favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/brand/salonflowai-splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#080A1F",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#080A1F"
           }
         }
       ],

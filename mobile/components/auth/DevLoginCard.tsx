@@ -1,27 +1,43 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import * as WebBrowser from "expo-web-browser";
+import React, { useMemo, useState } from "react";
 import * as Google from "expo-auth-session/providers/google";
-import * as AppleAuthentication from "expo-apple-authentication";
-import { UI } from "../../lib/theme/tokens";
+import * as WebBrowser from "expo-web-browser";
 import {
-  ActivityIndicator,
+  Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
-import ActionButton from "../dashboard/ActionButton";
-import { useToast } from "../ui/Toast";
-import AuthScreenShell from "./AuthScreenShell";
-import { useSession } from "../../hooks/useSession";
-import { DEFAULTS } from "../../lib/appConfig";
-import { getErrorMessage } from "../../lib/errors";
-import { getGoogleClientIds } from "../../lib/env";
-import { appleLogin, googleLogin, registerAccount, requestPasswordReset, saveTokenFromCredentials } from "../../lib/api";
-import { useAppLanguage } from "../../contexts/LanguageContext";
 import { useBilling } from "../../contexts/BillingContext";
+import { useAppLanguage } from "../../contexts/LanguageContext";
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+import { useSession } from "../../hooks/useSession";
+import {
+  googleLogin,
+  registerAccount,
+  requestPasswordReset,
+  saveTokenFromCredentials,
+} from "../../lib/api";
+import { getErrorMessage } from "../../lib/errors";
+import {
+  getGoogleClientIds,
+  isGoogleAuthConfigured,
+} from "../../lib/env";
+import { useToast } from "../ui/Toast";
+import {
+  AccessField,
+  GatewayButton,
+  GatewayDivider,
+  GatewayNotice,
+  GatewayProviderButton,
+} from "./AccessGatewayPrimitives";
+import AuthScreenShell from "./AuthScreenShell";
+import {
+  accessGatewayCopy,
+  type AccessGatewayMode,
+} from "./access-gateway-copy";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,40 +47,91 @@ type DevLoginCardProps = {
 };
 
 export default function DevLoginCard({
-  title = "Admin Session Recovery",
-  subtitle = "Restore your active session to continue managing SalonFlow AI.",
+  title: contextualTitle,
+  subtitle: contextualSubtitle,
 }: DevLoginCardProps) {
   const router = useRouter();
-  const { t } = useAppLanguage();
+  const { language, t } = useAppLanguage();
   const { setToken } = useSession();
   const { showToast } = useToast();
   const { refreshBilling } = useBilling();
+  const { selectedThemeId, theme } = useDashboardTheme();
+  const copy = accessGatewayCopy(language);
 
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [mode, setMode] = useState<AccessGatewayMode>("signin");
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState<string>(DEFAULTS.adminEmail);
-  const [password, setPassword] = useState<string>(DEFAULTS.adminPassword);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [providerLoading, setProviderLoading] = useState<"google" | null>(null);
   const [error, setError] = useState("");
 
-  const googleClientIds = getGoogleClientIds();
+  const googleClientIds = useMemo(() => getGoogleClientIds(), []);
+  const googleConfigured = isGoogleAuthConfigured();
+
   const [googleRequest, , promptGoogleSignIn] = Google.useIdTokenAuthRequest({
     webClientId: googleClientIds.webClientId,
     androidClientId: googleClientIds.androidClientId,
     iosClientId: googleClientIds.iosClientId || undefined,
   });
 
+  const accent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? theme.palette.gold
+      : theme.palette.royal;
+  const accentSoft =
+    selectedThemeId === "royal_gold_cosmos"
+      ? theme.palette.goldGlow
+      : theme.palette.royalGlow;
 
-  const getLocalizedAuthError = (err: any, fallback: string) => {
-    const message = getErrorMessage(err, fallback).toLowerCase();
+  const title =
+    mode === "signup"
+      ? copy.signupTitle
+      : mode === "forgot"
+        ? copy.forgotTitle
+        : contextualTitle?.trim() || copy.signinTitle;
+
+  const subtitle =
+    mode === "signup"
+      ? copy.signupSubtitle
+      : mode === "forgot"
+        ? copy.forgotSubtitle
+        : contextualSubtitle?.trim() || copy.signinSubtitle;
+
+  const switchMode = (nextMode: AccessGatewayMode) => {
+    setMode(nextMode);
+    setError("");
+
+    if (nextMode === "signup") {
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+    }
+
+    if (nextMode === "forgot") {
+      setPassword("");
+      setConfirmPassword("");
+    }
+  };
+
+  const localizeAuthError = (err: any, fallback: string) => {
+    const raw = getErrorMessage(err, fallback);
+    const message = raw.toLowerCase();
 
     if (message.includes("email_not_verified")) {
       return t.auth.emailNotVerified;
     }
 
+    if (message.includes("invalid credentials")) {
+      return copy.invalidCredentials;
+    }
 
-    if (message.includes("account already exists") || message.includes("already exists")) {
+    if (
+      message.includes("account already exists") ||
+      message.includes("already exists")
+    ) {
       return t.auth.accountAlreadyExists;
     }
 
@@ -78,11 +145,11 @@ export default function DevLoginCard({
       return t.auth.invalidEmail;
     }
 
-    return getErrorMessage(err, fallback);
+    return raw || copy.genericError;
   };
 
   const handleSignIn = async () => {
-    if (!email.trim() || !password.trim()) {
+    if (!email.trim() || !password) {
       const message = t.auth.emailPasswordRequired;
       setError(message);
       showToast(message, "error");
@@ -95,16 +162,15 @@ export default function DevLoginCard({
 
       const token = await saveTokenFromCredentials(
         email.trim(),
-        password.trim()
+        password
       );
 
       setToken(token);
       await refreshBilling(token);
       showToast(t.auth.adminSessionRestored, "success");
-      await new Promise((resolve) => setTimeout(resolve, 650));
       router.replace("/(tabs)");
     } catch (err: any) {
-      const message = getErrorMessage(err, t.auth.signInFailed);
+      const message = localizeAuthError(err, t.auth.signInFailed);
       setError(message);
       showToast(message, "error");
     } finally {
@@ -113,18 +179,16 @@ export default function DevLoginCard({
   };
 
   const handleGoogleSignIn = async () => {
+    if (!googleConfigured) {
+      const message = t.auth.googleAuthNotConfigured;
+      setError(message);
+      showToast(message, "error");
+      return;
+    }
+
     try {
-      setLoading(true);
+      setProviderLoading("google");
       setError("");
-
-      const { webClientId, androidClientId } = googleClientIds;
-
-      if (!webClientId && !androidClientId) {
-        const message = t.auth.googleAuthNotConfigured;
-        setError(message);
-        showToast(message, "error");
-        return;
-      }
 
       if (!googleRequest) {
         throw new Error("Google sign-in is not ready yet");
@@ -132,8 +196,15 @@ export default function DevLoginCard({
 
       const result = await promptGoogleSignIn();
 
+      if (
+        result.type === "cancel" ||
+        result.type === "dismiss"
+      ) {
+        return;
+      }
+
       if (result.type !== "success") {
-        throw new Error("Google sign-in was cancelled");
+        throw new Error("Google sign-in did not complete");
       }
 
       const idToken = result.params?.id_token;
@@ -147,63 +218,16 @@ export default function DevLoginCard({
       setToken(token);
       await refreshBilling(token);
       showToast(t.auth.googleSignInSuccess, "success");
-      await new Promise((resolve) => setTimeout(resolve, 650));
       router.replace("/(tabs)");
     } catch (err: any) {
-      const message = getErrorMessage(err, t.auth.googleSignInFailed);
+      const message = localizeAuthError(
+        err,
+        t.auth.googleSignInFailed
+      );
       setError(message);
       showToast(message, "error");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAppleSignIn = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const available = await AppleAuthentication.isAvailableAsync();
-
-      if (!available) {
-        const message = t.auth.appleAuthNotAvailable;
-        setError(message);
-        showToast(message, "error");
-        return;
-      }
-
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-
-      if (!credential.identityToken) {
-        throw new Error("Apple did not return an identity token");
-      }
-
-      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
-        .filter(Boolean)
-        .join(" ");
-
-      const token = await appleLogin(credential.identityToken, fullName);
-
-      setToken(token);
-      await refreshBilling(token);
-      showToast(t.auth.appleSignInSuccess, "success");
-      await new Promise((resolve) => setTimeout(resolve, 650));
-      router.replace("/(tabs)");
-    } catch (err: any) {
-      if (err?.code === "ERR_REQUEST_CANCELED") {
-        return;
-      }
-
-      const message = getErrorMessage(err, t.auth.appleSignInFailed);
-      setError(message);
-      showToast(message, "error");
-    } finally {
-      setLoading(false);
+      setProviderLoading(null);
     }
   };
 
@@ -222,9 +246,12 @@ export default function DevLoginCard({
       await requestPasswordReset(email.trim());
 
       showToast(t.auth.passwordResetEmailSent, "success");
-      setMode("signin");
+      switchMode("signin");
     } catch (err: any) {
-      const message = getErrorMessage(err, t.auth.passwordResetRequestFailed);
+      const message = localizeAuthError(
+        err,
+        t.auth.passwordResetRequestFailed
+      );
       setError(message);
       showToast(message, "error");
     } finally {
@@ -233,21 +260,26 @@ export default function DevLoginCard({
   };
 
   const handleCreateAccount = async () => {
-    if (!fullName.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (
+      !fullName.trim() ||
+      !email.trim() ||
+      !password ||
+      !confirmPassword
+    ) {
       const message = t.auth.allAccountFieldsRequired;
       setError(message);
       showToast(message, "error");
       return;
     }
 
-    if (password.trim().length < 8) {
+    if (password.length < 8) {
       const message = t.auth.passwordMinLength;
       setError(message);
       showToast(message, "error");
       return;
     }
 
-    if (password.trim() !== confirmPassword.trim()) {
+    if (password !== confirmPassword) {
       const message = t.auth.passwordMismatch;
       setError(message);
       showToast(message, "error");
@@ -261,15 +293,18 @@ export default function DevLoginCard({
       await registerAccount(
         fullName.trim(),
         email.trim(),
-        password.trim()
+        password
       );
 
-      setMode("signin");
+      switchMode("signin");
       setPassword("");
       setConfirmPassword("");
       showToast(t.auth.verifyEmailBeforeSignIn, "success");
     } catch (err: any) {
-      const message = getLocalizedAuthError(err, t.auth.createAccountFailed);
+      const message = localizeAuthError(
+        err,
+        t.auth.createAccountFailed
+      );
       setError(message);
       showToast(message, "error");
     } finally {
@@ -277,142 +312,195 @@ export default function DevLoginCard({
     }
   };
 
-  const useDemoAccount = () => {
-    setMode("signin");
-    setFullName("");
-    setEmail(DEFAULTS.adminEmail);
-    setPassword(DEFAULTS.adminPassword);
-    setConfirmPassword("");
-    setError("");
-    showToast(t.auth.adminCredentialsLoaded, "info");
+  const primaryLabel =
+    loading
+      ? mode === "signup"
+        ? copy.creatingAccount
+        : mode === "forgot"
+          ? copy.sendingReset
+          : copy.signingIn
+      : mode === "signup"
+        ? copy.createAccountAction
+        : mode === "forgot"
+          ? copy.sendResetAction
+          : copy.signInAction;
+
+  const primaryIcon =
+    mode === "signup"
+      ? "person-add-outline" as const
+      : mode === "forgot"
+        ? "mail-unread-outline" as const
+        : "log-in-outline" as const;
+
+  const handleAppleUnavailable = () => {
+    const message = copy.appleNotConfigured;
+    setError(message);
+    showToast(message, "info");
   };
 
   return (
-    <AuthScreenShell title={title} subtitle={subtitle}>
-
-      <View style={styles.modeSwitch}>
-        <Text
-          onPress={() => {
-            setMode("signin");
-            setError("");
-          }}
+    <AuthScreenShell
+      eyebrow={copy.overline}
+      title={title}
+      subtitle={subtitle}
+    >
+      <View style={styles.content}>
+        <View
+          accessibilityRole="radiogroup"
           style={[
-            styles.modeButton,
-            mode === "signin" ? styles.modeButtonActive : styles.modeButtonIdle,
+            styles.modeSwitch,
+            {
+              backgroundColor: theme.palette.surface,
+              borderColor: theme.palette.border,
+            },
           ]}
         >
-          {t.auth.signIn}
-        </Text>
+          {(["signin", "signup"] as const).map((item) => {
+            const active = item === mode;
+            const label =
+              item === "signin"
+                ? copy.signinTab
+                : copy.signupTab;
+            const icon =
+              item === "signin"
+                ? "log-in-outline" as const
+                : "person-add-outline" as const;
 
-        <Text
-          onPress={() => {
-            setMode("signup");
-            setFullName("");
-            setEmail("");
-            setPassword("");
-            setConfirmPassword("");
-            setError("");
-          }}
-          style={[
-            styles.modeButton,
-            mode === "signup" ? styles.modeButtonActive : styles.modeButtonIdle,
-          ]}
-        >
-          {t.auth.createAccount}
-        </Text>
-      </View>
-
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>{t.auth.adminRecoveryBadge}</Text>
-      </View>
-
-      {error ? (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{error}</Text>
+            return (
+              <Pressable
+                key={item}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: active }}
+                onPress={() => switchMode(item)}
+                style={({ pressed }) => [
+                  styles.modeButton,
+                  {
+                    backgroundColor: active
+                      ? accentSoft
+                      : "transparent",
+                    borderColor: active
+                      ? accent
+                      : "transparent",
+                    opacity: pressed ? 0.75 : 1,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={icon}
+                  size={16}
+                  color={
+                    active
+                      ? accent
+                      : theme.palette.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.modeButtonText,
+                    {
+                      color: active
+                        ? theme.palette.textPrimary
+                        : theme.palette.textSecondary,
+                    },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
-      ) : null}
 
-      {mode === "signup" ? (
-        <>
-          <Text style={styles.label}>{t.auth.fullName}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t.auth.fullName}
-            placeholderTextColor="#938b9d"
-            value={fullName}
-            onChangeText={setFullName}
+        {error ? (
+          <GatewayNotice
+            title={error}
+            tone="error"
           />
-        </>
-      ) : null}
+        ) : null}
 
-      <Text style={styles.label}>{t.auth.email}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder={DEFAULTS.adminEmail}
-        placeholderTextColor="#938b9d"
-        value={email}
-        onChangeText={(text) => setEmail(text)}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+        <View style={styles.fields}>
+          {mode === "signup" ? (
+            <AccessField
+              label={copy.fullNameLabel}
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder={copy.fullNamePlaceholder}
+              icon="person-outline"
+              autoCapitalize="words"
+              autoComplete="name"
+              textContentType="name"
+            />
+          ) : null}
 
-      {mode !== "forgot" ? (
-        <>
-          <Text style={styles.label}>{t.auth.password}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t.auth.enterPassword}
-            placeholderTextColor="#938b9d"
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-            secureTextEntry
+          <AccessField
+            label={copy.emailLabel}
+            value={email}
+            onChangeText={setEmail}
+            placeholder={copy.emailPlaceholder}
+            icon="mail-outline"
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
           />
-        </>
-      ) : null}
 
-      {mode === "signin" ? (
-        <Text
-          onPress={() => {
-            setMode("forgot");
-            setPassword("");
-            setConfirmPassword("");
-            setError("");
-          }}
-          style={styles.forgotLink}
-        >
-          {t.auth.forgotPassword}
-        </Text>
-      ) : null}
+          {mode !== "forgot" ? (
+            <AccessField
+              label={copy.passwordLabel}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={copy.passwordPlaceholder}
+              icon="lock-closed-outline"
+              secure
+              autoComplete={
+                mode === "signup"
+                  ? "new-password"
+                  : "current-password"
+              }
+              textContentType={
+                mode === "signup"
+                  ? "newPassword"
+                  : "password"
+              }
+            />
+          ) : null}
 
-      {mode === "signup" ? (
-        <>
-          <Text style={styles.label}>{t.auth.confirmPassword}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={t.auth.confirmPassword}
-            placeholderTextColor="#938b9d"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
-        </>
-      ) : null}
+          {mode === "signin" ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => switchMode("forgot")}
+              style={({ pressed }) => [
+                styles.forgotButton,
+                { opacity: pressed ? 0.65 : 1 },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.forgotText,
+                  { color: accent },
+                ]}
+              >
+                {copy.forgotPassword}
+              </Text>
+            </Pressable>
+          ) : null}
 
-      <View style={styles.actions}>
-        <ActionButton
-          title={
-            loading
-              ? mode === "signup"
-                ? t.auth.creatingAccount
-                : mode === "forgot"
-                  ? t.auth.sendingResetLink
-                  : t.auth.restoreSessionLoading
-              : mode === "signup"
-                ? t.auth.createAccount
-                : mode === "forgot"
-                  ? t.auth.sendResetLink
-                  : t.auth.restoreSession
-          }
+          {mode === "signup" ? (
+            <AccessField
+              label={copy.confirmPasswordLabel}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder={copy.confirmPasswordPlaceholder}
+              icon="shield-checkmark-outline"
+              secure
+              autoComplete="new-password"
+              textContentType="newPassword"
+            />
+          ) : null}
+        </View>
+
+        <GatewayButton
+          label={primaryLabel}
+          icon={primaryIcon}
           onPress={
             mode === "signup"
               ? handleCreateAccount
@@ -420,168 +508,114 @@ export default function DevLoginCard({
                 ? handleForgotPassword
                 : handleSignIn
           }
-          disabled={loading}
-          tone="success"
+          disabled={loading || providerLoading !== null}
+          loading={loading}
         />
-        {mode === "signin" ? (
-          <ActionButton
-            title={t.auth.continueWithGoogle}
-            onPress={handleGoogleSignIn}
-            disabled={loading}
-          />
-        ) : null}
-        {mode === "signin" ? (
-          <ActionButton
-            title={t.auth.continueWithApple}
-            onPress={handleAppleSignIn}
-            disabled={loading}
-          />
-        ) : null}
-        {mode === "signin" ? (
-          <ActionButton title={t.auth.loadAdminAccess} onPress={useDemoAccount} />
-        ) : null}
+
         {mode === "forgot" ? (
-          <ActionButton
-            title={t.auth.backToSignIn}
-            onPress={() => {
-              setMode("signin");
-              setError("");
-            }}
+          <GatewayButton
+            label={copy.backToSignIn}
+            icon="arrow-back-outline"
+            onPress={() => switchMode("signin")}
+            disabled={loading}
+            variant="secondary"
           />
         ) : null}
-      </View>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>
-          {mode === "signup" ? t.auth.createWorkspaceTitle : t.auth.sessionRecoveryTitle}
-        </Text>
-        <Text style={styles.infoText}>
-          {mode === "signup"
-            ? t.auth.createWorkspaceSubtitle
-            : t.auth.sessionRecoverySubtitle}
-        </Text>
-      </View>
+        {mode === "signin" ? (
+          <>
+            <GatewayDivider label={copy.orContinue} />
 
-      {loading ? (
-        <View style={styles.loaderWrap}>
-          <ActivityIndicator size="small" />
-        </View>
-      ) : null}
+            <View style={styles.providers}>
+              <GatewayProviderButton
+                label={copy.continueGoogle}
+                meta={
+                  googleConfigured
+                    ? copy.configured
+                    : copy.googleNotConfigured
+                }
+                brand="google"
+                onPress={handleGoogleSignIn}
+                disabled={
+                  loading ||
+                  providerLoading !== null ||
+                  !googleConfigured
+                }
+                loading={providerLoading === "google"}
+              />
+
+              <GatewayProviderButton
+                label={copy.continueApple}
+                meta={copy.appleNotConfigured}
+                brand="apple"
+                onPress={handleAppleUnavailable}
+                disabled
+              />
+            </View>
+          </>
+        ) : null}
+
+        <GatewayNotice
+          title={
+            mode === "signup"
+              ? copy.createWorkspaceTitle
+              : mode === "forgot"
+                ? copy.recoveryInfoTitle
+                : copy.workspaceAccessTitle
+          }
+          body={
+            mode === "signup"
+              ? copy.createWorkspaceBody
+              : mode === "forgot"
+                ? copy.recoveryInfoBody
+                : copy.workspaceAccessBody
+          }
+        />
+      </View>
     </AuthScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-
+  content: {
+    width: "100%",
+    gap: 16,
+  },
   modeSwitch: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 4,
     flexDirection: "row",
-    gap: 10,
-    flexWrap: "wrap",
-    marginBottom: UI.spacing.md,
+    gap: 4,
   },
   modeButton: {
-    borderRadius: UI.radius.pill,
+    flex: 1,
+    minHeight: 42,
     borderWidth: 1,
-    paddingHorizontal: UI.spacing.md,
-    paddingVertical: UI.spacing.sm,
-    fontSize: UI.font.tiny,
-    fontWeight: "900",
-    letterSpacing: 0.8,
-    overflow: "hidden",
-    textTransform: "uppercase",
-  },
-  modeButtonActive: {
-    backgroundColor: "rgba(242,209,122,0.16)",
-    borderColor: "#f2d17a",
-    color: "#f2d17a",
-  },
-  modeButtonIdle: {
-    backgroundColor: "#11131a",
-    borderColor: "#31384a",
-    color: "#c9c2cf",
-  },
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#1b1f2a",
-    borderWidth: 1,
-    borderColor: "#31384a",
-    paddingHorizontal: UI.spacing.md,
-    paddingVertical: UI.spacing.xs,
-    borderRadius: UI.radius.pill,
-    marginBottom: UI.spacing.md,
-  },
-  badgeText: {
-    color: "#f2d17a",
-    fontSize: UI.font.tiny,
-    fontWeight: "900",
-    letterSpacing: 1,
-  },
-  label: {
-    color: "#f5d27a",
-    fontSize: UI.font.body,
-    fontWeight: "900",
-    marginBottom: 8,
-    marginTop: 4,
-  },
-  input: {
-    backgroundColor: "#11131a",
-    color: "#ffffff",
-    borderRadius: UI.radius.md,
-    paddingHorizontal: UI.spacing.md,
-    paddingVertical: UI.spacing.md,
-    marginBottom: UI.spacing.sm,
-    borderWidth: 1,
-    borderColor: "#2e2631",
-  },
-  actions: {
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     flexDirection: "row",
-    gap: 10,
-    flexWrap: "wrap",
-    marginTop: 4,
-    marginBottom: 14,
-  },
-  infoCard: {
-    marginTop: 6,
-    backgroundColor: "#11131a",
-    borderRadius: UI.radius.lg,
-    padding: UI.spacing.md,
-    boxShadow: UI.depth.soft,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: "#232834",
-  },
-  infoTitle: {
-    color: "#ffffff",
-    fontSize: UI.font.subtitle,
-    fontWeight: "900",
-    marginBottom: 6,
-  },
-  infoText: {
-    color: "#c9c2cf",
-    fontSize: UI.font.body,
-    lineHeight: 20,
-  },
-  errorBox: {
-    backgroundColor: "#301218",
-    padding: UI.spacing.md,
-    borderRadius: UI.radius.md,
-    marginBottom: UI.spacing.md,
-    borderWidth: 1,
-    borderColor: "#5a232e",
-  },
-  errorText: {
-    color: "#ffcad3",
-    fontSize: UI.font.body,
-  },
-  loaderWrap: {
-    marginTop: 14,
     alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
   },
-  forgotLink: {
-    color: "#d6b46a",
-    fontSize: 13,
-    fontWeight: "800",
-    marginBottom: 12,
-    textAlign: "right",
+  modeButtonText: {
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  fields: {
+    gap: 13,
+  },
+  forgotButton: {
+    alignSelf: "flex-end",
+    paddingVertical: 2,
+  },
+  forgotText: {
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  providers: {
+    gap: 10,
   },
 });

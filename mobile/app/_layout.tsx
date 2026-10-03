@@ -7,12 +7,14 @@ import { BillingProvider } from "../contexts/BillingContext";
 import { ToastProvider } from "../components/ui/Toast";
 import { useSession } from "../hooks/useSession";
 import { DashboardThemeProvider } from "../hooks/useDashboardTheme";
+import { SalonFlowWebBrandSync } from "../components/brand/SalonFlowBrandMark";
 
 export default function RootLayout() {
   const { token, booting } = useSession();
 
   return (
     <DashboardThemeProvider>
+    <SalonFlowWebBrandSync />
     <View style={styles.root}>
       <ToastProvider>
         <LanguageProvider>
