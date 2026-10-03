@@ -22,6 +22,7 @@ export type NextBestActionLabels = Readonly<{
   retry: string;
   locked: string;
   upgrade: string;
+  settings: string;
 }>;
 
 export type NextBestActionV2Props = Readonly<{
@@ -31,6 +32,7 @@ export type NextBestActionV2Props = Readonly<{
   onActionPress: (action: NextBestAction) => void;
   onRetry?: () => void;
   onUpgrade?: () => void;
+  onSettings?: () => void;
 }>;
 
 function categoryLabel(category: NextBestActionCategory, labels: NextBestActionLabels): string {
@@ -53,6 +55,7 @@ function NextBestActionV2({
   onActionPress,
   onRetry,
   onUpgrade,
+  onSettings,
 }: NextBestActionV2Props) {
   const { theme } = useDashboardTheme();
   const cardStyle = {
@@ -90,11 +93,18 @@ function NextBestActionV2({
       <View style={[styles.shell, cardStyle]}>
         <Text style={styles.eyebrow}>{labels.title}</Text>
         <Text style={styles.stateTitle}>{labels.unavailable}</Text>
-        {onRetry ? (
-          <Pressable accessibilityRole="button" onPress={onRetry} style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>{labels.retry}</Text>
-          </Pressable>
-        ) : null}
+        <View style={styles.stateActions}>
+          {onRetry ? (
+            <Pressable accessibilityRole="button" onPress={onRetry} style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>{labels.retry}</Text>
+            </Pressable>
+          ) : null}
+          {onSettings ? (
+            <Pressable accessibilityRole="button" onPress={onSettings} style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>{labels.settings}</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     );
   }
@@ -183,7 +193,8 @@ const styles = StyleSheet.create({
   actionButtonText: { color: "#EAE4FF", fontSize: 11, fontWeight: "800" },
   primaryButton: { marginTop: 14, alignSelf: "flex-start", borderRadius: 999, backgroundColor: "#8B5CF6", paddingHorizontal: 16, paddingVertical: 10 },
   primaryButtonText: { color: "#FFFFFF", fontSize: 12, fontWeight: "800" },
-  secondaryButton: { marginTop: 14, alignSelf: "flex-start", borderRadius: 999, borderWidth: 1, borderColor: "rgba(124,92,255,0.45)", paddingHorizontal: 16, paddingVertical: 10 },
+  stateActions: { marginTop: 14, flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  secondaryButton: { alignSelf: "flex-start", borderRadius: 999, borderWidth: 1, borderColor: "rgba(124,92,255,0.45)", paddingHorizontal: 16, paddingVertical: 10 },
   secondaryButtonText: { color: "#D7C6FF", fontSize: 12, fontWeight: "800" },
   pressed: { opacity: 0.78 },
 });

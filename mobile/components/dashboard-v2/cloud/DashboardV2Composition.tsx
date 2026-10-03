@@ -1602,13 +1602,17 @@ function DashboardV2CompositionInner() {
         retry: translate('Retry', locale),
         locked: translate('Locked Feature Upgrade Note', locale),
         upgrade: translate('Pricing Packages', locale),
+        settings: translate('Settings', locale),
       }}
       onActionPress={(action: NextBestAction) =>
         router.push(action.destination as Href)
       }
       onRetry={intelligenceDecision.refresh}
       onUpgrade={() =>
-        router.push('/(tabs)/explore' as Href)
+        router.push('/(tabs)/explore?section=billing' as Href)
+      }
+      onSettings={() =>
+        router.push('/(tabs)/explore?section=intelligence' as Href)
       }
     />
   );

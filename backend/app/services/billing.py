@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+import os
 
 import stripe
 
@@ -116,48 +117,27 @@ def get_billing_plans() -> dict:
     }
 
 
-async def ensure_subscription(db, admin_id: str) -> dict:
-    now = datetime.now(UTC)
-
+async def get_subscription_status(db, admin_id: str) -> dict | None:
     subscription = await db.subscriptions.find_one({"admin_id": admin_id})
 
-    if subscription is not None:
-        return subscription
+    if subscription is None:
+        return None
 
-    doc = {
-        "admin_id": admin_id,
-        "plan": "business",
-        "status": "active",
-        "provider": "internal",
-        "customer_id": None,
-        "subscription_id": None,
-        "expires_at": None,
-        "created_at": now,
-        "updated_at": now,
-        "source": "auto_seed",
-    }
+    plan = subscription.get("plan")
+    if plan not in VALID_PLAN_CODES:
+        raise ValueError("Invalid persisted subscription plan")
 
-    result = await db.subscriptions.insert_one(doc)
-    created = await db.subscriptions.find_one({"_id": result.inserted_id})
-    return created or doc
-
-
-async def get_subscription_status(db, admin_id: str) -> dict:
-    subscription = await ensure_subscription(db, admin_id)
-
-    plan = subscription.get("plan", "free")
     status = subscription.get("status", "inactive")
     provider = subscription.get("provider", "internal")
     expires_at = subscription.get("expires_at")
-    source = subscription.get("source", "database")
 
     return {
         "plan": plan,
         "status": status,
         "provider": provider,
-        "features": PLAN_FEATURES.get(plan, PLAN_FEATURES["free"]),
+        "features": PLAN_FEATURES[plan],
         "expires_at": expires_at,
-        "source": source,
+        "source": "stripe" if provider == "stripe" else "organization",
         "billing_ready": is_billing_ready(),
         "updated_at": datetime.now(UTC).isoformat(),
     }
@@ -168,24 +148,60 @@ async def set_subscription_plan(db, admin_id: str, plan: str) -> dict:
         raise ValueError("Invalid subscription plan")
 
     now = datetime.now(UTC)
-    await ensure_subscription(db, admin_id)
 
     await db.subscriptions.update_one(
         {"admin_id": admin_id},
         {
             "$set": {
+                "admin_id": admin_id,
                 "plan": plan,
                 "status": "active",
                 "provider": "internal",
+                "customer_id": None,
+                "subscription_id": None,
+                "expires_at": None,
                 "updated_at": now,
-                "source": "internal_admin_update",
-            }
+                "source": "internal_operator_update",
+            },
+            "$setOnInsert": {
+                "created_at": now,
+            },
         },
+        upsert=True,
     )
 
     updated = await db.subscriptions.find_one({"admin_id": admin_id})
     return updated or {}
 
+
+def _billing_return_url_bases() -> tuple[str, ...]:
+    values = [
+        settings.frontend_web_origin,
+        settings.frontend_localhost_origin,
+        settings.frontend_lan_origin,
+        settings.public_app_url,
+        *os.getenv("BILLING_ALLOWED_RETURN_URLS", "").split(","),
+    ]
+
+    cleaned: list[str] = []
+    for raw in values:
+        value = raw.strip().rstrip("/")
+        if value and value not in cleaned:
+            cleaned.append(value)
+
+    return tuple(cleaned)
+
+
+def validate_billing_return_url(value: str) -> str:
+    candidate = (value or "").strip()
+    if not candidate:
+        raise ValueError("Billing return URL is required")
+
+    for base in _billing_return_url_bases():
+        if candidate == base or candidate.startswith(base + "/") or candidate.startswith(base + "?"):
+            return candidate
+
+    raise ValueError("Billing return URL is not allowed")
 
 
 def get_stripe_price_id(plan: str) -> str:
@@ -204,6 +220,8 @@ def create_checkout_session(admin_id: str, plan: str, success_url: str, cancel_u
     if not settings.stripe_ready:
         raise RuntimeError("Stripe billing is not configured")
 
+    success_url = validate_billing_return_url(success_url)
+    cancel_url = validate_billing_return_url(cancel_url)
     price_id = get_stripe_price_id(plan)
     stripe.api_key = settings.stripe_secret_key
 
@@ -237,6 +255,7 @@ async def create_customer_portal_session(db, admin_id: str, return_url: str) -> 
     if not settings.stripe_ready:
         raise RuntimeError("Stripe billing is not configured")
 
+    return_url = validate_billing_return_url(return_url)
     subscription = await db.subscriptions.find_one({"admin_id": admin_id})
     customer_id = (subscription or {}).get("customer_id")
 
@@ -262,7 +281,7 @@ def normalize_stripe_plan(raw_plan: str | None) -> str:
     if plan in VALID_PLAN_CODES:
         return plan
 
-    return "business"
+    raise ValueError("Unknown Stripe plan mapping")
 
 
 async def sync_checkout_session_completed(db, session: dict) -> dict:
@@ -304,13 +323,21 @@ async def sync_stripe_subscription_event(db, subscription: dict, event_type: str
     status = subscription.get("status", "inactive")
     metadata = subscription.get("metadata", {}) or {}
     admin_id = metadata.get("admin_id")
-    plan = normalize_stripe_plan(metadata.get("plan"))
+    raw_plan = metadata.get("plan")
 
-    if not admin_id and subscription_id:
+    existing = None
+    if subscription_id:
         existing = await db.subscriptions.find_one({"subscription_id": subscription_id})
-        if existing:
-            admin_id = existing.get("admin_id")
-            plan = existing.get("plan", plan)
+
+    if not admin_id and existing:
+        admin_id = existing.get("admin_id")
+
+    if raw_plan:
+        plan = normalize_stripe_plan(raw_plan)
+    elif existing and existing.get("plan") in VALID_PLAN_CODES:
+        plan = existing["plan"]
+    else:
+        raise ValueError("Unknown Stripe plan mapping")
 
     if not admin_id:
         return {"synced": False, "reason": "missing_admin_id"}

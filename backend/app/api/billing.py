@@ -1,3 +1,6 @@
+import os
+
+from bson import ObjectId
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 
@@ -6,6 +9,46 @@ from app.db.mongo import get_database
 from app.services.billing import create_checkout_session, create_customer_portal_session, get_billing_plans, get_subscription_status, handle_stripe_webhook, set_subscription_plan
 
 router = APIRouter()
+
+
+
+def _billing_operator_mutation_enabled() -> bool:
+    return os.getenv("BILLING_OPERATOR_MUTATION_ENABLED", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _billing_operator_email_set() -> set[str]:
+    return {
+        value.strip().lower()
+        for value in os.getenv("BILLING_OPERATOR_EMAILS", "").split(",")
+        if value.strip()
+    }
+
+
+async def _require_billing_operator(db, auth: object) -> None:
+    if not _billing_operator_mutation_enabled():
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "billing_operator_required"},
+        )
+
+    admin_id = auth.get("admin_id") if isinstance(auth, dict) else None
+    if not isinstance(admin_id, str) or not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = await db.admin_users.find_one({"_id": ObjectId(admin_id)})
+    email = (user or {}).get("email")
+    normalized = email.strip().lower() if isinstance(email, str) else ""
+
+    if not normalized or normalized not in _billing_operator_email_set():
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "billing_operator_required"},
+        )
 
 
 class SetPlanRequest(BaseModel):
@@ -33,7 +76,21 @@ async def billing_status(auth=Depends(require_auth)):
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
-    return await get_subscription_status(db, auth["admin_id"])
+    try:
+        status = await get_subscription_status(db, auth["admin_id"])
+    except ValueError:
+        raise HTTPException(
+            status_code=409,
+            detail={"code": "invalid_subscription_state"},
+        ) from None
+
+    if status is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "subscription_not_provisioned"},
+        )
+
+    return status
 
 
 
@@ -43,12 +100,18 @@ async def billing_admin_set_plan(payload: SetPlanRequest, auth=Depends(require_a
     if db is None:
         raise HTTPException(status_code=500, detail="Database not connected")
 
+    await _require_billing_operator(db, auth)
+
     try:
         await set_subscription_plan(db, auth["admin_id"], payload.plan)
+        status = await get_subscription_status(db, auth["admin_id"])
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid subscription plan") from None
 
-    return await get_subscription_status(db, auth["admin_id"])
+    if status is None:
+        raise HTTPException(status_code=500, detail="Subscription update failed")
+
+    return status
 
 
 
