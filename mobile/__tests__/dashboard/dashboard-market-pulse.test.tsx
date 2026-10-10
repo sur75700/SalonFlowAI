@@ -1,10 +1,16 @@
 import React from "react";
-import { act, render, renderHook, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, renderHook, waitFor, within } from "@testing-library/react-native";
 
 import RoyalMarketPulseV2 from "../../components/dashboard-v2/cloud/RoyalMarketPulseV2";
 import { useMarketPulse } from "../../hooks/useMarketPulse";
 import { api } from "../../lib/api";
-import type { MarketPulseResponse } from "../../lib/market";
+import { t } from "../../lib/i18n";
+import {
+  buildAmdMarketPanels,
+  buildReferenceMarketPanels,
+  deriveMarketCrossRate,
+  type MarketPulseResponse,
+} from "../../lib/market";
 
 jest.mock("../../lib/api", () => ({
   api: {
@@ -57,6 +63,18 @@ const labels = {
   refreshing: "Refreshing",
   retry: "Retry",
   source: "Source",
+  inspect: "Inspect rate",
+  referenceRate: "Reference rate",
+  from: "From",
+  to: "To",
+  derived: "Derived from",
+  derivedNote: "Derived from loaded authoritative quotes.",
+  conversionUnavailable: "Conversion unavailable",
+  close: "Close",
+  expand: "Expand market pulse",
+  fullView: "Live currency command center",
+  referenceCurrency: "Reference currency",
+  referenceMatrixNote: "All four panels follow the selected reference currency.",
 };
 
 afterEach(() => {
@@ -64,6 +82,19 @@ afterEach(() => {
 });
 
 describe("Royal Market Pulse", () => {
+  it("localizes market fullscreen controls and AI confidence labels in all supported locales", () => {
+    expect(t("High", "en")).toBe("High");
+    expect(t("High", "hy")).toBe("Բարձր");
+    expect(t("High", "ru")).toBe("Высокий");
+    expect(t("High", "fr")).toBe("Élevé");
+    expect(t("Market Full View", "hy")).toBe("Արժույթների կենդանի հրամանային կենտրոն");
+    expect(t("Market Expand", "ru")).toBe("Развернуть рыночный пульс");
+    expect(t("Market Full View", "fr")).toBe("Centre de commande des devises en direct");
+    expect(t("Market Reference Currency", "hy")).toBe("Հենակետային արժույթ");
+    expect(t("Market Reference Currency", "ru")).toBe("Опорная валюта");
+    expect(t("Market Reference Currency", "fr")).toBe("Devise de référence");
+  });
+
   it("renders the initial loading state explicitly", () => {
     const screen = render(
       <RoyalMarketPulseV2 data={null} status="loading" labels={labels} locale="en" />,
@@ -94,10 +125,160 @@ describe("Royal Market Pulse", () => {
       <RoyalMarketPulseV2 data={PULSE} status="success" labels={labels} locale="en" />,
     );
     expect(screen.getByText("USD/AMD")).toBeTruthy();
-    expect(screen.getByText("BTC/USD")).toBeTruthy();
+    expect(screen.getByText("BTC/AMD")).toBeTruthy();
     expect(screen.getByText("Stale")).toBeTruthy();
     expect(screen.getByText("Unavailable")).toBeTruthy();
-    expect(screen.getByText("Source: COINBASE")).toBeTruthy();
+    expect(screen.getByText(/BTC\/USD × USD\/AMD/)).toBeTruthy();
+  });
+
+  it("derives truthful cross-rates only from available canonical quotes", () => {
+    const eurUsd = deriveMarketCrossRate(PULSE, "EUR", "USD");
+    expect(eurUsd).not.toBeNull();
+    expect(eurUsd?.rate).toBeCloseTo(451.2 / 385.5, 6);
+    expect(eurUsd?.state).toBe("STALE");
+    expect(eurUsd?.sources).toEqual(["CBA"]);
+
+    expect(deriveMarketCrossRate(PULSE, "RUB", "USD")).toBeNull();
+  });
+
+  it("builds four AMD-centric panels and derives BTC/AMD from loaded canonical quotes only", () => {
+    const panels = buildAmdMarketPanels(PULSE);
+    expect(panels.map((panel) => panel.pair)).toEqual([
+      "USD/AMD",
+      "EUR/AMD",
+      "RUB/AMD",
+      "BTC/AMD",
+    ]);
+
+    const btcAmd = panels[3];
+    expect(btcAmd.derived).toBe(true);
+    expect(btcAmd.asset_class).toBe("MARKET_ASSET");
+    expect(btcAmd.rate).toBeCloseTo(101234.5 * 385.5, 4);
+    expect(btcAmd.sources).toEqual(["COINBASE", "CBA"]);
+    expect(btcAmd.source_pairs).toEqual(["BTC/USD", "USD/AMD"]);
+  });
+
+  it("rebuilds the four-panel matrix around any selected reference currency without network data", () => {
+    const usdPanels = buildReferenceMarketPanels(PULSE, "USD");
+    expect(usdPanels.map((panel) => panel.pair)).toEqual([
+      "AMD/USD",
+      "EUR/USD",
+      "RUB/USD",
+      "BTC/USD",
+    ]);
+
+    const eurUsd = usdPanels.find((panel) => panel.pair === "EUR/USD");
+    expect(eurUsd?.rate).toBeCloseTo(451.2 / 385.5, 6);
+    expect(eurUsd?.derived).toBe(true);
+    expect(eurUsd?.state).toBe("STALE");
+
+    const btcUsd = usdPanels.find((panel) => panel.pair === "BTC/USD");
+    expect(btcUsd?.rate).toBeCloseTo(101234.5, 6);
+    expect(btcUsd?.derived).toBe(false);
+    expect(btcUsd?.asset_class).toBe("MARKET_ASSET");
+
+    const rubUsd = usdPanels.find((panel) => panel.pair === "RUB/USD");
+    expect(rubUsd?.state).toBe("UNAVAILABLE");
+    expect(rubUsd?.rate).toBeNull();
+  });
+
+  it("renders recognizable currency symbols with canonical codes in compact and fullscreen selectors", () => {
+    const screen = render(
+      <RoyalMarketPulseV2 data={PULSE} status="success" labels={labels} locale="en" />,
+    );
+
+    expect(within(screen.getByTestId("market-inline-reference-AMD")).getByText("֏ AMD")).toBeTruthy();
+    expect(within(screen.getByTestId("market-inline-reference-USD")).getByText("$ USD")).toBeTruthy();
+    expect(within(screen.getByTestId("market-inline-reference-EUR")).getByText("€ EUR")).toBeTruthy();
+    expect(within(screen.getByTestId("market-inline-reference-RUB")).getByText("₽ RUB")).toBeTruthy();
+    expect(within(screen.getByTestId("market-inline-reference-BTC")).getByText("₿ BTC")).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId("market-pulse-expand"));
+    const modal = screen.getByTestId("market-pulse-modal");
+    expect(within(within(modal).getByTestId("market-reference-AMD")).getByText("֏ AMD")).toBeTruthy();
+    expect(within(within(modal).getByTestId("market-reference-BTC")).getByText("₿ BTC")).toBeTruthy();
+    expect(within(within(modal).getByTestId("market-fullscreen-base-USD")).getByText("$ USD")).toBeTruthy();
+    expect(within(within(modal).getByTestId("market-fullscreen-quote-currency-EUR")).getByText("€ EUR")).toBeTruthy();
+  });
+
+  it("keeps compact mode clean and switches the four live panels instantly by reference currency", () => {
+    const screen = render(
+      <RoyalMarketPulseV2 data={PULSE} status="success" labels={labels} locale="en" />,
+    );
+
+    expect(screen.getByTestId("market-inline-reference-switcher")).toBeTruthy();
+    expect(screen.queryByTestId("market-detail-panel")).toBeNull();
+    expect(screen.getByTestId("market-quote-USD/AMD")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-EUR/AMD")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-RUB/AMD")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-BTC/AMD")).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId("market-inline-reference-USD"));
+    expect(screen.getByTestId("market-quote-AMD/USD")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-EUR/USD")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-RUB/USD")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-BTC/USD")).toBeTruthy();
+    expect(screen.queryByTestId("market-quote-USD/AMD")).toBeNull();
+
+    fireEvent.press(screen.getByTestId("market-inline-reference-BTC"));
+    expect(screen.getByTestId("market-quote-AMD/BTC")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-USD/BTC")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-EUR/BTC")).toBeTruthy();
+    expect(screen.getByTestId("market-quote-RUB/BTC")).toBeTruthy();
+    expect(screen.queryByTestId("market-detail-panel")).toBeNull();
+  });
+
+  it("carries the compact reference into fullscreen while preserving the full converter playground", () => {
+    const screen = render(
+      <RoyalMarketPulseV2 data={PULSE} status="success" labels={labels} locale="en" />,
+    );
+
+    fireEvent.press(screen.getByTestId("market-inline-reference-USD"));
+    fireEvent.press(screen.getByTestId("market-quote-EUR/USD"));
+    fireEvent.press(screen.getByTestId("market-pulse-expand"));
+
+    const modal = screen.getByTestId("market-pulse-modal");
+    expect(within(modal).getByTestId("market-reference-USD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-AMD/USD")).toBeTruthy();
+    const detail = within(modal).getByTestId("market-fullscreen-detail-panel");
+    expect(within(detail).getByText("EUR/USD")).toBeTruthy();
+    expect(within(detail).getByText(/1 EUR = .* USD/)).toBeTruthy();
+  });
+
+  it("opens a fullscreen live currency matrix and lets every supported currency become the four-panel reference", () => {
+    const screen = render(
+      <RoyalMarketPulseV2 data={PULSE} status="success" labels={labels} locale="en" />,
+    );
+
+    fireEvent.press(screen.getByTestId("market-pulse-expand"));
+    const modal = screen.getByTestId("market-pulse-modal");
+    expect(within(modal).getByText("Live currency command center")).toBeTruthy();
+    expect(within(modal).getByTestId("market-reference-matrix")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-USD/AMD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-EUR/AMD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-RUB/AMD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-BTC/AMD")).toBeTruthy();
+
+    fireEvent.press(within(modal).getByTestId("market-reference-USD"));
+    expect(within(modal).getByTestId("market-fullscreen-quote-AMD/USD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-EUR/USD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-RUB/USD")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-BTC/USD")).toBeTruthy();
+    expect(within(modal).queryByTestId("market-fullscreen-quote-USD/AMD")).toBeNull();
+
+    fireEvent.press(within(modal).getByTestId("market-fullscreen-quote-EUR/USD"));
+    const detail = within(modal).getByTestId("market-fullscreen-detail-panel");
+    expect(within(detail).getByText("EUR/USD")).toBeTruthy();
+    expect(within(detail).getByText(/1 EUR = .* USD/)).toBeTruthy();
+
+    fireEvent.press(within(modal).getByTestId("market-reference-BTC"));
+    expect(within(modal).getByTestId("market-fullscreen-quote-AMD/BTC")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-USD/BTC")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-EUR/BTC")).toBeTruthy();
+    expect(within(modal).getByTestId("market-fullscreen-quote-RUB/BTC")).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId("market-pulse-close"));
+    expect(screen.queryByTestId("market-pulse-modal")).toBeNull();
   });
 
   it("performs one canonical request, not one request per quote, and ignores unrelated rerenders", async () => {

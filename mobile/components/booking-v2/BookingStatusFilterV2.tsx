@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 /** Only the 3 confirmed-real statuses, plus 'all' — matches BookingCardV2. */
 export type BookingFilterValue = 'all' | 'scheduled' | 'completed' | 'cancelled';
 
@@ -42,15 +44,32 @@ function BookingStatusFilterV2({
   onSearchChange,
   searchPlaceholder,
 }: BookingStatusFilterV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, burgundySurfaceStyle]}>
       {onSearchChange !== undefined && (
         <TextInput
           value={searchValue}
           onChangeText={onSearchChange}
           placeholder={searchPlaceholder}
           placeholderTextColor={colors.textTertiary}
-          style={styles.searchInput}
+          style={[styles.searchInput, burgundyRaisedStyle]}
         />
       )}
 
@@ -63,7 +82,7 @@ function BookingStatusFilterV2({
               onPress={() => onChange(option.value)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              style={[styles.segment, active && styles.segmentActive]}
+              style={[styles.segment, !active && burgundyRaisedStyle, active && styles.segmentActive]}
             >
               <Text style={[styles.segmentText, active && styles.segmentTextActive]} numberOfLines={1}>
                 {option.label}

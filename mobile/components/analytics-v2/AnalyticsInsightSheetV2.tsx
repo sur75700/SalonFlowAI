@@ -8,6 +8,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -716,6 +718,23 @@ export default function AnalyticsInsightSheetV2({
   insightKey,
   onClose,
 }: Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const { locale } = useAppPreferences();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
@@ -752,6 +771,7 @@ export default function AnalyticsInsightSheetV2({
           accessibilityViewIsModal
           style={[
             styles.sheet,
+            burgundySurfaceStyle,
             wide && styles.sheetWide,
             { borderColor: tone.border },
           ]}

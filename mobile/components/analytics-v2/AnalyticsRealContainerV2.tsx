@@ -10,6 +10,8 @@ import {
   Text,
   View,
 } from "react-native";
+
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 import { Ionicons } from "@expo/vector-icons";
 
 import AnalyticsCommandCenterV2 from "./AnalyticsCommandCenterV2";
@@ -113,6 +115,23 @@ function StatusView({
 }
 
 export default function AnalyticsRealContainerV2() {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const {
     token,
     booting,

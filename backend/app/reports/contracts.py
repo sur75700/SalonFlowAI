@@ -21,7 +21,7 @@ REPORT_FORMATS_V2 = ("pdf", "txt", "csv", "xlsx", "docx")
 REPORT_STATUS_VALUES = ("scheduled", "completed", "cancelled")
 REPORT_FIAT_CURRENCIES = ("AMD", "USD", "EUR", "RUB")
 REPORT_MARKET_ASSETS = ("BTC",)
-REPORT_THEME_IDS = ("royal_cosmos", "royal_gold_cosmos")
+REPORT_THEME_IDS = ("royal_cosmos", "royal_gold_cosmos", "burgundy_cosmos")
 REPORT_CURRENCY_REPORT_TYPES = frozenset(
     {"revenue-summary", "client-summary", "service-performance"}
 )
@@ -40,7 +40,7 @@ ReportTypeName = Literal[
     "capacity-utilization",
 ]
 ReportFormatName = Literal["pdf", "txt", "csv", "xlsx", "docx"]
-ReportThemeId = Literal["royal_cosmos", "royal_gold_cosmos"]
+ReportThemeId = Literal["royal_cosmos", "royal_gold_cosmos", "burgundy_cosmos"]
 
 REPORT_SUPPORTED_FILTERS: Mapping[str, frozenset[str]] = MappingProxyType(
     {

@@ -1,9 +1,11 @@
 from datetime import UTC, datetime, timedelta
+import base64
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, EmailStr
 from bson import ObjectId
+from bson.binary import Binary
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 
@@ -14,6 +16,68 @@ from app.core.config import settings
 from app.services.email import send_email
 
 router = APIRouter()
+
+
+AVATAR_MAX_BYTES = 1_500_000
+AVATAR_ALLOWED_MIME = frozenset({
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+})
+
+
+def normalize_avatar_mime(value: str | None) -> str:
+    normalized = (value or "").split(";", 1)[0].strip().lower()
+    if normalized == "image/jpg":
+        return "image/jpeg"
+    return normalized
+
+
+def detect_avatar_mime(content: bytes) -> str | None:
+    if content.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if content.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if (
+        len(content) >= 12
+        and content[0:4] == b"RIFF"
+        and content[8:12] == b"WEBP"
+    ):
+        return "image/webp"
+    return None
+
+
+def resolve_avatar_url(user: dict) -> tuple[str | None, str]:
+    custom_blob = user.get("avatar_blob")
+    custom_mime = normalize_avatar_mime(user.get("avatar_mime"))
+
+    if custom_blob and custom_mime in AVATAR_ALLOWED_MIME:
+        raw = bytes(custom_blob)
+        encoded = base64.b64encode(raw).decode("ascii")
+        return f"data:{custom_mime};base64,{encoded}", "custom"
+
+    provider_url = str(user.get("provider_avatar_url") or "").strip()
+    if provider_url.startswith("https://"):
+        return provider_url, "google"
+
+    return None, "initials"
+
+
+def serialize_current_user(user: dict) -> dict:
+    avatar_url, avatar_source = resolve_avatar_url(user)
+    return {
+        "id": str(user["_id"]),
+        "email": user.get("email"),
+        "full_name": user.get("full_name"),
+        "role": user.get("role", "owner"),
+        "email_verified": bool(user.get("email_verified", False)),
+        "last_login_at": user.get("last_login_at"),
+        "created_at": user.get("created_at"),
+        "avatar_url": avatar_url,
+        "avatar_source": avatar_source,
+    }
+
+
 
 
 class LoginRequest(BaseModel):
@@ -165,6 +229,9 @@ async def find_or_create_google_user(db, google_payload: dict) -> dict:
     email = str(google_payload.get("email", "")).lower().strip()
     google_sub = str(google_payload.get("sub", "")).strip()
     full_name = str(google_payload.get("name") or email.split("@")[0]).strip()
+    provider_avatar_url = str(google_payload.get("picture") or "").strip()
+    if provider_avatar_url and not provider_avatar_url.startswith("https://"):
+        provider_avatar_url = ""
 
     if not email or not google_sub:
         raise HTTPException(status_code=400, detail="Invalid Google identity")
@@ -172,18 +239,20 @@ async def find_or_create_google_user(db, google_payload: dict) -> dict:
     user = await db.admin_users.find_one({"email": email})
 
     if user is not None:
+        google_updates = {
+            "google_id": google_sub,
+            "auth_provider": user.get("auth_provider", "google"),
+            "email_verified": True,
+            "email_verified_at": user.get("email_verified_at") or now,
+            "last_login_at": now,
+            "updated_at": now,
+        }
+        if provider_avatar_url:
+            google_updates["provider_avatar_url"] = provider_avatar_url
+
         await db.admin_users.update_one(
             {"_id": user["_id"]},
-            {
-                "$set": {
-                    "google_id": google_sub,
-                    "auth_provider": user.get("auth_provider", "google"),
-                    "email_verified": True,
-                    "email_verified_at": user.get("email_verified_at") or now,
-                    "last_login_at": now,
-                    "updated_at": now,
-                }
-            },
+            {"$set": google_updates},
         )
         updated = await db.admin_users.find_one({"_id": user["_id"]})
         return updated or user
@@ -194,6 +263,7 @@ async def find_or_create_google_user(db, google_payload: dict) -> dict:
         "role": "owner",
         "auth_provider": "google",
         "google_id": google_sub,
+        "provider_avatar_url": provider_avatar_url or None,
         "email_verified": True,
         "email_verified_at": now,
         "created_at": now,
@@ -323,15 +393,91 @@ async def get_current_user(auth: dict = Depends(require_auth)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return {
-        "id": str(user["_id"]),
-        "email": user.get("email"),
-        "full_name": user.get("full_name"),
-        "role": user.get("role", "owner"),
-        "email_verified": bool(user.get("email_verified", False)),
-        "last_login_at": user.get("last_login_at"),
-        "created_at": user.get("created_at"),
-    }
+    return serialize_current_user(user)
+
+
+@router.post("/me/avatar")
+async def upload_current_user_avatar(
+    file: UploadFile = File(...),
+    auth: dict = Depends(require_auth),
+):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    admin_id = auth.get("admin_id")
+    if not admin_id or not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    content = await file.read(AVATAR_MAX_BYTES + 1)
+    if not content:
+        raise HTTPException(status_code=400, detail="Avatar image is empty")
+    if len(content) > AVATAR_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="Avatar image is too large")
+
+    declared_mime = normalize_avatar_mime(file.content_type)
+    detected_mime = detect_avatar_mime(content)
+
+    if detected_mime is None or detected_mime not in AVATAR_ALLOWED_MIME:
+        raise HTTPException(status_code=415, detail="Unsupported avatar image type")
+    if declared_mime and declared_mime not in AVATAR_ALLOWED_MIME:
+        raise HTTPException(status_code=415, detail="Unsupported avatar content type")
+    if declared_mime and declared_mime != detected_mime:
+        raise HTTPException(status_code=415, detail="Avatar content type mismatch")
+
+    now = datetime.now(UTC).isoformat()
+    result = await db.admin_users.update_one(
+        {"_id": ObjectId(admin_id)},
+        {
+            "$set": {
+                "avatar_blob": Binary(content),
+                "avatar_mime": detected_mime,
+                "avatar_updated_at": now,
+                "updated_at": now,
+            }
+        },
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = await db.admin_users.find_one({"_id": ObjectId(admin_id)})
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return serialize_current_user(user)
+
+
+@router.delete("/me/avatar")
+async def delete_current_user_avatar(auth: dict = Depends(require_auth)):
+    db = get_database()
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not connected")
+
+    admin_id = auth.get("admin_id")
+    if not admin_id or not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    result = await db.admin_users.update_one(
+        {"_id": ObjectId(admin_id)},
+        {
+            "$unset": {
+                "avatar_blob": "",
+                "avatar_mime": "",
+                "avatar_updated_at": "",
+            },
+            "$set": {
+                "updated_at": datetime.now(UTC).isoformat(),
+            },
+        },
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user = await db.admin_users.find_one({"_id": ObjectId(admin_id)})
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return serialize_current_user(user)
 
 
 @router.post("/login")

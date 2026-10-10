@@ -42,6 +42,7 @@ function emptyForm(currency: AppCurrency): ServiceFormValuesV2 {
     price: "",
     currency,
     is_active: true,
+    icon_key: "",
   };
 }
 
@@ -504,6 +505,7 @@ export default function ServiceCenterContainerV2() {
         createValues.currency.trim().toUpperCase()
       ),
       is_active: createValues.is_active,
+      icon_key: createValues.icon_key || null,
     });
 
     if (created) {
@@ -534,6 +536,7 @@ export default function ServiceCenterContainerV2() {
         service.currency || preferredCurrency
       ),
       is_active: Boolean(service.is_active),
+      icon_key: service.icon_key || "",
     });
   };
 
@@ -552,6 +555,7 @@ export default function ServiceCenterContainerV2() {
         selectedService.currency || preferredCurrency
       ),
       is_active: Boolean(selectedService.is_active),
+      icon_key: selectedService.icon_key || "",
     });
 
     setEditErrors({});
@@ -597,6 +601,7 @@ export default function ServiceCenterContainerV2() {
           editValues.currency.trim().toUpperCase()
         ),
         is_active: editValues.is_active,
+        icon_key: editValues.icon_key || null,
       }
     );
 
@@ -656,7 +661,7 @@ export default function ServiceCenterContainerV2() {
 
   return (
     <ServiceCenterCompositionV2
-      overline="SALONFLOW AI"
+      overline="SalonFlowAI"
       title={t("Service Catalog", locale)}
       subtitle={t(
         "Service CatalogHeroSubtitle",

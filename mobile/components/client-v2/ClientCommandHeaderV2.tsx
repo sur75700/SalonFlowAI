@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, Pressable, Animated, StyleSheet, useWindowDimensions } from 'react-native';
 
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+
 const theme = {
   color: {
     bgBase: '#0A0A12',
@@ -103,11 +105,21 @@ export default function ClientCommandHeaderV2({
   const { width } = useWindowDimensions();
   const isDesktop = width >= 860;
   const interactive = !disabled && !loading;
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const brandAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
 
   return (
     <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <View style={styles.titleBlock}>
-        {!!overline && <Text style={styles.overline}>{overline}</Text>}
+        <Text
+          accessibilityLabel={overline || "SalonFlowAI"}
+          style={[styles.overline, { color: brandAccent }]}
+        >
+          SalonFlowAI
+        </Text>
         <Text style={styles.title}>{title}</Text>
         {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>

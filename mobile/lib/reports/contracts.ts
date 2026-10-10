@@ -440,7 +440,8 @@ export function assertReportDocument(
   if (
     value.theme_id !== undefined &&
     value.theme_id !== "royal_cosmos" &&
-    value.theme_id !== "royal_gold_cosmos"
+    value.theme_id !== "royal_gold_cosmos" &&
+    value.theme_id !== "burgundy_cosmos"
   ) {
     throw new Error("Invalid report theme");
   }

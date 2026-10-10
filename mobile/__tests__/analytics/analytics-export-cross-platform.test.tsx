@@ -66,6 +66,9 @@ describe("Analytics professional cross-platform export", () => {
   it("embeds the selected Royal Cosmos background into the PDF-ready report", () => {
     expect(source).toContain('from "../../hooks/useDashboardTheme"');
     expect(source).toContain("selectedThemeId");
+    expect(source).toContain("burgundy-cosmos.png");
+    expect(source).toContain('"burgundy_cosmos"');
+    expect(source).toContain("backgroundMimeType");
     expect(source).toContain('royal-cosmos.jpg');
     expect(source).toContain('royal-gold-cosmos.jpg');
     expect(source).toContain("resolveExportBackgroundDataUrl");

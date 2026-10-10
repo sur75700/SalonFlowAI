@@ -10,9 +10,11 @@ import {
 import { getTokenEmail } from "../lib/jwt";
 
 const SESSION_EVENT = "salonflow-session-changed";
+const PROFILE_EVENT = "salonflow-profile-changed";
 
 let memoryToken = "";
 const listeners = new Set<(token: string) => void>();
+const profileListeners = new Set<() => void>();
 
 function canUseBrowserSessionEvents(): boolean {
   return (
@@ -40,10 +42,20 @@ function notifySessionChanged(nextToken: string) {
   }
 }
 
+function notifyProfileChanged() {
+  if (canUseBrowserSessionEvents()) {
+    window.dispatchEvent(new Event(PROFILE_EVENT));
+    return;
+  }
+
+  profileListeners.forEach((listener) => listener());
+}
+
 export function useSession() {
   const [token, setTokenState] = useState("");
   const [sessionUser, setSessionUser] = useState<CurrentUser | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [profileRevision, setProfileRevision] = useState(0);
   const [booting, setBooting] = useState(true);
 
   useEffect(() => {
@@ -74,6 +86,24 @@ export function useSession() {
 
     return () => {
       listeners.delete(syncFromMemory);
+    };
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => setProfileRevision((value) => value + 1);
+
+    if (canUseBrowserSessionEvents()) {
+      window.addEventListener(PROFILE_EVENT, refresh);
+
+      return () => {
+        window.removeEventListener(PROFILE_EVENT, refresh);
+      };
+    }
+
+    profileListeners.add(refresh);
+
+    return () => {
+      profileListeners.delete(refresh);
     };
   }, []);
 
@@ -109,7 +139,7 @@ export function useSession() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [profileRevision, token]);
 
   const setToken = useCallback((nextToken: string) => {
     writeStoredToken(nextToken);
@@ -127,6 +157,10 @@ export function useSession() {
     [sessionUser?.email, token]
   );
 
+  const refreshProfile = useCallback(() => {
+    notifyProfileChanged();
+  }, []);
+
   return {
     token,
     setToken,
@@ -135,5 +169,6 @@ export function useSession() {
     profileLoading,
     sessionEmail,
     sessionUser,
+    refreshProfile,
   };
 }

@@ -24,7 +24,12 @@ export default function SettingsCommandCenter() {
   const copy = settingsCopy(language);
   const snapshot = useSettingsSnapshot(selected);
   const settingsAccent = selectedThemeId === "royal_gold_cosmos" ? theme.palette.gold : theme.palette.royal;
-  const themeIdentity = selectedThemeId === "royal_gold_cosmos" ? "ROYAL GOLD COSMOS" : "ROYAL COSMOS";
+  const themeIdentity =
+    selectedThemeId === "royal_gold_cosmos"
+      ? "ROYAL GOLD COSMOS"
+      : selectedThemeId === "burgundy_cosmos"
+        ? "BURGUNDY COSMOS"
+        : "ROYAL COSMOS";
 
   useEffect(() => {
     setSelected(routeSection);

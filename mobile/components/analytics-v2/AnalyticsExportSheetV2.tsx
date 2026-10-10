@@ -96,6 +96,7 @@ const COLORS = {
 const EXPORT_BACKGROUND_MODULES = {
   royal_cosmos: require("../../assets/backgrounds/royal-cosmos.jpg"),
   royal_gold_cosmos: require("../../assets/backgrounds/royal-gold-cosmos.jpg"),
+  burgundy_cosmos: require("../../assets/backgrounds/burgundy-cosmos.png"),
 } as const;
 
 type ExportBackgroundThemeId = keyof typeof EXPORT_BACKGROUND_MODULES;
@@ -105,7 +106,9 @@ function normalizeExportThemeId(
 ): ExportBackgroundThemeId {
   return value === "royal_gold_cosmos"
     ? "royal_gold_cosmos"
-    : "royal_cosmos";
+    : value === "burgundy_cosmos"
+      ? "burgundy_cosmos"
+      : "royal_cosmos";
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -121,6 +124,10 @@ async function resolveExportBackgroundDataUrl(
   selectedThemeId: string | null | undefined
 ): Promise<{ dataUrl: string; themeId: ExportBackgroundThemeId }> {
   const themeId = normalizeExportThemeId(selectedThemeId);
+  const backgroundFileExtension =
+    themeId === "burgundy_cosmos" ? "png" : "jpg";
+  const backgroundMimeType =
+    themeId === "burgundy_cosmos" ? "image/png" : "image/jpeg";
   const assetModule =
     EXPORT_BACKGROUND_MODULES[themeId];
 
@@ -180,7 +187,7 @@ async function resolveExportBackgroundDataUrl(
     const download =
       await FileSystem.downloadAsync(
         uri,
-        `${directory}salonflowai-analytics-${themeId}.jpg`
+        `${directory}salonflowai-analytics-${themeId}.${backgroundFileExtension}`
       );
 
     readableUri = download.uri;
@@ -197,7 +204,7 @@ async function resolveExportBackgroundDataUrl(
 
   return {
     dataUrl:
-      `data:image/jpeg;base64,${base64}`,
+      `data:${backgroundMimeType};base64,${base64}`,
     themeId,
   };
 }
@@ -897,7 +904,15 @@ export default function AnalyticsExportSheetV2({
   onClose,
 }: Props) {
   const { locale } = useAppPreferences();
-  const { selectedThemeId } = useDashboardTheme();
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const burgundySurfaceStyle =
+    selectedThemeId === "burgundy_cosmos"
+      ? {
+          backgroundColor: dashboardTheme.palette.surface,
+          borderColor: dashboardTheme.palette.borderStrong,
+          shadowColor: "#000000",
+        }
+      : undefined;
   const t = (
     source: string,
     params: Record<string, string | number> = {}

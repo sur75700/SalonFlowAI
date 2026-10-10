@@ -25,6 +25,7 @@ export type ServiceItem = {
   price: number;
   currency: string;
   is_active: boolean;
+  icon_key?: string | null;
   created_at?: string;
   updated_at?: string | null;
 };

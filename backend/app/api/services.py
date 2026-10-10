@@ -9,12 +9,44 @@ from app.db.mongo import get_database
 
 router = APIRouter()
 
+SERVICE_ICON_KEYS = frozenset({
+    "haircut",
+    "styling",
+    "color",
+    "makeup",
+    "nails",
+    "brows",
+    "facial",
+    "spa",
+    "massage",
+    "bridal",
+    "waxing",
+    "laser",
+    "barber",
+    "wellness",
+    "premium",
+    "kids",
+    "body",
+    "skincare",
+})
+
+
+def normalize_service_icon_key(value: str | None) -> str | None:
+    normalized = (value or "").strip().lower()
+    if not normalized:
+        return None
+    if normalized not in SERVICE_ICON_KEYS:
+        raise HTTPException(status_code=422, detail="Unsupported service icon")
+    return normalized
+
+
 class ServiceCreate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     duration_minutes: int = Field(gt=0, le=1440)
     price: float = Field(ge=0)
     currency: str = Field(default="AMD", min_length=3, max_length=8)
     is_active: bool = True
+    icon_key: str | None = Field(default=None, max_length=32)
 
 class ServiceUpdate(BaseModel):
     name: str = Field(min_length=2, max_length=120)
@@ -22,6 +54,7 @@ class ServiceUpdate(BaseModel):
     price: float = Field(ge=0)
     currency: str = Field(default="AMD", min_length=3, max_length=8)
     is_active: bool = True
+    icon_key: str | None = Field(default=None, max_length=32)
 
 class ServiceStatusUpdate(BaseModel):
     is_active: bool
@@ -40,6 +73,8 @@ async def create_service(payload: ServiceCreate, auth: dict = Depends(require_au
     if existing is not None:
         raise HTTPException(status_code=409, detail="Service already exists")
 
+    icon_key = normalize_service_icon_key(payload.icon_key)
+
     doc = {
         "owner_id": owner_id,
         "name": payload.name,
@@ -47,6 +82,7 @@ async def create_service(payload: ServiceCreate, auth: dict = Depends(require_au
         "price": payload.price,
         "currency": payload.currency.upper(),
         "is_active": payload.is_active,
+        "icon_key": icon_key,
         "created_at": datetime.now(UTC).isoformat(),
     }
 
@@ -59,6 +95,7 @@ async def create_service(payload: ServiceCreate, auth: dict = Depends(require_au
         "price": doc["price"],
         "currency": doc["currency"],
         "is_active": doc["is_active"],
+        "icon_key": doc.get("icon_key"),
         "created_at": doc["created_at"],
     }
 
@@ -88,6 +125,7 @@ async def list_services(active_only: bool = Query(default=False), auth: dict = D
                 "price": doc.get("price"),
                 "currency": doc.get("currency"),
                 "is_active": doc.get("is_active"),
+                "icon_key": doc.get("icon_key"),
                 "created_at": doc.get("created_at"),
                 "updated_at": doc.get("updated_at"),
             }
@@ -108,6 +146,8 @@ async def update_service(service_id: str, payload: ServiceUpdate, auth: dict = D
     if not owner_id or not ObjectId.is_valid(owner_id):
         raise HTTPException(status_code=401, detail="Invalid token")
 
+    icon_key = normalize_service_icon_key(payload.icon_key)
+
     result = await db.services.update_one(
         {"_id": ObjectId(service_id), "owner_id": owner_id},
         {
@@ -117,6 +157,7 @@ async def update_service(service_id: str, payload: ServiceUpdate, auth: dict = D
                 "price": payload.price,
                 "currency": payload.currency.upper(),
                 "is_active": payload.is_active,
+                "icon_key": icon_key,
                 "updated_at": datetime.now(UTC).isoformat(),
             }
         },
@@ -134,6 +175,7 @@ async def update_service(service_id: str, payload: ServiceUpdate, auth: dict = D
         "price": doc.get("price"),
         "currency": doc.get("currency"),
         "is_active": doc.get("is_active"),
+        "icon_key": doc.get("icon_key"),
         "created_at": doc.get("created_at"),
         "updated_at": doc.get("updated_at"),
     }
@@ -168,6 +210,7 @@ async def update_service_status(service_id: str, payload: ServiceStatusUpdate, a
         "price": doc.get("price"),
         "currency": doc.get("currency"),
         "is_active": doc.get("is_active"),
+        "icon_key": doc.get("icon_key"),
         "created_at": doc.get("created_at"),
         "updated_at": doc.get("updated_at"),
     }

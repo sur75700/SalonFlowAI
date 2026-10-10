@@ -1,4 +1,6 @@
 import { View, Text, TextInput, Pressable, ScrollView, Modal, StyleSheet, useWindowDimensions } from 'react-native';
+
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
 import { ClientRecord, ClientStatus } from './ClientCardV3';
 
 const theme = {
@@ -141,6 +143,23 @@ export default function ClientDetailSheetV2({
   onCancelEdit,
   onClose,
 }: ClientDetailSheetV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const t: ClientDetailSheetV2Labels = { ...DEFAULT_CLIENT_DETAIL_SHEET_LABELS, ...labels };
   const { width } = useWindowDimensions();
   const isDesktop = width >= 860;
@@ -162,7 +181,7 @@ export default function ClientDetailSheetV2({
           accessibilityLabel={t.closeAction}
         />
         <View
-          style={[styles.panel, isDesktop ? styles.panelDesktop : styles.panelMobile]}
+          style={[styles.panel, burgundySurfaceStyle, isDesktop ? styles.panelDesktop : styles.panelMobile]}
           accessibilityViewIsModal
         >
           {!isDesktop && <View style={styles.dragHandle} />}

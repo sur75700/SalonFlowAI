@@ -8,6 +8,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, {
   Circle,
@@ -181,7 +183,21 @@ function Card({
   children: React.ReactNode;
   style?: object;
 }) {
-  return <View style={[styles.card, style]}>{children}</View>;
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const burgundySurfaceStyle =
+    selectedThemeId === "burgundy_cosmos"
+      ? {
+          backgroundColor: dashboardTheme.palette.surface,
+          borderColor: dashboardTheme.palette.borderStrong,
+          shadowColor: "#000000",
+        }
+      : undefined;
+
+  return (
+    <View style={[styles.card, burgundySurfaceStyle, style]}>
+      {children}
+    </View>
+  );
 }
 
 function SectionHeader({
@@ -273,6 +289,23 @@ function KpiCard({
   kpi: AnalyticsKpiPreview;
   flexBasis: `${number}%`;
 }) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const tone = TONE_MAP[kpi.tone];
 
   return (
@@ -281,8 +314,12 @@ function KpiCard({
         styles.kpiCard,
         {
           flexBasis,
-          backgroundColor: tone.surface,
-          borderColor: tone.border,
+          backgroundColor: isBurgundyCosmos
+            ? dashboardTheme.palette.surface
+            : tone.surface,
+          borderColor: isBurgundyCosmos
+            ? dashboardTheme.palette.border
+            : tone.border,
         },
       ]}
     >
@@ -1432,6 +1469,27 @@ export default function AnalyticsCommandCenterV2({
   refreshing = false,
   onRefresh,
 }: Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const brandAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const { width } = useWindowDimensions();
   const { locale } = useAppPreferences();
 
@@ -1533,7 +1591,7 @@ export default function AnalyticsCommandCenterV2({
           wide && styles.contentWide,
         ]}
       >
-        <View style={styles.hero}>
+        <View style={[styles.hero, burgundySurfaceStyle]}>
           <View style={styles.heroOrbPrimary} />
           <View style={styles.heroOrbSecondary} />
 
@@ -1545,8 +1603,11 @@ export default function AnalyticsCommandCenterV2({
           >
             <View style={styles.heroCopy}>
               <View style={styles.heroOverlineRow}>
-                <Text style={styles.heroOverline}>
-                  {periodModel.overline}
+                <Text
+                  accessibilityRole="text"
+                  style={[styles.heroOverline, { color: brandAccent }]}
+                >
+                  SalonFlowAI
                 </Text>
 
                 <View style={styles.previewBadge}>

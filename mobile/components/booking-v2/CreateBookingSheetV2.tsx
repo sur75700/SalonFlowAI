@@ -12,6 +12,8 @@ import {
   StyleSheet,
 } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 export interface BookingSelectOption {
   id: string;
   /** Pre-formatted display label (e.g. client name, service name). */
@@ -167,6 +169,23 @@ function SelectField({
  * Booking Time + quick actions, Notes); nothing added, nothing removed.
  */
 function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const {
     visible,
     onRequestClose,
@@ -232,7 +251,7 @@ function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={isSheet ? styles.sheetOuter : styles.panelOuter}
         >
-          <Animated.View style={[isSheet ? styles.sheet : styles.panel, containerAnimatedStyle]}>
+          <Animated.View style={[isSheet ? styles.sheet : styles.panel, burgundySurfaceStyle, containerAnimatedStyle]}>
             {!isSheet ? (
               <View pointerEvents="none" style={styles.desktopModalCrown} />
             ) : null}

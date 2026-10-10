@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAppLanguage } from "../../../../contexts/LanguageContext";
 import { useDashboardTheme } from "../../../../hooks/useDashboardTheme";
+import { useProfileAvatar } from "../../../../hooks/useProfileAvatar";
 import { languageLabels, type AppLanguage } from "../../../../lib/i18n";
 import { DASHBOARD_THEMES, DASHBOARD_THEME_IDS, type DashboardThemeId } from "../../../../lib/theme/dashboardThemes";
 import { settingsCopy } from "../../../../lib/settings/copy";
@@ -17,8 +18,27 @@ function minuteLabel(value: number): string {
 
 export function AccountSettingsPanel({ snapshot }: { snapshot: SettingsSnapshot }) {
   const { language } = useAppLanguage();
+  const { theme, selectedThemeId } = useDashboardTheme();
   const copy = settingsCopy(language);
   const user = snapshot.account.user;
+  const {
+    avatarUrl,
+    avatarSource,
+    working: avatarWorking,
+    error: avatarError,
+    choosePhoto,
+    resetPhoto,
+  } = useProfileAvatar();
+  const accent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? theme.palette.gold
+      : theme.palette.royal;
+  const avatarCopy = {
+    en: { choose: "Choose photo", reset: "Use provider photo", title: "Profile photo" },
+    hy: { choose: "Ընտրել նկար", reset: "Վերականգնել մատակարարի նկարը", title: "Պրոֆիլի նկար" },
+    ru: { choose: "Выбрать фото", reset: "Вернуть фото провайдера", title: "Фото профиля" },
+    fr: { choose: "Choisir une photo", reset: "Rétablir la photo du fournisseur", title: "Photo de profil" },
+  }[language];
 
   return (
     <SettingsSectionShell title={copy.sectionLabels.account} subtitle={copy.accountSubtitle}>
@@ -26,6 +46,90 @@ export function AccountSettingsPanel({ snapshot }: { snapshot: SettingsSnapshot 
         <SettingsNotice state="CACHED" text={copy.loading} />
       ) : user ? (
         <>
+          <View
+            style={[
+              styles.avatarCard,
+              {
+                backgroundColor: theme.palette.surfaceRaised,
+                borderColor: theme.palette.borderStrong,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.avatarShell,
+                {
+                  borderColor: `${accent}88`,
+                  backgroundColor: theme.palette.surface,
+                },
+              ]}
+            >
+              {avatarUrl ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  resizeMode="cover"
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <Text
+                  style={[
+                    styles.avatarInitials,
+                    { color: theme.palette.textPrimary },
+                  ]}
+                >
+                  {(user.full_name || user.email || "SF")
+                    .split(/\s+|@/)
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((part) => part.charAt(0).toUpperCase())
+                    .join("") || "SF"}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.avatarCopy}>
+              <Text
+                style={[
+                  styles.avatarTitle,
+                  { color: theme.palette.textPrimary },
+                ]}
+              >
+                {avatarCopy.title}
+              </Text>
+              <Text
+                style={[
+                  styles.avatarSource,
+                  { color: theme.palette.textTertiary },
+                ]}
+              >
+                {avatarSource === "custom"
+                  ? "Custom"
+                  : avatarSource === "google"
+                    ? "Google"
+                    : "Initials"}
+              </Text>
+            </View>
+
+            <View style={styles.avatarActions}>
+              <SettingsButton
+                label={avatarCopy.choose}
+                onPress={() => void choosePhoto()}
+                disabled={avatarWorking}
+              />
+              {avatarSource === "custom" ? (
+                <SettingsButton
+                  label={avatarCopy.reset}
+                  onPress={() => void resetPhoto()}
+                  disabled={avatarWorking}
+                />
+              ) : null}
+            </View>
+          </View>
+
+          {avatarError ? (
+            <SettingsNotice state="ERROR" text={avatarError} />
+          ) : null}
+
           <SettingsFactRow label={copy.emailLabel} value={user.email || copy.unavailable} state={user.email ? "LIVE" : "NOT_AVAILABLE"} />
           <SettingsFactRow label={copy.fullNameLabel} value={user.full_name || copy.unavailable} state={user.full_name ? "LIVE" : "NOT_AVAILABLE"} />
           <SettingsFactRow label={copy.roleLabel} value={user.role || copy.unavailable} state={user.role ? "DERIVED" : "NOT_AVAILABLE"} detail={copy.roleDetail} />
@@ -124,7 +228,11 @@ export function AppearanceSettingsPanel() {
               <View style={[styles.swatch, { backgroundColor: definition.palette.royal }]} />
               <View style={[styles.swatch, { backgroundColor: definition.palette.gold }]} />
               <Text style={[styles.optionText, { color: definition.palette.textPrimary }]}>
-                {id === "royal_cosmos" ? "Royal Cosmos" : "Royal Gold Cosmos"}
+                {id === "royal_cosmos"
+                  ? "Royal Cosmos"
+                  : id === "royal_gold_cosmos"
+                    ? "Royal Gold Cosmos"
+                    : "Burgundy Cosmos"}
               </Text>
               {active ? <Text style={[styles.currentText, { color: optionAccent }]}>{copy.current}</Text> : null}
             </Pressable>
@@ -165,6 +273,54 @@ export function AppearanceSettingsPanel() {
 }
 
 const styles = StyleSheet.create({
+  avatarCard: {
+    minHeight: 112,
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  avatarShell: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 1,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 36,
+  },
+  avatarInitials: {
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  avatarCopy: {
+    minWidth: 120,
+    flexGrow: 1,
+    flexShrink: 1,
+    gap: 3,
+  },
+  avatarTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+  },
+  avatarSource: {
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
+  },
+  avatarActions: {
+    minWidth: 180,
+    gap: 8,
+  },
   groupTitle: { fontSize: 14, fontWeight: "900", marginTop: 4 },
   optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   themeOption: { flexGrow: 1, flexBasis: 200, minHeight: 110, borderWidth: 1, borderRadius: 16, padding: 14, gap: 8 },

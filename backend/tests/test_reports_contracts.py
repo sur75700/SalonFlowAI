@@ -96,7 +96,7 @@ class ReportContractTests(unittest.TestCase):
     def test_report_theme_contract_defaults_and_serializes(self) -> None:
         self.assertEqual(
             REPORT_THEME_IDS,
-            ("royal_cosmos", "royal_gold_cosmos"),
+            ("royal_cosmos", "royal_gold_cosmos", "burgundy_cosmos"),
         )
         self.assertEqual(
             normalize_report_theme("ROYAL_GOLD_COSMOS"),

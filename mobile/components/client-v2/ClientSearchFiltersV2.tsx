@@ -1,5 +1,7 @@
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 const theme = {
   color: {
     bgBase: '#0A0A12',
@@ -117,6 +119,23 @@ export default function ClientSearchFiltersV2({
   disabled = false,
   labels,
 }: ClientSearchFiltersV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const t: ClientSearchFiltersV2Labels = { ...DEFAULT_CLIENT_SEARCH_FILTERS_LABELS, ...labels };
 
   return (
@@ -129,7 +148,7 @@ export default function ClientSearchFiltersV2({
           placeholder={t.searchPlaceholder}
           placeholderTextColor={theme.color.textTertiary}
           editable={!disabled}
-          style={styles.searchInput}
+          style={[styles.searchInput, burgundySurfaceStyle]}
           accessibilityLabel={t.searchAccessibilityLabel}
           autoCapitalize="none"
           autoCorrect={false}

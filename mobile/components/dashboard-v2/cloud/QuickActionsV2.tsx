@@ -53,13 +53,16 @@ function ActionTile({ action }: { action: QuickAction }) {
   return (
     <Pressable
       onPress={action.onPress}
+      disabled={!action.onPress}
       accessibilityRole="button"
+      accessibilityState={{ disabled: !action.onPress }}
       accessibilityLabel={action.helperText ? `${action.label}. ${action.helperText}` : action.label}
       hitSlop={2}
       style={({ pressed }) => [
         styles.tile,
-        { backgroundColor: pressed ? tone.bgPressed : theme.palette.surfaceRaised, borderColor: pressed ? tone.fg : theme.palette.border },
-        pressed && styles.tilePressed,
+        { backgroundColor: pressed && action.onPress ? tone.bgPressed : theme.palette.surfaceRaised, borderColor: pressed && action.onPress ? tone.fg : theme.palette.border },
+        pressed && action.onPress && styles.tilePressed,
+        !action.onPress && styles.tileDisabled,
       ]}
     >
       <View style={[styles.iconChip, { backgroundColor: tone.bg }]}>
@@ -155,6 +158,9 @@ const styles = StyleSheet.create({
   },
   tilePressed: {
     transform: [{ scale: 0.97 }],
+  },
+  tileDisabled: {
+    opacity: 0.46,
   },
   iconChip: {
     width: 40,

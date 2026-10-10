@@ -104,6 +104,28 @@ describe("Dashboard Revenue Cosmos fullscreen theater contract", () => {
     );
   });
 
+  it("anchors fullscreen content inside one responsive themed frame", () => {
+    expect(revenueSource).toContain(
+      "styles.immersiveFrame"
+    );
+
+    expect(revenueSource).toContain(
+      "backgroundColor: theme.palette.surface"
+    );
+
+    expect(revenueSource).toContain(
+      "borderColor: theme.palette.border"
+    );
+
+    expect(revenueSource).toContain(
+      "maxWidth: 1600"
+    );
+
+    expect(revenueSource).toContain(
+      "isCompactImmersive"
+    );
+  });
+
   it("uses optical depth primitives without changing business data", () => {
     expect(revenueSource).toContain(
       "IMMERSIVE_NEBULA_GRADIENT_ID"
@@ -197,6 +219,63 @@ describe("Dashboard Revenue Cosmos interactive scientific contract", () => {
   it("resets selected instrument state when revenue period changes", () => {
     expect(revenueSource).toContain(
       "key={selectedPeriod ?? periodLabel}"
+    );
+  });
+
+
+  it("keeps real peaks below the chart ceiling with dynamic domain headroom", () => {
+    expect(revenueSource).toContain(
+      "REVENUE_DOMAIN_HEADROOM_RATIO"
+    );
+
+    expect(revenueSource).toContain(
+      "resolveRevenueDomain"
+    );
+
+    expect(revenueSource).toContain(
+      "rawMax + headroom"
+    );
+  });
+
+  it("bounds smoothing control points to the trusted segment envelope", () => {
+    expect(revenueSource).toContain(
+      "segmentTop"
+    );
+
+    expect(revenueSource).toContain(
+      "segmentBottom"
+    );
+
+    expect(revenueSource).toContain(
+      "clampNumber(rawCp1y"
+    );
+
+    expect(revenueSource).toContain(
+      "clampNumber(rawCp2y"
+    );
+  });
+
+  it("supports desktop pointer movement and native touch drag through one nearest-point model", () => {
+    expect(revenueSource).toContain(
+      "nearestSeriesIndexFromX"
+    );
+
+    expect(revenueSource).toContain(
+      "onPointerMove"
+    );
+
+    expect(revenueSource).toContain(
+      "event.nativeEvent.offsetX"
+    );
+
+    expect(
+      revenueSource.match(
+        /event\.nativeEvent\.offsetX/g
+      ) ?? []
+    ).toHaveLength(2);
+
+    expect(revenueSource).toContain(
+      "onPanResponderMove"
     );
   });
 

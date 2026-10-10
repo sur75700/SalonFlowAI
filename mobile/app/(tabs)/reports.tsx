@@ -31,6 +31,8 @@ import type {
 
 import { UI } from "../../lib/theme/tokens";
 
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+
 function ReportsSkeleton() {
   return (
     <RoyalCosmosBackground
@@ -106,6 +108,11 @@ function ReportsSkeleton() {
 export default function ReportsScreen() {
   const { locale } =
     useAppPreferences();
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const brandAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
 
   const {
     token,
@@ -172,7 +179,16 @@ export default function ReportsScreen() {
           />
         }
       >
-        <View style={styles.hero}>
+        <View
+          style={[
+            styles.hero,
+            {
+              backgroundColor: dashboardTheme.palette.surface,
+              borderColor: dashboardTheme.palette.borderStrong,
+              shadowColor: brandAccent,
+            },
+          ]}
+        >
           <View style={styles.heroGlow} />
           <View
             style={styles.heroGlowSmall}
@@ -182,14 +198,10 @@ export default function ReportsScreen() {
             style={styles.heroTopRow}
           >
             <Text
-              style={
-                styles.heroOverline
-              }
+              accessibilityRole="text"
+              style={[styles.heroOverline, { color: brandAccent }]}
             >
-              {t(
-                "reports.commandCenter.eyebrow",
-                locale,
-              )}
+              SalonFlowAI
             </Text>
 
             <View
@@ -213,7 +225,7 @@ export default function ReportsScreen() {
           </View>
 
           <View
-            style={styles.heroAccent}
+            style={[styles.heroAccent, { backgroundColor: brandAccent }]}
           />
 
           <Text

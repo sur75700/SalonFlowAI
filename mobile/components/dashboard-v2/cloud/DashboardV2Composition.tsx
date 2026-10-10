@@ -28,6 +28,7 @@ import {
 } from './ai-command-center-live-model';
 import QuickActionsV2 from './QuickActionsV2';
 import CalendarSnapshotV2 from './CalendarSnapshotV2';
+import SalonFlowBrandMark from '../../brand/SalonFlowBrandMark';
 import DashboardThemeBackground from './DashboardThemeBackground';
 import {
   useDashboardTheme,
@@ -36,6 +37,7 @@ import type {
   DashboardThemeId,
 } from '../../../lib/theme/dashboardThemes';
 import { useSession } from '../../../hooks/useSession';
+import { useProfileAvatar } from '../../../hooks/useProfileAvatar';
 import { useLogout } from '../../../hooks/useLogout';
 import { useAppLanguage } from '../../../contexts/LanguageContext';
 import {
@@ -250,29 +252,58 @@ function isValidAppointmentTimestamp(
   return Number.isFinite(new Date(value).getTime());
 }
 
-function isAppointmentToday(value: string): boolean {
-  const appointmentDate = new Date(value);
-  const today = new Date();
-
-  return (
-    appointmentDate.getFullYear() === today.getFullYear() &&
-    appointmentDate.getMonth() === today.getMonth() &&
-    appointmentDate.getDate() === today.getDate()
+function startOfLocalDay(value: Date): Date {
+  return new Date(
+    value.getFullYear(),
+    value.getMonth(),
+    value.getDate()
   );
 }
 
-function formatCalendarDate(locale: string): string {
-  const today = new Date();
+function isSameLocalDay(first: Date, second: Date): boolean {
+  return (
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
+  );
+}
 
+function selectCalendarDisplayDay(
+  appointments: AppointmentItem[]
+): Date {
+  const today = startOfLocalDay(new Date());
+
+  const validDates = appointments
+    .filter((appointment) =>
+      isValidAppointmentTimestamp(appointment.starts_at)
+    )
+    .map((appointment) => new Date(appointment.starts_at));
+
+  if (validDates.some((date) => isSameLocalDay(date, today))) {
+    return today;
+  }
+
+  const nearestFuture = validDates
+    .map(startOfLocalDay)
+    .filter((date) => date.getTime() >= today.getTime())
+    .sort((first, second) => first.getTime() - second.getTime())[0];
+
+  return nearestFuture ?? today;
+}
+
+function formatCalendarDate(
+  value: Date,
+  locale: string
+): string {
   try {
     return new Intl.DateTimeFormat(locale, {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-    }).format(today);
+    }).format(value);
   } catch {
-    return today.toDateString();
+    return value.toDateString();
   }
 }
 
@@ -341,6 +372,7 @@ function mapCalendarStatus(
 
 function buildRealCalendarEvents(
   appointments: AppointmentItem[],
+  displayDay: Date,
   locale: string,
   copy: CalendarCopy
 ) {
@@ -348,7 +380,10 @@ function buildRealCalendarEvents(
     .filter(
       (appointment) =>
         isValidAppointmentTimestamp(appointment.starts_at) &&
-        isAppointmentToday(appointment.starts_at)
+        isSameLocalDay(
+          new Date(appointment.starts_at),
+          displayDay
+        )
     )
     .slice()
     .sort(
@@ -468,7 +503,17 @@ function DashboardV2CompositionInner() {
     booting,
     clearToken,
     sessionEmail,
+    sessionUser,
   } = useSession();
+
+  const {
+    avatarUrl,
+    avatarSource,
+    working: avatarWorking,
+    error: avatarError,
+    choosePhoto: chooseAvatarPhoto,
+    resetPhoto: resetAvatarPhoto,
+  } = useProfileAvatar();
 
   const { logout, loggingOut } = useLogout();
 
@@ -531,6 +576,54 @@ function DashboardV2CompositionInner() {
     { value: 'all', label: dashboardCopy.periods.allTime },
   ] as const;
 
+  const translateRuntimeAIDomains = (
+    value: string
+  ): string =>
+    value
+      .split(',')
+      .map((domain) => {
+        const trimmed = domain.trim().replace(/\.$/, '');
+
+        switch (trimmed.toLowerCase()) {
+          case 'revenue':
+            return translate(
+              'AI Runtime Domain Revenue',
+              language
+            );
+          case 'capacity':
+            return translate(
+              'AI Runtime Domain Capacity',
+              language
+            );
+          case 'client':
+            return translate(
+              'AI Runtime Domain Client',
+              language
+            );
+          case 'service':
+            return translate(
+              'AI Runtime Domain Service',
+              language
+            );
+          default:
+            return trimmed;
+        }
+      })
+      .join(', ');
+
+  const fillRuntimeTemplate = (
+    key: string,
+    values: Readonly<Record<string, string>>
+  ): string => {
+    let result = translate(key, language);
+
+    Object.entries(values).forEach(([name, value]) => {
+      result = result.replace(`{${name}}`, value);
+    });
+
+    return result;
+  };
+
   const translateRuntimeAIText = (
     value: string | null | undefined
   ): string | undefined => {
@@ -543,6 +636,151 @@ function DashboardV2CompositionInner() {
 
     if (dictionaryTranslation !== original) {
       return dictionaryTranslation;
+    }
+
+    if (language !== 'en') {
+      const analyzedMatch = original.match(
+        /^Analyzed\s+(\d+)\s+trusted signals?\s+and\s+(\d+)\s+validated metrics?\s+across\s+(\d+)\s+trusted domains?:\s*(.+?)\.?$/i
+      );
+
+      if (analyzedMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Analyzed Summary',
+          {
+            signals: analyzedMatch[1],
+            metrics: analyzedMatch[2],
+            domainCount: analyzedMatch[3],
+            domains: translateRuntimeAIDomains(
+              analyzedMatch[4]
+            ),
+          }
+        );
+      }
+
+      const coverageMatch = original.match(
+        /^Validated metric coverage includes\s+(\d+)\s+of\s+(\d+)\s+trusted domains?:\s*([^.|]+)\.\s*This score measures data-domain coverage, not predictive certainty\./i
+      );
+
+      if (coverageMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Coverage Summary',
+          {
+            covered: coverageMatch[1],
+            total: coverageMatch[2],
+            domains: translateRuntimeAIDomains(
+              coverageMatch[3]
+            ),
+          }
+        );
+      }
+
+      const capacityIdleMatch = original.match(
+        /^Capacity utilization is only\s+([\d.]+)%\s+and\s+([\d,]+)\s+slots remain available\.?$/i
+      );
+
+      if (capacityIdleMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Capacity Idle Detail',
+          {
+            utilization: capacityIdleMatch[1],
+            slots: capacityIdleMatch[2],
+          }
+        );
+      }
+
+      const capacityOverloadedMatch = original.match(
+        /^Booked demand exceeds configured capacity at\s+([\d.]+)%\s+utilization\.\s+Immediate schedule or staffing intervention is required\.?$/i
+      );
+
+      if (capacityOverloadedMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Capacity Overloaded Detail',
+          {
+            utilization: capacityOverloadedMatch[1],
+          }
+        );
+      }
+
+      const capacityNearLimitMatch = original.match(
+        /^Capacity utilization reached\s+([\d.]+)%\s+with\s+([\d,]+)\s+open slots remaining\.?$/i
+      );
+
+      if (capacityNearLimitMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Capacity Near Limit Detail',
+          {
+            utilization: capacityNearLimitMatch[1],
+            slots: capacityNearLimitMatch[2],
+          }
+        );
+      }
+
+      const capacityHealthyMatch = original.match(
+        /^Capacity utilization is balanced at\s+([\d.]+)%\s+with\s+([\d,]+)\s+open slots\.?$/i
+      );
+
+      if (capacityHealthyMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Capacity Healthy Detail',
+          {
+            utilization: capacityHealthyMatch[1],
+            slots: capacityHealthyMatch[2],
+          }
+        );
+      }
+
+      const revenueIncreasedMatch = original.match(
+        /^Revenue increased by\s+([\d.]+)%\s+compared with the previous period\.?$/i
+      );
+
+      if (revenueIncreasedMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Revenue Increased Detail',
+          { growth: revenueIncreasedMatch[1] }
+        );
+      }
+
+      const revenueDeclinedMatch = original.match(
+        /^Revenue declined by\s+([\d.]+)%\s+compared with the previous period\.?$/i
+      );
+
+      if (revenueDeclinedMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Revenue Declined Detail',
+          { growth: revenueDeclinedMatch[1] }
+        );
+      }
+
+      const revenueChangedMatch = original.match(
+        /^Revenue changed by\s+(-?[\d.]+)%\s+compared with the previous period\.?$/i
+      );
+
+      if (revenueChangedMatch) {
+        return fillRuntimeTemplate(
+          'AI Runtime Revenue Changed Detail',
+          { growth: revenueChangedMatch[1] }
+        );
+      }
+
+      const scaleRevenueMatch = original.match(
+        /^(Identify the services, staff and booking periods driving growth, then increase their capacity and promotion without reducing service quality\.)(?:\s+Current measured growth is\s+([\d.]+)%\.)?$/i
+      );
+
+      if (scaleRevenueMatch) {
+        const translatedBase = translate(
+          scaleRevenueMatch[1],
+          language
+        );
+
+        if (!scaleRevenueMatch[2]) {
+          return translatedBase;
+        }
+
+        return `${translatedBase} ${fillRuntimeTemplate(
+          'AI Runtime Current Growth Detail',
+          { growth: scaleRevenueMatch[2] }
+        )}`;
+      }
     }
 
     if (normalized.includes('capture growth opportunity')) {
@@ -608,7 +846,11 @@ function DashboardV2CompositionInner() {
       return dashboardCopy.ai.upsellBaseline;
     }
 
-    return language === 'en' ? original : undefined;
+    // Preserve trusted runtime meaning even when a newly introduced backend
+    // sentence has not been localized yet. Never replace real Intelligence
+    // text with a generic translated fallback merely because the locale is
+    // not English.
+    return original;
   };
 
   const { locale } = useAppPreferences();
@@ -686,10 +928,15 @@ function DashboardV2CompositionInner() {
   const displayValue = (value: number | undefined) =>
     dataPending ? '—' : String(value ?? 0);
 
-  const ownerFirstName =
-    sessionEmail?.split('@')[0]?.trim() || 'Owner';
+  const ownerDisplayName =
+    sessionUser?.full_name?.trim() ||
+    sessionEmail?.split('@')[0]?.trim() ||
+    'Owner';
 
-  const accountInitials = ownerFirstName
+  const ownerFirstName =
+    ownerDisplayName.split(/\s+/)[0] || 'Owner';
+
+  const accountInitials = ownerDisplayName
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -1137,6 +1384,19 @@ function DashboardV2CompositionInner() {
       accountMenu={{
         email: sessionEmail || undefined,
         initials: accountInitials,
+        avatarUrl: avatarUrl || undefined,
+        avatarSource,
+        avatarWorking,
+        avatarError: avatarError || undefined,
+        onChangeAvatar: () => {
+          void chooseAvatarPhoto();
+        },
+        onResetAvatar:
+          avatarSource === 'custom'
+            ? () => {
+                void resetAvatarPhoto();
+              }
+            : undefined,
         languageLabel: languageLabels[language],
         languageOptions: accountLanguageOptions,
         selectedLanguage: language,
@@ -1162,6 +1422,14 @@ function DashboardV2CompositionInner() {
               language
             ),
             swatch: '#F3D184',
+          },
+          {
+            value: 'burgundy_cosmos',
+            label: translate(
+              'Burgundy Cosmos',
+              language
+            ),
+            swatch: '#D65A88',
           },
         ],
         selectedTheme: selectedThemeId,
@@ -1530,6 +1798,9 @@ function DashboardV2CompositionInner() {
           locale
         ),
         upgrade: translate('Pricing Packages', locale),
+        expand: translate('AI Command Center Expand', locale),
+        close: translate('AI Command Center Close', locale),
+        fullView: translate('AI Command Center Full View', locale),
       }}
       healthLabel={intelligenceModel.healthLabel}
       aiScore={clampDashboardScore(
@@ -1632,6 +1903,18 @@ function DashboardV2CompositionInner() {
         refreshing: translate('Market Refreshing', locale),
         retry: translate('Retry', locale),
         source: translate('Market Source', locale),
+        inspect: translate('Market Inspect', locale),
+        referenceRate: translate('Market Reference Rate', locale),
+        from: translate('Market From', locale),
+        to: translate('Market To', locale),
+        derived: translate('Market Derived', locale),
+        derivedNote: translate('Market Derived Note', locale),
+        conversionUnavailable: translate('Market Conversion Unavailable', locale),
+        close: translate('Market Close', locale),
+        expand: translate('Market Expand', locale),
+        fullView: translate('Market Full View', locale),
+        referenceCurrency: translate('Market Reference Currency', locale),
+        referenceMatrixNote: translate('Market Reference Matrix Note', locale),
       }}
       onRetry={marketPulse.refresh}
     />
@@ -1645,8 +1928,12 @@ function DashboardV2CompositionInner() {
     />
   );
 
+  const calendarDisplayDay =
+    selectCalendarDisplayDay(appointments);
+
   const calendarEvents = buildRealCalendarEvents(
     appointments,
+    calendarDisplayDay,
     locale,
     {
       completed: dashboardCopy.appointments.completed,
@@ -1668,7 +1955,7 @@ function DashboardV2CompositionInner() {
   const calendarSection = (
     <CalendarSnapshotV2
       title={dashboardCopy.calendar.title}
-      dateLabel={formatCalendarDate(locale)}
+      dateLabel={formatCalendarDate(calendarDisplayDay, locale)}
       events={calendarEvents}
       emptyLabel={calendarEmptyLabel}
     />
@@ -1696,6 +1983,11 @@ function DashboardV2CompositionInner() {
           }
         >
         <View style={isDesktop ? styles.pageInnerDesktop : styles.pageInner}>
+          <View style={styles.globalBrandRow} pointerEvents="box-none">
+            <View style={styles.globalBrandAnchor} pointerEvents="none">
+              <SalonFlowBrandMark size={isDesktop ? 76 : 60} />
+            </View>
+          </View>
           <View style={styles.sectionGap}>{greeting}</View>
           <View style={styles.sectionGap}>{kpiGrid}</View>
 
@@ -1770,6 +2062,19 @@ const styles = StyleSheet.create({
     // Clears the fixed bottom tab bar while preserving a calm end-of-page
     // breathing zone across web, tablet, and safe-area-heavy phones.
     paddingBottom: 112,
+  },
+  globalBrandRow: {
+    width: '100%',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  globalBrandAnchor: {
+    alignSelf: 'flex-start',
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(7,8,22,0.68)',
+    borderWidth: 1,
+    borderColor: 'rgba(232,201,122,0.22)',
   },
   pageInner: {
     width: '100%',

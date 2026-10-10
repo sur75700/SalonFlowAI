@@ -29,7 +29,9 @@ export default function SettingsExecutiveOverview({
   const themeName =
     snapshot.theme === "royal_cosmos"
       ? "Royal Cosmos"
-      : "Royal Gold Cosmos";
+      : snapshot.theme === "royal_gold_cosmos"
+        ? "Royal Gold Cosmos"
+        : "Burgundy Cosmos";
 
   const aiIncluded = Boolean(
     billing?.features?.some(

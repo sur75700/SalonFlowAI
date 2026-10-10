@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 export interface BookingCommandHeaderV2Props {
   /** Pre-translated — this component never calls t() itself. */
   title: string;
@@ -44,12 +46,39 @@ function BookingCommandHeaderV2({
   connectionStatusLabel,
   connectionStatusSubtitle,
 }: BookingCommandHeaderV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const brandAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, burgundySurfaceStyle]}>
       <View style={styles.glow} pointerEvents="none" />
 
       <View style={styles.topRow}>
         <View style={styles.titleCol}>
+          <Text
+            accessibilityRole="text"
+            style={[styles.brandWordmark, { color: brandAccent }]}
+          >
+            SalonFlowAI
+          </Text>
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
@@ -129,6 +158,13 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     marginRight: 18,
+  },
+  brandWordmark: {
+    marginBottom: 8,
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+    letterSpacing: 1.8,
   },
   title: {
     fontSize: 27,

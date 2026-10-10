@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 export interface BookingSummaryStat {
   label: string;
   value: string;
@@ -36,13 +38,30 @@ const toneColorMap = {
  * against the booking stream itself.
  */
 function BookingSummaryStripV2({ stats }: BookingSummaryStripV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   return (
     <View style={styles.row}>
       {stats.map((stat) => {
         const tone = stat.tone ? toneColorMap[stat.tone] : toneColorMap.royal;
 
         return (
-          <View key={stat.label} style={styles.cell}>
+          <View key={stat.label} style={[styles.cell, burgundySurfaceStyle]}>
             <View style={[styles.accentLine, { backgroundColor: tone }]} />
 
             <View style={styles.valueRow}>

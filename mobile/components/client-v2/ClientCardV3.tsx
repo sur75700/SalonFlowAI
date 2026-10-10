@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, Pressable, Animated, StyleSheet, ViewStyle } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 /**
  * Royal Cosmos design tokens.
  * Mirrored identically across every ClientCenter V2 file so each file stays a
@@ -178,6 +180,23 @@ function ClientCardV3({
   onDelete,
   onOpenDetails,
 }: ClientCardV3Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const t: ClientCardV3Labels = { ...DEFAULT_CLIENT_CARD_LABELS, ...labels };
   const palette = getStatusPalette(status);
   const isRow = layout === 'row';
@@ -192,7 +211,7 @@ function ClientCardV3({
 
   if (loading) {
     return (
-      <View style={[styles.card, isRow && styles.cardRow]} accessibilityRole="none">
+      <View style={[styles.card, burgundySurfaceStyle, isRow && styles.cardRow]} accessibilityRole="none">
         <View style={[styles.headerRow, isRow && styles.headerRowInRow]}>
           <SkeletonBlock style={{ width: 44, height: 44, borderRadius: theme.radius.lg }} />
           <View style={{ marginLeft: theme.space.md, flex: 1 }}>
@@ -219,6 +238,7 @@ function ClientCardV3({
       accessibilityState={{ selected, disabled }}
       style={({ pressed }: { pressed: boolean }) => [
         styles.card,
+        burgundySurfaceStyle,
         isRow && styles.cardRow,
         isCompact && styles.cardCompact,
         selected && styles.cardSelected,

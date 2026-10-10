@@ -122,8 +122,18 @@ function CosmosSection({
   accent = "#8D7CFF",
   children,
 }: CosmosSectionProps) {
+  const { theme: dashboardTheme } = useDashboardTheme();
+
   return (
-    <View style={styles.section}>
+    <View
+      style={[
+        styles.section,
+        {
+          backgroundColor: dashboardTheme.palette.surface,
+          borderColor: dashboardTheme.palette.borderStrong,
+        },
+      ]}
+    >
       <View
         style={[
           styles.sectionGlow,
@@ -189,7 +199,11 @@ export default function ReportsCommandCenterV2({
   refreshKey,
   onAuthExpired,
 }: Props) {
-  const { selectedThemeId } = useDashboardTheme();
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const reportAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
   const [catalog, setCatalog] =
     useState<ReportCatalog | null>(
       null,
@@ -826,7 +840,7 @@ export default function ReportsCommandCenterV2({
           locale,
         )}
         subtitle={catalogSubtitle}
-        accent="#F2D17A"
+        accent={reportAccent}
       >
         <ReportCatalogSelector
           entries={

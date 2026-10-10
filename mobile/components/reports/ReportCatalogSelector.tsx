@@ -14,6 +14,8 @@ import type {
   ReportType,
 } from "../../lib/reports/contracts";
 
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+
 type Props = {
   entries: ReportCatalogEntry[];
   selected: ReportType;
@@ -104,6 +106,11 @@ export default function ReportCatalogSelector({
   locale,
   onSelect,
 }: Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const brandAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
   const { width } =
     useWindowDimensions();
 
@@ -164,13 +171,15 @@ export default function ReportCatalogSelector({
                 flexBasis:
                   cardBasis,
                 backgroundColor:
-                  visual.surface,
+                  dashboardTheme.palette.surfaceRaised,
+                borderColor:
+                  dashboardTheme.palette.border,
                 shadowColor:
-                  visual.accent,
+                  active ? brandAccent : "#000000",
               },
               active && {
                 borderColor:
-                  visual.accent,
+                  brandAccent,
               },
             ]}
           >
@@ -320,14 +329,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     position: "relative",
     overflow: "hidden",
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor:
       "rgba(150,132,255,0.48)",
-    padding: 18,
+    padding: 16,
 
-    shadowOpacity: 0.22,
-    shadowRadius: 16,
+    minHeight: 168,
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
     shadowOffset: {
       width: 0,
       height: 9,
@@ -363,9 +373,9 @@ const styles = StyleSheet.create({
   },
 
   glyph: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",

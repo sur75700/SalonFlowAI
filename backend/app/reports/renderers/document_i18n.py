@@ -26,6 +26,7 @@ REPORT_DOCUMENT_TEXT: dict[str, dict[str, str]] = {
         "no": "No",
         "theme_royal_cosmos": "Royal Cosmos",
         "theme_royal_gold_cosmos": "Royal Gold Cosmos",
+        "theme_burgundy_cosmos": "Burgundy Cosmos",
         "footer": "SalonFlowAI · Confidential operational report",
         "daily-summary": "Daily Summary",
         "appointments": "Appointments",
@@ -98,6 +99,7 @@ REPORT_DOCUMENT_TEXT: dict[str, dict[str, str]] = {
         "no": "Ոչ",
         "theme_royal_cosmos": "Royal Cosmos",
         "theme_royal_gold_cosmos": "Royal Gold Cosmos",
+        "theme_burgundy_cosmos": "Burgundy Cosmos",
         "footer": "SalonFlowAI · Սրահի ներքին գործառնական հաշվետվություն",
         "daily-summary": "Օրական ամփոփում",
         "appointments": "Ամրագրումներ",
@@ -170,6 +172,7 @@ REPORT_DOCUMENT_TEXT: dict[str, dict[str, str]] = {
         "no": "Нет",
         "theme_royal_cosmos": "Royal Cosmos",
         "theme_royal_gold_cosmos": "Royal Gold Cosmos",
+        "theme_burgundy_cosmos": "Burgundy Cosmos",
         "footer": "SalonFlowAI · Внутренний операционный отчет салона",
         "daily-summary": "Сводка за день",
         "appointments": "Записи",
@@ -242,6 +245,7 @@ REPORT_DOCUMENT_TEXT: dict[str, dict[str, str]] = {
         "no": "Non",
         "theme_royal_cosmos": "Royal Cosmos",
         "theme_royal_gold_cosmos": "Royal Gold Cosmos",
+        "theme_burgundy_cosmos": "Burgundy Cosmos",
         "footer": "SalonFlowAI · Rapport opérationnel interne du salon",
         "daily-summary": "Résumé quotidien",
         "appointments": "Rendez-vous",
@@ -318,12 +322,13 @@ def report_title(locale: str, report_type: str) -> str:
 
 
 def theme_label(locale: str, theme_id: str) -> str:
-    return text(
-        locale,
-        "theme_royal_gold_cosmos"
-        if theme_id == "royal_gold_cosmos"
-        else "theme_royal_cosmos",
-    )
+    if theme_id == "royal_gold_cosmos":
+        key = "theme_royal_gold_cosmos"
+    elif theme_id == "burgundy_cosmos":
+        key = "theme_burgundy_cosmos"
+    else:
+        key = "theme_royal_cosmos"
+    return text(locale, key)
 
 
 def label_for(locale: str, key: str) -> str:

@@ -7,6 +7,8 @@ import {
   View,
 } from "react-native";
 
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+
 import { useAppPreferences } from "../../hooks/useAppPreferences";
 import { t } from "../../lib/i18n";
 
@@ -197,6 +199,23 @@ function BookingCardV3({
   selected = false,
   disabled = false,
 }: BookingCardV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const { locale } = useAppPreferences();
   const clientLabel = t("Client", locale as any).toUpperCase();
   const serviceLabel = t("Service", locale as any).toUpperCase();
@@ -217,7 +236,7 @@ function BookingCardV3({
 
   if (loading) {
     return (
-      <View style={[styles.card, styles.loadingCard]}>
+      <View style={[styles.card, burgundySurfaceStyle, styles.loadingCard]}>
         <ActivityIndicator color={palette.royal} />
       </View>
     );
@@ -231,6 +250,7 @@ function BookingCardV3({
       onPress={isInteractive ? onPress : undefined}
       style={({ pressed }) => [
         styles.card,
+        burgundySurfaceStyle,
         isRow ? styles.cardRow : styles.cardStacked,
         compact && styles.cardCompact,
         selected && styles.cardSelected,

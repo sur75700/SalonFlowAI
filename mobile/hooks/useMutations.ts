@@ -26,6 +26,7 @@ type CreateServiceInput = {
   price: number;
   currency: string;
   is_active: boolean;
+  icon_key?: string | null;
 };
 
 type UpdateServiceInput = CreateServiceInput;

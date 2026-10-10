@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, ViewStyle } from 'react-native';
 
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
+
 const theme = {
   color: {
     bgBase: '#0A0A12',
@@ -133,6 +135,23 @@ function KpiSkeleton() {
 }
 
 export default function ClientSummaryStripV2({ kpis, loading = false, skeletonCount = 5 }: ClientSummaryStripV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   return (
     <View style={styles.strip} accessibilityRole="none">
       {loading
@@ -145,7 +164,7 @@ export default function ClientSummaryStripV2({ kpis, loading = false, skeletonCo
             const accent = toneColor(kpi.tone);
             return (
               <View key={kpi.id} style={styles.cardWrapper}>
-                <View style={styles.card} accessibilityRole="summary" accessibilityLabel={`${kpi.label}: ${kpi.value}`}>
+                <View style={[styles.card, burgundySurfaceStyle]} accessibilityRole="summary" accessibilityLabel={`${kpi.label}: ${kpi.value}`}>
                   <View style={[styles.accentBar, { backgroundColor: accent }]} />
                   <Text style={styles.label}>{kpi.label}</Text>
                   <Text style={styles.value} numberOfLines={1}>

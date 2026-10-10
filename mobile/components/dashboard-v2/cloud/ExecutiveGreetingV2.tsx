@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Image, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type HealthTone = 'positive' | 'neutral' | 'negative';
@@ -60,6 +61,12 @@ export interface ExecutiveGreetingV2Props {
   accountMenu?: {
     email?: string;
     initials: string;
+    avatarUrl?: string;
+    avatarSource?: "custom" | "google" | "initials";
+    avatarWorking?: boolean;
+    avatarError?: string;
+    onChangeAvatar?: () => void;
+    onResetAvatar?: () => void;
     languageLabel: string;
     languageOptions: readonly {
       value: string;
@@ -212,14 +219,6 @@ function ExecutiveGreetingV2({
       </View>
 
       <View style={styles.headerRow}>
-        <Text
-          style={styles.eyebrow}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          accessibilityLabel="SalonFlowAI"
-        >
-          SalonFlow<Text style={styles.eyebrowAI}>AI</Text>
-        </Text>
 
         <View style={styles.headerActions}>
           <View style={[styles.healthPill, { backgroundColor: health.bg }]}>
@@ -245,9 +244,17 @@ function ExecutiveGreetingV2({
               ]}
             >
               <View style={styles.accountAvatar}>
-                <Text style={styles.accountAvatarText}>
-                  {accountMenu.initials}
-                </Text>
+                {accountMenu.avatarUrl ? (
+                  <Image
+                    source={{ uri: accountMenu.avatarUrl }}
+                    resizeMode="cover"
+                    style={styles.accountAvatarImage}
+                  />
+                ) : (
+                  <Text style={styles.accountAvatarText}>
+                    {accountMenu.initials}
+                  </Text>
+                )}
               </View>
 
               <Text
@@ -326,10 +333,58 @@ function ExecutiveGreetingV2({
             ]}
           >
             <View style={styles.accountIdentity}>
-              <View style={styles.accountAvatarLarge}>
-                <Text style={styles.accountAvatarLargeText}>
-                  {accountMenu.initials}
-                </Text>
+              <View style={styles.accountAvatarLargeWrap}>
+                <Pressable
+                  accessibilityRole={
+                    accountMenu.onChangeAvatar ? "button" : undefined
+                  }
+                  accessibilityLabel="Choose profile photo"
+                  disabled={
+                    !accountMenu.onChangeAvatar ||
+                    accountMenu.avatarWorking
+                  }
+                  onPress={accountMenu.onChangeAvatar}
+                  style={({ pressed }) => [
+                    styles.accountAvatarLarge,
+                    pressed && styles.accountAvatarLargePressed,
+                  ]}
+                >
+                  {accountMenu.avatarUrl ? (
+                    <Image
+                      source={{ uri: accountMenu.avatarUrl }}
+                      resizeMode="cover"
+                      style={styles.accountAvatarLargeImage}
+                    />
+                  ) : (
+                    <Text style={styles.accountAvatarLargeText}>
+                      {accountMenu.initials}
+                    </Text>
+                  )}
+                </Pressable>
+
+                {!!accountMenu.onChangeAvatar && (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Choose profile photo"
+                    disabled={accountMenu.avatarWorking}
+                    onPress={accountMenu.onChangeAvatar}
+                    style={({ pressed }) => [
+                      styles.avatarEditButton,
+                      {
+                        backgroundColor: palette.surface,
+                        borderColor: palette.borderStrong,
+                      },
+                      pressed && styles.menuItemPressed,
+                      accountMenu.avatarWorking && styles.avatarActionDisabled,
+                    ]}
+                  >
+                    <Ionicons
+                      name={accountMenu.avatarWorking ? "hourglass-outline" : "camera-outline"}
+                      size={14}
+                      color={palette.royal}
+                    />
+                  </Pressable>
+                )}
               </View>
 
               <View style={styles.accountIdentityText}>
@@ -342,7 +397,38 @@ function ExecutiveGreetingV2({
                   </Text>
                 )}
               </View>
+
+              {!!accountMenu.onResetAvatar && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Use provider photo"
+                  disabled={accountMenu.avatarWorking}
+                  onPress={accountMenu.onResetAvatar}
+                  style={({ pressed }) => [
+                    styles.avatarResetButton,
+                    pressed && styles.menuItemPressed,
+                    accountMenu.avatarWorking && styles.avatarActionDisabled,
+                  ]}
+                >
+                  <Ionicons
+                    name="refresh-circle-outline"
+                    size={18}
+                    color={palette.textSecondary}
+                  />
+                </Pressable>
+              )}
             </View>
+
+            {!!accountMenu.avatarError && (
+              <Text
+                style={[
+                  styles.avatarErrorText,
+                  { color: palette.negative },
+                ]}
+              >
+                {accountMenu.avatarError}
+              </Text>
+            )}
 
             <View style={styles.accountDivider} />
 
@@ -616,7 +702,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
   },
   headerActions: {
     flexDirection: 'row',
@@ -647,6 +733,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(124,92,255,0.22)',
     borderWidth: 1,
     borderColor: 'rgba(124,92,255,0.42)',
+  },
+  accountAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
   },
   accountAvatarText: {
     fontSize: 10,
@@ -818,15 +909,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  accountAvatarLargeWrap: {
+    position: 'relative',
+    width: 48,
+    height: 48,
+  },
   accountAvatarLarge: {
     width: 43,
     height: 43,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
     backgroundColor: 'rgba(124,92,255,0.24)',
     borderWidth: 1,
     borderColor: 'rgba(124,92,255,0.48)',
+  },
+  accountAvatarLargeImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 22,
+  },
+  accountAvatarLargePressed: {
+    opacity: 0.78,
+    transform: [{ scale: 0.98 }],
+  },
+  avatarErrorText: {
+    marginTop: 10,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '700',
+  },
+  avatarEditButton: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: 23,
+    height: 23,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    shadowColor: '#000000',
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  avatarResetButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarActionDisabled: {
+    opacity: 0.5,
   },
   accountAvatarLargeText: {
     fontSize: 14,

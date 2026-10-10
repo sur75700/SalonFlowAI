@@ -126,39 +126,57 @@ function NextBestActionV2({
         </View>
       ) : (
         <View style={styles.list}>
-          {actions.slice(0, 3).map((action) => (
-            <View key={action.code} style={styles.actionCard}>
-              <View style={styles.actionHeader}>
-                <Text style={styles.category}>{categoryLabel(action.category, labels)}</Text>
-                <Text style={styles.priority}>P{action.priority}</Text>
-              </View>
-              <Text style={styles.actionTitle}>{action.title}</Text>
-              <Text style={styles.actionDescription}>{action.description}</Text>
-              <View style={styles.metaRow}>
-                <View style={styles.metaBlock}>
-                  <Text style={styles.metaLabel}>{labels.evidence}</Text>
-                  <Text style={styles.metaValue} numberOfLines={2}>
-                    {action.evidence[0]?.description ?? "—"}
-                  </Text>
+          {actions.slice(0, 3).map((action) => {
+            const leadEvidence = action.evidence[0];
+            return (
+              <View key={action.code} style={styles.actionCard}>
+                <View style={styles.actionHeader}>
+                  <Text style={styles.category}>{categoryLabel(action.category, labels)}</Text>
+                  <View style={styles.priorityCluster}>
+                    <Text style={styles.confidenceBadge}>
+                      {Math.round(action.confidence.score * 100)}%
+                    </Text>
+                    <Text style={styles.priority}>P{action.priority}</Text>
+                  </View>
                 </View>
-                <View style={styles.metaBlockCompact}>
-                  <Text style={styles.metaLabel}>{labels.expectedImpact}</Text>
-                  <Text style={styles.metaValue}>{formatImpact(action)}</Text>
-                  <Text style={styles.confidence}>
-                    {labels.confidence}: {Math.round(action.confidence.score * 100)}%
-                  </Text>
+
+                <Text style={styles.actionTitle}>{action.title}</Text>
+                <Text style={styles.actionDescription}>{action.description}</Text>
+
+                <View style={styles.metaRow}>
+                  <View style={styles.metaBlock}>
+                    <Text style={styles.metaLabel}>{labels.evidence}</Text>
+                    <Text style={styles.metaValue} numberOfLines={3}>
+                      {leadEvidence?.description ?? "—"}
+                    </Text>
+                    {leadEvidence?.source ? (
+                      <Text style={styles.evidenceSource} numberOfLines={1}>
+                        {leadEvidence.source}
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.metaBlockCompact}>
+                    <Text style={styles.metaLabel}>{labels.expectedImpact}</Text>
+                    <Text style={styles.impactValue}>{formatImpact(action) || "—"}</Text>
+                    <Text style={styles.confidence}>
+                      {labels.confidence}: {Math.round(action.confidence.score * 100)}%
+                    </Text>
+                  </View>
                 </View>
+
+                <Pressable
+                  testID={`next-best-action-${action.code}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${labels.open}: ${action.title}`}
+                  onPress={() => onActionPress(action)}
+                  style={({ pressed }) => [styles.actionButton, pressed ? styles.pressed : null]}
+                >
+                  <Text style={styles.actionButtonText}>{labels.open} ›</Text>
+                </Pressable>
               </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`${labels.open}: ${action.title}`}
-                onPress={() => onActionPress(action)}
-                style={({ pressed }) => [styles.actionButton, pressed ? styles.pressed : null]}
-              >
-                <Text style={styles.actionButtonText}>{labels.open}</Text>
-              </Pressable>
-            </View>
-          ))}
+            );
+          })}
         </View>
       )}
     </View>
@@ -177,17 +195,21 @@ const styles = StyleSheet.create({
   emptyTitle: { color: "#F6F5FB", fontSize: 14, fontWeight: "700" },
   emptyDetail: { marginTop: 5, color: "#8C8EAA", fontSize: 12, lineHeight: 18 },
   list: { marginTop: 14, gap: 12 },
-  actionCard: { borderRadius: 18, borderWidth: 1, borderColor: "rgba(232,201,122,0.14)", backgroundColor: "rgba(13,14,30,0.48)", padding: 14 },
-  actionHeader: { flexDirection: "row", justifyContent: "space-between", gap: 10 },
+  actionCard: { borderRadius: 18, borderWidth: 1, borderLeftWidth: 2, borderColor: "rgba(232,201,122,0.16)", borderLeftColor: "rgba(112,231,255,0.46)", backgroundColor: "rgba(13,14,30,0.52)", padding: 14 },
+  actionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  priorityCluster: { flexDirection: "row", alignItems: "center", gap: 7 },
+  confidenceBadge: { color: "#70E7FF", fontSize: 9, fontWeight: "900", borderRadius: 999, borderWidth: 1, borderColor: "rgba(112,231,255,0.24)", backgroundColor: "rgba(112,231,255,0.07)", paddingHorizontal: 7, paddingVertical: 3 },
   category: { color: "#D7C6FF", fontSize: 10, fontWeight: "800", letterSpacing: 0.7, textTransform: "uppercase" },
   priority: { color: "#E8C97A", fontSize: 10, fontWeight: "800" },
   actionTitle: { marginTop: 8, color: "#F8F7FD", fontSize: 15, fontWeight: "800", lineHeight: 21 },
   actionDescription: { marginTop: 4, color: "#A6A7C4", fontSize: 12, lineHeight: 18 },
   metaRow: { marginTop: 12, flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  metaBlock: { flex: 1, minWidth: 180 },
-  metaBlockCompact: { minWidth: 140 },
+  metaBlock: { flex: 1, minWidth: 180, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.055)", backgroundColor: "rgba(255,255,255,0.025)", padding: 10 },
+  metaBlockCompact: { minWidth: 140, borderRadius: 12, borderWidth: 1, borderColor: "rgba(124,92,255,0.16)", backgroundColor: "rgba(124,92,255,0.055)", padding: 10 },
   metaLabel: { color: "#6F7092", fontSize: 9, fontWeight: "800", letterSpacing: 0.6, textTransform: "uppercase" },
   metaValue: { marginTop: 4, color: "#E7E7F1", fontSize: 11, lineHeight: 16 },
+  evidenceSource: { marginTop: 5, color: "#70E7FF", fontSize: 9, fontWeight: "700" },
+  impactValue: { marginTop: 5, color: "#F8F7FD", fontSize: 12, lineHeight: 17, fontWeight: "900" },
   confidence: { marginTop: 4, color: "#8C8EAA", fontSize: 10 },
   actionButton: { marginTop: 12, alignSelf: "flex-start", borderRadius: 999, backgroundColor: "rgba(124,92,255,0.18)", borderWidth: 1, borderColor: "rgba(124,92,255,0.42)", paddingHorizontal: 14, paddingVertical: 8 },
   actionButtonText: { color: "#EAE4FF", fontSize: 11, fontWeight: "800" },

@@ -268,6 +268,19 @@ PDF_THEME_PALETTES = {
         "muted": "#71656F",
         "footer": "#71656F",
     },
+    "burgundy_cosmos": {
+        "hero": "#3B0B1D",
+        "hero_deep": "#16060D",
+        "accent": "#D65A88",
+        "accent_soft": "#F8E7ED",
+        "surface": "#FFF8FA",
+        "surface_alt": "#F8EDF1",
+        "line": "#E7CBD4",
+        "ink": "#2A111A",
+        "muted": "#735462",
+        "footer": "#735462",
+    },
+
 }
 
 
@@ -341,7 +354,13 @@ def render_report_document_pdf(document: object) -> bytes:
         fontSize=8,
         leading=10,
         textColor=colors.HexColor(
-            "#D7CFFF" if theme_id == "royal_cosmos" else "#E8C982"
+            (
+                "#D7CFFF"
+                if theme_id == "royal_cosmos"
+                else "#E8C982"
+                if theme_id == "royal_gold_cosmos"
+                else "#F4D0DC"
+            )
         ),
         spaceAfter=4,
     )
@@ -361,7 +380,13 @@ def render_report_document_pdf(document: object) -> bytes:
         fontSize=9,
         leading=12,
         textColor=colors.HexColor(
-            "#D9D5EE" if theme_id == "royal_cosmos" else "#E8DFCB"
+            (
+                "#D9D5EE"
+                if theme_id == "royal_cosmos"
+                else "#E8DFCB"
+                if theme_id == "royal_gold_cosmos"
+                else "#EAC1CF"
+            )
         ),
     )
     section_style = ParagraphStyle(

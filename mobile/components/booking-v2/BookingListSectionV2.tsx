@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
 import BookingCardV3, { BookingCardV2Props, BookingCardLayout } from './BookingCardV3';
 
 export interface BookingListSectionV2Props {
@@ -41,6 +43,23 @@ function BookingListSectionV2({
   emptyLabel,
   cardLayout = 'stacked',
 }: BookingListSectionV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   return (
     <View style={styles.section}>
       <View style={styles.headerRow}>
@@ -54,7 +73,7 @@ function BookingListSectionV2({
 
       <View style={styles.body}>
         {loading ? (
-          <View style={styles.centerState}>
+          <View style={[styles.centerState, burgundySurfaceStyle]}>
             <ActivityIndicator color={colors.textSecondary} />
           </View>
         ) : error ? (
@@ -62,7 +81,7 @@ function BookingListSectionV2({
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : items.length === 0 ? (
-          <View style={styles.centerState}>
+          <View style={[styles.centerState, burgundySurfaceStyle]}>
             <Text style={styles.emptyText}>{emptyLabel}</Text>
           </View>
         ) : (

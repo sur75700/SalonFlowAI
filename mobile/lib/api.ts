@@ -45,6 +45,15 @@ export type CurrentUser = {
   email_verified?: boolean;
   last_login_at?: string;
   created_at?: string;
+  avatar_url?: string | null;
+  avatar_source?: "custom" | "google" | "initials";
+};
+
+export type ProfileAvatarUploadAsset = {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  file?: any;
 };
 
 export type CheckoutSessionResponse = {
@@ -121,6 +130,54 @@ export async function createCustomerPortalSession(
 
 export async function fetchCurrentUser(token: string): Promise<CurrentUser> {
   const response = await api.get("/auth/me", {
+    headers: authHeaders(token),
+  });
+
+  return response.data;
+}
+
+
+export async function uploadProfileAvatar(
+  token: string,
+  asset: ProfileAvatarUploadAsset
+): Promise<CurrentUser> {
+  const form = new FormData();
+  const name = asset.fileName?.trim() || "avatar.jpg";
+  const mimeType = asset.mimeType?.trim() || "image/jpeg";
+
+  if (asset.file) {
+    form.append("file", asset.file, name);
+  } else if (
+    typeof fetch === "function" &&
+    (asset.uri.startsWith("blob:") ||
+      asset.uri.startsWith("data:"))
+  ) {
+    const blob = await fetch(asset.uri).then((response) =>
+      response.blob()
+    );
+    form.append("file", blob as any, name);
+  } else {
+    form.append(
+      "file",
+      {
+        uri: asset.uri,
+        name,
+        type: mimeType,
+      } as any
+    );
+  }
+
+  const response = await api.post("/auth/me/avatar", form, {
+    headers: authHeaders(token),
+  });
+
+  return response.data;
+}
+
+export async function deleteProfileAvatar(
+  token: string
+): Promise<CurrentUser> {
+  const response = await api.delete("/auth/me/avatar", {
     headers: authHeaders(token),
   });
 

@@ -1,5 +1,16 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Easing, ActivityIndicator, Pressable } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+  ActivityIndicator,
+  Pressable,
+  Modal,
+  ScrollView,
+  useWindowDimensions,
+} from 'react-native';
 import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
 
 export type InsightTone = 'positive' | 'neutral' | 'warning' | 'danger';
@@ -48,6 +59,9 @@ export interface AICommandCenterV2Props {
     retry: string;
     locked: string;
     upgrade: string;
+    expand: string;
+    close: string;
+    fullView: string;
   };
   healthLabel: string;
   aiScore: number; // 0–100
@@ -224,6 +238,229 @@ const entitlementLockStyles = StyleSheet.create({
   },
 });
 
+
+function getForecastExecutiveSummary(helperText?: string): string | undefined {
+  const firstSegment = helperText
+    ?.split('|')
+    .map((segment) => segment.trim())
+    .find(Boolean);
+
+  return firstSegment || undefined;
+}
+
+function ExpandGlyph() {
+  return (
+    <View style={styles.expandGlyph} pointerEvents="none">
+      <View style={[styles.expandCorner, styles.expandCornerTopLeft]} />
+      <View style={[styles.expandCorner, styles.expandCornerTopRight]} />
+      <View style={[styles.expandCorner, styles.expandCornerBottomLeft]} />
+      <View style={[styles.expandCorner, styles.expandCornerBottomRight]} />
+    </View>
+  );
+}
+
+type ExpandedAICommandCenterProps = Readonly<{
+  labels: AICommandCenterV2Props['labels'];
+  healthLabel: string;
+  aiScore: number;
+  confidenceLabel: string;
+  insights: AIInsight[];
+  recommendations: string[];
+  todaysFocus: FocusItem[];
+  forecast: AICommandCenterV2Props['forecast'];
+  visible: boolean;
+  onClose: () => void;
+}>;
+
+function ExpandedAICommandCenter({
+  labels,
+  healthLabel,
+  aiScore,
+  confidenceLabel,
+  insights,
+  recommendations,
+  todaysFocus,
+  forecast,
+  visible,
+  onClose,
+}: ExpandedAICommandCenterProps) {
+  const { width, height } = useWindowDimensions();
+  const { theme } = useDashboardTheme();
+  const wide = width >= 920;
+  const scoreTone = getScoreTone(aiScore);
+  const executiveForecast = getForecastExecutiveSummary(forecast.helperText);
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View
+        testID="ai-command-center-modal"
+        style={[
+          styles.modalBackdrop,
+          {
+            paddingHorizontal: width < 700 ? 10 : 28,
+            paddingVertical: height < 700 ? 10 : 24,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.modalShell,
+            {
+              maxHeight: Math.max(420, height - (height < 700 ? 20 : 48)),
+              borderColor: theme.palette.borderStrong,
+            },
+          ]}
+        >
+          <View style={styles.modalHeader}>
+            <View style={styles.modalTitleBlock}>
+              <Text style={styles.modalEyebrow}>
+                {labels.commandCenter.toUpperCase()}
+              </Text>
+              <Text style={styles.modalTitle}>{labels.fullView}</Text>
+            </View>
+
+            <View style={styles.modalHeaderActions}>
+              <View style={[styles.healthPill, { backgroundColor: scoreTone.bg }]}>
+                <Text style={[styles.healthLabel, { color: scoreTone.fg }]}>
+                  {healthLabel}
+                </Text>
+              </View>
+              <Pressable
+                testID="ai-command-center-close"
+                accessibilityRole="button"
+                accessibilityLabel={labels.close}
+                hitSlop={10}
+                onPress={onClose}
+                style={({ pressed }) => [
+                  styles.modalCloseButton,
+                  pressed ? styles.modalCloseButtonPressed : null,
+                ]}
+              >
+                <Text style={styles.modalCloseText}>×</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <ScrollView
+            style={styles.modalScroll}
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator
+          >
+            <View style={[styles.expandedGrid, wide ? styles.expandedGridWide : null]}>
+              <View style={[styles.expandedGlassPanel, wide ? styles.expandedHalfPanel : null]}>
+                <Text style={styles.sectionEyebrow}>{labels.score.toUpperCase()}</Text>
+                <View style={styles.expandedScoreRow}>
+                  <ScoreDial score={aiScore} tone={scoreTone.fg} />
+                  <View style={styles.expandedScoreTextCol}>
+                    <Text style={styles.expandedScoreValue}>{Math.round(aiScore)} / 100</Text>
+                    <Text style={styles.expandedConfidence}>{confidenceLabel}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={[styles.expandedGlassPanel, wide ? styles.expandedHalfPanel : null]}>
+                <Text style={styles.sectionEyebrow}>{labels.todaysFocus.toUpperCase()}</Text>
+                {todaysFocus.length === 0 ? (
+                  <Text style={styles.emptyText}>{labels.emptyFocus}</Text>
+                ) : (
+                  <View>
+                    {todaysFocus.map((item, i) => {
+                      const tone = toneColorMap[item.tone ?? 'neutral'];
+                      return (
+                        <View key={`${item.label}-${i}`} style={styles.expandedFocusRow}>
+                          <View style={[styles.expandedFocusMarker, { backgroundColor: tone.fg }]} />
+                          <View style={styles.focusTextCol}>
+                            <View style={styles.focusTopLine}>
+                              {!!item.time && <Text style={styles.focusTime}>{item.time}</Text>}
+                              <Text style={styles.expandedFocusLabel}>{item.label}</Text>
+                            </View>
+                            {!!item.detail && (
+                              <Text style={styles.expandedBodyText}>{item.detail}</Text>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.expandedGlassPanel}>
+              <Text style={styles.sectionEyebrow}>{labels.forecast.toUpperCase()}</Text>
+              <View style={styles.forecastHeaderRow}>
+                <Text style={styles.expandedForecastHeadline}>{forecast.headline}</Text>
+                {!!forecast.trendLabel && (
+                  <Text
+                    style={[
+                      styles.forecastTrend,
+                      { color: trendColorMap[forecast.trendDirection ?? 'flat'] },
+                    ]}
+                  >
+                    {forecast.trendLabel}
+                  </Text>
+                )}
+              </View>
+              {!!executiveForecast && (
+                <Text style={styles.expandedBodyText}>{executiveForecast}</Text>
+              )}
+              <ForecastBars series={forecast.series} color={scoreTone.fg} />
+            </View>
+
+            <View style={[styles.expandedGrid, wide ? styles.expandedGridWide : null]}>
+              <View style={[styles.expandedGlassPanel, wide ? styles.expandedHalfPanel : null]}>
+                <Text style={styles.sectionEyebrow}>{labels.insights.toUpperCase()}</Text>
+                {insights.length === 0 ? (
+                  <Text style={styles.emptyText}>{labels.emptyInsights}</Text>
+                ) : (
+                  <View>
+                    {insights.map((insight, i) => {
+                      const tone = toneColorMap[insight.tone];
+                      return (
+                        <View
+                          key={`${insight.title}-${i}`}
+                          style={[styles.expandedInsightCard, { backgroundColor: tone.bg }]}
+                        >
+                          <View style={[styles.insightBar, { backgroundColor: tone.fg }]} />
+                          <View style={styles.insightTextCol}>
+                            <Text style={styles.expandedInsightTitle}>{insight.title}</Text>
+                            <Text style={styles.expandedBodyText}>{insight.description}</Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+
+              <View style={[styles.expandedGlassPanel, wide ? styles.expandedHalfPanel : null]}>
+                <Text style={styles.sectionEyebrow}>{labels.recommendations.toUpperCase()}</Text>
+                {recommendations.length === 0 ? (
+                  <Text style={styles.emptyText}>{labels.caughtUp}</Text>
+                ) : (
+                  <View>
+                    {recommendations.map((rec, i) => (
+                      <View key={`${rec}-${i}`} style={styles.expandedRecommendationRow}>
+                        <View style={styles.diamondBullet} />
+                        <Text style={styles.expandedRecommendationText}>{rec}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 function AICommandCenterV2({
   labels,
   healthLabel,
@@ -239,6 +476,7 @@ function AICommandCenterV2({
 }: AICommandCenterV2Props) {
   const { theme } = useDashboardTheme();
   const pulseAnim = useRef(new Animated.Value(0)).current;
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -405,10 +643,25 @@ function AICommandCenterV2({
           </View>
           <Text style={styles.eyebrow}>{labels.commandCenter.toUpperCase()}</Text>
         </View>
-        <View style={[styles.healthPill, { backgroundColor: scoreTone.bg }]}>
-          <Text style={[styles.healthLabel, { color: scoreTone.fg }]} numberOfLines={1}>
-            {stateHealthLabel}
-          </Text>
+        <View style={styles.headerActions}>
+          <View style={[styles.healthPill, { backgroundColor: scoreTone.bg }]}>
+            <Text style={[styles.healthLabel, { color: scoreTone.fg }]} numberOfLines={1}>
+              {stateHealthLabel}
+            </Text>
+          </View>
+          <Pressable
+            testID="ai-command-center-expand"
+            accessibilityRole="button"
+            accessibilityLabel={labels.expand}
+            hitSlop={8}
+            onPress={() => setExpanded(true)}
+            style={({ pressed }) => [
+              styles.expandButton,
+              pressed ? styles.expandButtonPressed : null,
+            ]}
+          >
+            <ExpandGlyph />
+          </Pressable>
         </View>
       </View>
 
@@ -485,7 +738,11 @@ function AICommandCenterV2({
           </Text>
         )}
       </View>
-      {!!forecast.helperText && <Text style={styles.forecastHelper}>{forecast.helperText}</Text>}
+      {!!getForecastExecutiveSummary(forecast.helperText) && (
+        <Text style={styles.forecastHelper} numberOfLines={3}>
+          {getForecastExecutiveSummary(forecast.helperText)}
+        </Text>
+      )}
       <ForecastBars series={forecast.series} color={scoreTone.fg} />
 
       <View style={styles.divider} />
@@ -533,6 +790,19 @@ function AICommandCenterV2({
           ))}
         </View>
       )}
+
+      <ExpandedAICommandCenter
+        labels={labels}
+        healthLabel={stateHealthLabel}
+        aiScore={aiScore}
+        confidenceLabel={confidenceLabel}
+        insights={insights}
+        recommendations={recommendations}
+        todaysFocus={todaysFocus}
+        forecast={forecast}
+        visible={expanded}
+        onClose={() => setExpanded(false)}
+      />
     </View>
   );
 }
@@ -549,6 +819,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  expandButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(232,201,122,0.30)',
+    backgroundColor: 'rgba(255,255,255,0.035)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandButtonPressed: {
+    opacity: 0.72,
+    transform: [{ scale: 0.96 }],
+  },
+  expandGlyph: {
+    width: 14,
+    height: 14,
+  },
+  expandCorner: {
+    position: 'absolute',
+    width: 6,
+    height: 6,
+    borderColor: colors.gold,
+  },
+  expandCornerTopLeft: {
+    left: 0,
+    top: 0,
+    borderLeftWidth: 1.5,
+    borderTopWidth: 1.5,
+  },
+  expandCornerTopRight: {
+    right: 0,
+    top: 0,
+    borderRightWidth: 1.5,
+    borderTopWidth: 1.5,
+  },
+  expandCornerBottomLeft: {
+    left: 0,
+    bottom: 0,
+    borderLeftWidth: 1.5,
+    borderBottomWidth: 1.5,
+  },
+  expandCornerBottomRight: {
+    right: 0,
+    bottom: 0,
+    borderRightWidth: 1.5,
+    borderBottomWidth: 1.5,
   },
   titleRow: {
     flexDirection: 'row',
@@ -781,6 +1104,181 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     color: colors.textSecondary,
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(2, 3, 12, 0.78)',
+  },
+  modalShell: {
+    width: '100%',
+    maxWidth: 1180,
+    alignSelf: 'center',
+    borderRadius: 30,
+    borderWidth: 1,
+    backgroundColor: 'rgba(10, 12, 32, 0.94)',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    minHeight: 72,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.025)',
+  },
+  modalTitleBlock: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 14,
+  },
+  modalEyebrow: {
+    color: colors.gold,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.25,
+  },
+  modalTitle: {
+    marginTop: 3,
+    color: colors.textPrimary,
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '800',
+    letterSpacing: -0.25,
+  },
+  modalHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  modalCloseButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.055)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCloseButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.96 }],
+  },
+  modalCloseText: {
+    marginTop: -2,
+    color: colors.textPrimary,
+    fontSize: 26,
+    lineHeight: 28,
+    fontWeight: '400',
+  },
+  modalScroll: {
+    flexGrow: 0,
+  },
+  modalScrollContent: {
+    padding: 18,
+    gap: 14,
+  },
+  expandedGrid: {
+    gap: 14,
+  },
+  expandedGridWide: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  expandedHalfPanel: {
+    flex: 1,
+    minWidth: 0,
+  },
+  expandedGlassPanel: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.09)',
+    backgroundColor: 'rgba(255,255,255,0.035)',
+    padding: 18,
+  },
+  expandedScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 150,
+  },
+  expandedScoreTextCol: {
+    flex: 1,
+    minWidth: 0,
+    marginLeft: 20,
+  },
+  expandedScoreValue: {
+    color: colors.textPrimary,
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.35,
+  },
+  expandedConfidence: {
+    marginTop: 7,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  expandedFocusRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 9,
+  },
+  expandedFocusMarker: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginTop: 7,
+    marginRight: 11,
+  },
+  expandedFocusLabel: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: '700',
+  },
+  expandedForecastHeadline: {
+    flex: 1,
+    marginRight: 12,
+    color: colors.textPrimary,
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: '800',
+  },
+  expandedBodyText: {
+    marginTop: 4,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  expandedInsightCard: {
+    flexDirection: 'row',
+    borderRadius: 15,
+    padding: 13,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  expandedInsightTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '800',
+  },
+  expandedRecommendationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 8,
+  },
+  expandedRecommendationText: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: '600',
   },
   recommendationList: {},
   recommendationRow: {

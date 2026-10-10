@@ -192,6 +192,55 @@ function svgNumber(value: number): string {
   return Number.isFinite(value) ? value.toFixed(2) : '0';
 }
 
+const REVENUE_DOMAIN_HEADROOM_RATIO = 0.12;
+const REVENUE_DOMAIN_MIN_HEADROOM_RATIO = 0.04;
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function resolveRevenueDomain(
+  currentSeries: RevenueSeriesPoint[],
+  comparisonSeries?: RevenueSeriesPoint[]
+): Readonly<{ min: number; max: number }> {
+  const values = [...currentSeries, ...(comparisonSeries ?? [])]
+    .map((point) => point.value)
+    .filter(Number.isFinite);
+
+  if (values.length === 0) {
+    return { min: 0, max: 1 };
+  }
+
+  const rawMin = Math.min(...values, 0);
+  const rawMax = Math.max(...values, 1);
+  const span = Math.max(rawMax - rawMin, 1);
+  const headroom = Math.max(
+    span * REVENUE_DOMAIN_HEADROOM_RATIO,
+    Math.abs(rawMax) * REVENUE_DOMAIN_MIN_HEADROOM_RATIO,
+    1
+  );
+
+  return {
+    min: rawMin,
+    max: rawMax + headroom,
+  };
+}
+
+function nearestSeriesIndexFromX(
+  xValue: number,
+  chartWidth: number,
+  seriesLength: number
+): number | null {
+  if (chartWidth <= 0 || seriesLength <= 0) {
+    return null;
+  }
+
+  const x = clampNumber(xValue, 0, chartWidth);
+  return seriesLength === 1
+    ? 0
+    : Math.round((x / chartWidth) * (seriesLength - 1));
+}
+
 /**
  * Smooth interpolation affects presentation only.
  * Trusted revenue values remain completely unchanged.
@@ -214,13 +263,21 @@ function buildSmoothPath(points: ScaledPoint[]): string {
 
     const cp1x =
       current.x + (next.x - previous.x) / 6;
-    const cp1y =
+    const rawCp1y =
       current.y + (next.y - previous.y) / 6;
 
     const cp2x =
       next.x - (afterNext.x - current.x) / 6;
-    const cp2y =
+    const rawCp2y =
       next.y - (afterNext.y - current.y) / 6;
+
+    // Keep the visual spline inside each real-point segment's vertical
+    // envelope. This prevents Catmull-Rom control points from inventing a
+    // peak above the trusted observations while preserving smoothness.
+    const segmentTop = Math.min(current.y, next.y);
+    const segmentBottom = Math.max(current.y, next.y);
+    const cp1y = clampNumber(rawCp1y, segmentTop, segmentBottom);
+    const cp2y = clampNumber(rawCp2y, segmentTop, segmentBottom);
 
     result +=
       ` C ${svgNumber(cp1x)} ${svgNumber(cp1y)}` +
@@ -310,38 +367,31 @@ function ImmersiveRevenueStage({
 
   const seriesLength = currentSeries.length;
 
+  const selectNearestRealPoint = (
+    xValue: number
+  ) => {
+    const index = nearestSeriesIndexFromX(
+      xValue,
+      chartWidth,
+      seriesLength
+    );
+
+    if (index !== null) {
+      setActiveIndex(index);
+    }
+  };
+
   const interactionPanResponder = useMemo(
-    () => {
-      const resolveIndexFromX = (
-        xValue: number
-      ): number | null => {
-        if (
-          chartWidth <= 0 ||
-          seriesLength === 0
-        ) {
-          return null;
-        }
-
-        const x = Math.max(
-          0,
-          Math.min(chartWidth, xValue)
-        );
-
-        return seriesLength === 1
-          ? 0
-          : Math.round(
-              (x / chartWidth) *
-                (seriesLength - 1)
-            );
-      };
-
-      return PanResponder.create({
+    () =>
+      PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
 
         onPanResponderGrant: (event) => {
-          const index = resolveIndexFromX(
-            event.nativeEvent.locationX
+          const index = nearestSeriesIndexFromX(
+            event.nativeEvent.locationX,
+            chartWidth,
+            seriesLength
           );
 
           if (index !== null) {
@@ -350,8 +400,10 @@ function ImmersiveRevenueStage({
         },
 
         onPanResponderMove: (event) => {
-          const index = resolveIndexFromX(
-            event.nativeEvent.locationX
+          const index = nearestSeriesIndexFromX(
+            event.nativeEvent.locationX,
+            chartWidth,
+            seriesLength
           );
 
           if (index !== null) {
@@ -364,8 +416,7 @@ function ImmersiveRevenueStage({
 
         onShouldBlockNativeResponder:
           () => false,
-      });
-    },
+      }),
     [chartWidth, seriesLength]
   );
 
@@ -552,6 +603,274 @@ function ImmersiveRevenueStage({
 
   return (
     <>
+      <View style={styles.immersiveReadoutDock}>
+        {!!activePoint && (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.interactionReadout,
+              {
+                width:
+                  chartWidth < 760
+                    ? Math.max(chartWidth - 64, 214)
+                    : Math.min(chartWidth * 0.72, 760),
+                paddingHorizontal:
+                  chartWidth < 760 ? 14 : 16,
+                paddingVertical:
+                  chartWidth < 760 ? 12 : 10,
+                flexDirection:
+                  chartWidth < 760 ? 'column' : 'row',
+                alignItems:
+                  chartWidth < 760 ? 'stretch' : 'center',
+                borderRadius: 18,
+                borderWidth: 1,
+                borderLeftWidth: 2,
+                borderColor: activeDeltaColor,
+                backgroundColor: 'rgba(8,11,34,0.95)',
+                shadowColor: activeDeltaColor,
+                shadowOpacity: 0.14,
+                shadowRadius: 12,
+                shadowOffset: {
+                  width: 0,
+                  height: 6,
+                },
+                elevation: 6,
+              },
+            ]}
+          >
+            <View
+              style={{
+                minWidth: chartWidth < 760 ? 0 : 176,
+                maxWidth: chartWidth < 760 ? undefined : 210,
+                flexShrink: 0,
+              }}
+            >
+              <Text
+                style={[
+                  styles.interactionDate,
+                  {
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontWeight: '700',
+                    letterSpacing: 0.25,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {activePoint.label}
+              </Text>
+
+              <Text
+                style={[
+                  styles.interactionValue,
+                  {
+                    color: colors.textPrimary,
+                    fontSize: chartWidth < 760 ? 21 : 23,
+                    lineHeight: chartWidth < 760 ? 26 : 28,
+                    fontWeight: '900',
+                    letterSpacing: -0.4,
+                    marginTop: 3,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {axisValueFormatter(activePoint.value)}
+              </Text>
+
+              {previousPoint && previousIntervalLabel ? (
+                <Text
+                  style={styles.interactionReference}
+                  numberOfLines={1}
+                >
+                  {previousIntervalLabel}: {previousPoint.label} ·{' '}
+                  {axisValueFormatter(previousPoint.value)}
+                </Text>
+              ) : null}
+            </View>
+
+            <View
+              style={[
+                styles.interactionStats,
+                {
+                  flex: 1,
+                  marginTop: chartWidth < 760 ? 10 : 0,
+                  marginLeft: chartWidth < 760 ? 0 : 14,
+                  flexWrap: chartWidth < 760 ? 'wrap' : 'nowrap',
+                  gap: 8,
+                },
+              ]}
+            >
+              <View
+                style={{
+                  flexBasis: chartWidth < 760 ? '47%' : 0,
+                  flexGrow: 1,
+                  minWidth: chartWidth < 760 ? 88 : 72,
+                  paddingHorizontal: 9,
+                  paddingVertical: 7,
+                  borderRadius: 11,
+                  borderWidth: 1,
+                  borderColor: activeDeltaColor,
+                  backgroundColor: activeDeltaBackground,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textTertiary,
+                    fontSize: 9,
+                    lineHeight: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.55,
+                  }}
+                >
+                  {changeLabel ?? 'Δ'}
+                </Text>
+                <Text
+                  style={{
+                    color: activeDeltaColor,
+                    fontSize: 12,
+                    lineHeight: 17,
+                    fontWeight: '900',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {activeDelta === null
+                    ? '—'
+                    : `${activeDelta >= 0 ? '+' : ''}${axisValueFormatter(
+                        activeDelta
+                      )}`}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexBasis: chartWidth < 760 ? '47%' : 0,
+                  flexGrow: 1,
+                  minWidth: chartWidth < 760 ? 88 : 72,
+                  paddingHorizontal: 9,
+                  paddingVertical: 7,
+                  borderRadius: 11,
+                  borderWidth: 1,
+                  borderColor: activePercentColor,
+                  backgroundColor: activePercentBackground,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textTertiary,
+                    fontSize: 9,
+                    lineHeight: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.55,
+                  }}
+                >
+                  {changePercentLabel ?? 'Δ%'}
+                </Text>
+                <Text
+                  style={{
+                    color: activePercentColor,
+                    fontSize: 12,
+                    lineHeight: 17,
+                    fontWeight: '900',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {activeDeltaPercent === null
+                    ? '—'
+                    : `${activeDeltaPercent >= 0 ? '+' : ''}${activeDeltaPercent.toFixed(
+                        1
+                      )}%`}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexBasis: chartWidth < 760 ? '47%' : 0,
+                  flexGrow: 1,
+                  minWidth: chartWidth < 760 ? 88 : 72,
+                  paddingHorizontal: 9,
+                  paddingVertical: 7,
+                  borderRadius: 11,
+                  borderWidth: 1,
+                  borderColor: palette.lineStart,
+                  backgroundColor: 'rgba(75,190,255,0.10)',
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textTertiary,
+                    fontSize: 9,
+                    lineHeight: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.55,
+                  }}
+                >
+                  {periodShareLabel ?? 'Σ'}
+                </Text>
+                <Text
+                  style={{
+                    color: palette.lineStart,
+                    fontSize: 12,
+                    lineHeight: 17,
+                    fontWeight: '900',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {activeShare === null
+                    ? '—'
+                    : `${activeShare.toFixed(1)}%`}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  flexBasis: chartWidth < 760 ? '47%' : 0,
+                  flexGrow: 1,
+                  minWidth: chartWidth < 760 ? 88 : 72,
+                  paddingHorizontal: 9,
+                  paddingVertical: 7,
+                  borderRadius: 11,
+                  borderWidth: 1,
+                  borderColor: palette.lineMid,
+                  backgroundColor: isEmerald
+                    ? 'rgba(69,242,167,0.10)'
+                    : 'rgba(124,92,255,0.10)',
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textTertiary,
+                    fontSize: 9,
+                    lineHeight: 12,
+                    fontWeight: '800',
+                    letterSpacing: 0.55,
+                  }}
+                >
+                  {intervalPositionLabel ?? '#'}
+                </Text>
+                <Text
+                  style={{
+                    color: palette.lineMid,
+                    fontSize: 12,
+                    lineHeight: 17,
+                    fontWeight: '900',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {(resolvedActiveIndex ?? 0) + 1}
+                  {' / '}
+                  {seriesLength}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+      </View>
+
       <View style={styles.immersiveChartRow}>
         <View
           style={[
@@ -954,299 +1273,19 @@ function ImmersiveRevenueStage({
             </Svg>
           )}
 
-          {!!activePoint && (
-            <View
-              pointerEvents="none"
-              style={[
-                  styles.interactionReadout,
-                  {
-                    width:
-                      chartWidth < 560
-                        ? 214
-                        : 254,
-                    paddingHorizontal:
-                      chartWidth < 560
-                        ? 14
-                        : 18,
-                    paddingVertical:
-                      chartWidth < 560
-                        ? 13
-                        : 16,
-                    borderRadius: 18,
-                    borderWidth: 1,
-                    borderLeftWidth: 3,
-                    borderColor:
-                      activeDeltaColor,
-                    backgroundColor:
-                      'rgba(8,11,34,0.97)',
-                    shadowColor:
-                      activeDeltaColor,
-                    shadowOpacity: 0.24,
-                    shadowRadius: 18,
-                    shadowOffset: {
-                      width: 0,
-                      height: 8,
-                    },
-                    elevation: 8,
-                  },
-                ]}
-            >
-              <Text
-                style={[
-                    styles.interactionDate,
-                    {
-                      color:
-                        colors.textSecondary,
-                      fontSize: 12,
-                      lineHeight: 16,
-                      fontWeight: '700',
-                      letterSpacing: 0.25,
-                    },
-                  ]}
-                numberOfLines={1}
-              >
-                {activePoint.label}
-              </Text>
-
-              <Text
-                style={[
-                    styles.interactionValue,
-                    {
-                      color:
-                        colors.textPrimary,
-                      fontSize:
-                        chartWidth < 560
-                          ? 21
-                          : 25,
-                      lineHeight:
-                        chartWidth < 560
-                          ? 26
-                          : 30,
-                      fontWeight: '900',
-                      letterSpacing: -0.4,
-                      marginTop: 4,
-                    },
-                  ]}
-                numberOfLines={1}
-              >
-                {axisValueFormatter(
-                  activePoint.value
-                )}
-              </Text>
-
-              {previousPoint && previousIntervalLabel ? (
-                <Text
-                  style={styles.interactionReference}
-                  numberOfLines={2}
-                >
-                  {previousIntervalLabel}: {previousPoint.label} · {axisValueFormatter(previousPoint.value)}
-                </Text>
-              ) : null}
-
-              <View
-                  style={[
-                    styles.interactionStats,
-                    {
-                      marginTop: 12,
-                      flexWrap: 'wrap',
-                      gap: 8,
-                    },
-                  ]}
-                >
-                  <View
-                    style={{
-                      flexBasis: '47%',
-                      minWidth: 88,
-                      paddingHorizontal: 10,
-                      paddingVertical: 8,
-                      borderRadius: 11,
-                      borderWidth: 1,
-                      borderColor:
-                        activeDeltaColor,
-                      backgroundColor:
-                        activeDeltaBackground,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          colors.textTertiary,
-                        fontSize: 9,
-                        lineHeight: 12,
-                        fontWeight: '800',
-                        letterSpacing: 0.55,
-                      }}
-                    >
-                      {changeLabel ?? 'Δ'}
-                    </Text>
-                    <Text
-                      style={{
-                        color:
-                          activeDeltaColor,
-                        fontSize: 12,
-                        lineHeight: 17,
-                        fontWeight: '900',
-                        marginTop: 2,
-                      }}
-                      numberOfLines={1}
-                    >
-                      {activeDelta === null
-                        ? '—'
-                        : `${
-                            activeDelta >= 0
-                              ? '+'
-                              : ''
-                          }${axisValueFormatter(
-                            activeDelta
-                          )}`}
-                    </Text>
-                  </View>
-
-                  <View
-                    style={{
-                      flexBasis: '47%',
-                      minWidth: 88,
-                      paddingHorizontal: 10,
-                      paddingVertical: 8,
-                      borderRadius: 11,
-                      borderWidth: 1,
-                      borderColor:
-                        activePercentColor,
-                      backgroundColor:
-                        activePercentBackground,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          colors.textTertiary,
-                        fontSize: 9,
-                        lineHeight: 12,
-                        fontWeight: '800',
-                        letterSpacing: 0.55,
-                      }}
-                    >
-                      {changePercentLabel ?? 'Δ%'}
-                    </Text>
-                    <Text
-                      style={{
-                        color:
-                          activePercentColor,
-                        fontSize: 12,
-                        lineHeight: 17,
-                        fontWeight: '900',
-                        marginTop: 2,
-                      }}
-                      numberOfLines={1}
-                    >
-                      {activeDeltaPercent === null
-                        ? '—'
-                        : `${
-                            activeDeltaPercent >= 0
-                              ? '+'
-                              : ''
-                          }${activeDeltaPercent.toFixed(
-                            1
-                          )}%`}
-                    </Text>
-                  </View>
-
-                  <View
-                    style={{
-                      flexBasis: '47%',
-                      minWidth: 88,
-                      paddingHorizontal: 10,
-                      paddingVertical: 8,
-                      borderRadius: 11,
-                      borderWidth: 1,
-                      borderColor:
-                        palette.lineStart,
-                      backgroundColor:
-                        'rgba(75,190,255,0.10)',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          colors.textTertiary,
-                        fontSize: 9,
-                        lineHeight: 12,
-                        fontWeight: '800',
-                        letterSpacing: 0.55,
-                      }}
-                    >
-                      {periodShareLabel ?? 'Σ'}
-                    </Text>
-                    <Text
-                      style={{
-                        color:
-                          palette.lineStart,
-                        fontSize: 12,
-                        lineHeight: 17,
-                        fontWeight: '900',
-                        marginTop: 2,
-                      }}
-                      numberOfLines={1}
-                    >
-                      {activeShare === null
-                        ? '—'
-                        : `${activeShare.toFixed(
-                            1
-                          )}%`}
-                    </Text>
-                  </View>
-
-                  <View
-                    style={{
-                      flexBasis: '47%',
-                      minWidth: 88,
-                      paddingHorizontal: 10,
-                      paddingVertical: 8,
-                      borderRadius: 11,
-                      borderWidth: 1,
-                      borderColor:
-                        palette.lineMid,
-                      backgroundColor:
-                        isEmerald
-                          ? 'rgba(69,242,167,0.10)'
-                          : 'rgba(124,92,255,0.10)',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          colors.textTertiary,
-                        fontSize: 9,
-                        lineHeight: 12,
-                        fontWeight: '800',
-                        letterSpacing: 0.55,
-                      }}
-                    >
-                      {intervalPositionLabel ?? '#'}
-                    </Text>
-                    <Text
-                      style={{
-                        color:
-                          palette.lineMid,
-                        fontSize: 12,
-                        lineHeight: 17,
-                        fontWeight: '900',
-                        marginTop: 2,
-                      }}
-                      numberOfLines={1}
-                    >
-                      {(resolvedActiveIndex ??
-                        0) + 1}
-                      {' / '}
-                      {seriesLength}
-                    </Text>
-                  </View>
-                </View>
-            </View>
-          )}
 
           <View
             {...interactionPanResponder.panHandlers}
+            onPointerDown={(event) =>
+              selectNearestRealPoint(
+                event.nativeEvent.offsetX
+              )
+            }
+            onPointerMove={(event) =>
+              selectNearestRealPoint(
+                event.nativeEvent.offsetX
+              )
+            }
             style={
               styles.interactionSurface
             }
@@ -1371,12 +1410,17 @@ function RevenueAnalyticsV2({
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false);
   const [immersiveOpen, setImmersiveOpen] = useState(false);
 
-  const { height: viewportHeight } =
+  const { width: viewportWidth, height: viewportHeight } =
     useWindowDimensions();
+
+  const isCompactImmersive = viewportWidth < 760;
 
   const immersiveHeight = Math.max(
     220,
-    Math.min(viewportHeight * 0.61, 620)
+    Math.min(
+      viewportHeight * (isCompactImmersive ? 0.42 : 0.52),
+      520
+    )
   );
 
   const canSelectPeriod =
@@ -1391,10 +1435,10 @@ function RevenueAnalyticsV2({
   const onChartLayout = (e: LayoutChangeEvent) =>
     setChartWidth(e.nativeEvent.layout.width);
 
-  const { min, max } = useMemo(() => {
-    const all = [...currentSeries, ...(comparisonSeries ?? [])].map((p) => p.value);
-    return { min: Math.min(...all, 0), max: Math.max(...all, 1) };
-  }, [currentSeries, comparisonSeries]);
+  const { min, max } = useMemo(
+    () => resolveRevenueDomain(currentSeries, comparisonSeries),
+    [currentSeries, comparisonSeries]
+  );
 
   const currentScaled = useMemo(
     () => scalePoints(currentSeries, chartWidth, height, min, max),
@@ -1865,26 +1909,48 @@ function RevenueAnalyticsV2({
           style={[
             styles.immersiveRoot,
             isEmerald && styles.immersiveRootEmerald,
+            {
+              paddingHorizontal: isCompactImmersive ? 8 : 20,
+              paddingVertical: isCompactImmersive ? 8 : 14,
+            },
           ]}
         >
           <View
-            pointerEvents="none"
-            style={styles.immersiveHaloBlue}
-          />
-          <View
-            pointerEvents="none"
-            style={styles.immersiveHaloViolet}
-          />
+            style={[
+              styles.immersiveFrame,
+              {
+                width: isCompactImmersive ? '100%' : '96%',
+                backgroundColor: theme.palette.surface,
+                borderColor: theme.palette.border,
+              },
+            ]}
+          >
+            <View
+              pointerEvents="none"
+              style={styles.immersiveHaloBlue}
+            />
+            <View
+              pointerEvents="none"
+              style={styles.immersiveHaloViolet}
+            />
 
           <View style={styles.immersiveTopBar}>
             <View style={styles.immersiveIdentity}>
-              <Text style={styles.immersiveTitle}>
+              <Text
+                style={[
+                  styles.immersiveTitle,
+                  isCompactImmersive && styles.immersiveTitleCompact,
+                ]}
+              >
                 {title}
               </Text>
 
               <View style={styles.immersiveMetricRow}>
                 <Text
-                  style={styles.immersiveTotal}
+                  style={[
+                    styles.immersiveTotal,
+                    isCompactImmersive && styles.immersiveTotalCompact,
+                  ]}
                   numberOfLines={1}
                 >
                   {totalValue}
@@ -2024,6 +2090,7 @@ function RevenueAnalyticsV2({
                 </Text>
               </View>
             )}
+          </View>
           </View>
         </SafeAreaView>
         </DashboardThemeBackground>
@@ -2322,14 +2389,30 @@ const styles = StyleSheet.create({
   immersiveRoot: {
     flex: 1,
     overflow: 'hidden',
-    backgroundColor: '#070A1C',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   immersiveRootEmerald: {
-    backgroundColor: 'rgba(5,9,24,0.72)',
+    backgroundColor: 'rgba(5,9,24,0.18)',
+  },
+
+  immersiveFrame: {
+    flex: 1,
+    maxWidth: 1600,
+    alignSelf: 'center',
+    borderRadius: 30,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOpacity: 0.28,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 12,
   },
 
   immersiveHaloBlue: {
@@ -2371,6 +2454,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
 
+  immersiveTitleCompact: {
+    fontSize: 18,
+    lineHeight: 23,
+  },
+
   immersiveMetricRow: {
     marginTop: 9,
     flexDirection: 'row',
@@ -2384,6 +2472,11 @@ const styles = StyleSheet.create({
     fontSize: 38,
     fontWeight: '800',
     letterSpacing: -1,
+  },
+
+  immersiveTotalCompact: {
+    fontSize: 30,
+    letterSpacing: -0.7,
   },
 
   immersiveClose: {
@@ -2487,13 +2580,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 
+  immersiveReadoutDock: {
+    minHeight: 0,
+    paddingLeft: 64,
+    marginBottom: 12,
+    alignItems: 'flex-end',
+    zIndex: 4,
+  },
+
   interactionReadout: {
-    position: 'absolute',
-    top: 14,
-    right: 14,
     zIndex: 4,
     minWidth: 170,
-    maxWidth: 270,
+    maxWidth: 760,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 18,

@@ -1,4 +1,6 @@
 import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+
+import { useDashboardTheme } from '../../hooks/useDashboardTheme';
 import ClientCardV3, { ClientRecord, ClientCardLayout, ClientCardV3Labels } from './ClientCardV3';
 
 const theme = {
@@ -96,6 +98,23 @@ export default function ClientListSectionV2({
   onEmptyStateAction,
   onErrorAction,
 }: ClientListSectionV2Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const t: ClientListSectionV2Labels = { ...DEFAULT_CLIENT_LIST_SECTION_LABELS, ...labels };
   const { width } = useWindowDimensions();
   const effectiveColumns = columns ?? computeColumns(width);
@@ -187,7 +206,7 @@ export default function ClientListSectionV2({
         ? theme.color.red
         : theme.color.textSecondary;
     return (
-      <View style={styles.statePanel} accessibilityRole="none">
+      <View style={[styles.statePanel, burgundySurfaceStyle]} accessibilityRole="none">
         <View style={[styles.stateGlyph, { borderColor: toneColor }]} />
         <Text style={styles.stateTitle}>{options.title}</Text>
         <Text style={styles.stateDescription}>{options.description}</Text>

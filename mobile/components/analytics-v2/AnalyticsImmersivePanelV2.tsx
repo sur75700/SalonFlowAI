@@ -10,6 +10,8 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 import Svg, { Circle, G } from "react-native-svg";
 
 import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
@@ -791,6 +793,23 @@ export default function AnalyticsImmersivePanelV2({
   clientSignals = [],
   heatmap = [],
 }: Props) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
   const [visible, setVisible] = useState(false);
   const { width } = useWindowDimensions();
 
@@ -858,7 +877,8 @@ export default function AnalyticsImmersivePanelV2({
             <View
               style={[
                 styles.modalShell,
-                wide && styles.modalShellWide,
+                burgundySurfaceStyle,
+                    wide && styles.modalShellWide,
               ]}
             >
               <View style={styles.modalHeader}>

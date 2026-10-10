@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Modal,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -12,11 +13,16 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Polyline } from "react-native-svg";
 
 import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
 import type { ServiceItem } from "../../types/models";
+import ServiceIconPickerV2, {
+  resolveServiceIconName,
+} from "./ServiceIconPickerV2";
 
 export type ServiceFilterKey =
   "all" | "popular" | "active" | "inactive";
@@ -27,6 +33,7 @@ export type ServiceFormValuesV2 = {
   price: string;
   currency: string;
   is_active: boolean;
+  icon_key: string;
 };
 
 export type ServiceFormErrorsV2 = Partial<
@@ -64,7 +71,7 @@ const DEFAULT_SERVICE_VISUAL: ServiceVisualV2 = {
   glow: "rgba(116, 126, 255, 0.15)",
 };
 
-function resolveServiceVisual(
+function resolveServiceVisualByName(
   serviceName: string | null | undefined
 ): ServiceVisualV2 {
   const name = (serviceName || "").toLocaleLowerCase();
@@ -255,6 +262,18 @@ function resolveServiceVisual(
   return DEFAULT_SERVICE_VISUAL;
 }
 
+function resolveServiceVisual(
+  serviceName: string | null | undefined,
+  iconKey?: string | null
+): ServiceVisualV2 {
+  const visual = resolveServiceVisualByName(serviceName);
+  const explicitIcon = resolveServiceIconName(iconKey);
+
+  return explicitIcon
+    ? { ...visual, icon: explicitIcon }
+    : visual;
+}
+
 export type ServiceFilterOptionV2 = {
   key: ServiceFilterKey;
   label: string;
@@ -369,7 +388,7 @@ function ActionPill({
   label: string;
   icon?: React.ComponentProps<typeof Ionicons>["name"];
   onPress: () => void;
-  tone?: "primary" | "purple" | "secondary" | "danger";
+  tone?: "primary" | "purple" | "burgundy" | "secondary" | "danger";
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
@@ -382,6 +401,7 @@ function ActionPill({
         styles.actionPill,
         tone === "primary" && styles.actionPrimary,
         tone === "purple" && styles.actionPurple,
+        tone === "burgundy" && styles.actionBurgundy,
         tone === "secondary" && styles.actionSecondary,
         tone === "danger" && styles.actionDanger,
         disabled && styles.disabled,
@@ -425,6 +445,9 @@ function FormField({
   disabled?: boolean;
   onChangeText: (value: string) => void;
 }) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyField = selectedThemeId === "burgundy_cosmos";
+
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -435,9 +458,18 @@ function FormField({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
-        placeholderTextColor="#777fa8"
+        placeholderTextColor={
+          isBurgundyField
+            ? dashboardTheme.palette.textTertiary
+            : "#777fa8"
+        }
         style={[
           styles.fieldInput,
+          isBurgundyField && {
+            backgroundColor: "rgba(13,8,15,0.82)",
+            borderColor: dashboardTheme.palette.border,
+            color: dashboardTheme.palette.textPrimary,
+          },
           error && styles.fieldInputError,
           disabled && styles.disabled,
         ]}
@@ -503,6 +535,12 @@ function ServiceForm({
         }
       />
 
+      <ServiceIconPickerV2
+        value={values.icon_key}
+        disabled={disabled}
+        onChange={(value) => onChangeField("icon_key", value)}
+      />
+
       <Text style={styles.fieldLabel}>{labels.active}</Text>
 
       <View style={styles.statusSelector}>
@@ -545,10 +583,14 @@ function SheetShell({
   visible: boolean;
   title: string;
   subtitle?: string;
-  tone?: "default" | "purple";
+  tone?: "default" | "purple" | "burgundy";
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundySheet =
+    tone === "burgundy" && selectedThemeId === "burgundy_cosmos";
+
   return (
     <Modal
       visible={visible}
@@ -568,17 +610,32 @@ function SheetShell({
           style={[
             styles.sheet,
             tone === "purple" && styles.sheetPurple,
+            isBurgundySheet && {
+              maxWidth: 520,
+              borderRadius: 28,
+              backgroundColor: dashboardTheme.palette.surface,
+              borderColor: dashboardTheme.palette.borderStrong,
+              shadowColor: dashboardTheme.palette.royal,
+              shadowOpacity: 0.28,
+              shadowRadius: 36,
+            },
           ]}
         >
-          {tone === "purple" ? (
+          {tone === "purple" || tone === "burgundy" ? (
             <>
               <View
                 pointerEvents="none"
-                style={styles.sheetPurpleGlowTop}
+                style={[
+                  styles.sheetPurpleGlowTop,
+                  isBurgundySheet && styles.sheetBurgundyGlowTop,
+                ]}
               />
               <View
                 pointerEvents="none"
-                style={styles.sheetPurpleGlowBottom}
+                style={[
+                  styles.sheetPurpleGlowBottom,
+                  isBurgundySheet && styles.sheetBurgundyGlowBottom,
+                ]}
               />
             </>
           ) : null}
@@ -697,7 +754,27 @@ function ServiceCard({
   wide: boolean;
   onPress: () => void;
 }) {
-  const visual = resolveServiceVisual(service.name);
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
+  const visual = resolveServiceVisual(
+    service.name,
+    service.icon_key
+  );
   const metricsReady = Boolean(metrics?.ready);
 
   const bookingsValue = metricsReady
@@ -720,7 +797,8 @@ function ServiceCard({
       style={({ pressed }) => [
         styles.serviceCard,
         styles.cardCosmosSurface,
-        { borderColor: visual.border },
+        burgundySurfaceStyle,
+        { borderColor: isBurgundyCosmos ? dashboardTheme.palette.borderStrong : visual.border },
         wide ? styles.serviceCardWide : styles.serviceCardFull,
         pressed && !disabled && styles.cardPressed,
         disabled && styles.disabled,
@@ -896,17 +974,49 @@ export default function ServiceCenterCompositionV2({
   createSheet,
   detailSheet,
 }: Props) {
-  const { width } = useWindowDimensions();
+  const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const brandAccent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
+  const burgundySurfaceStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surface,
+        borderColor: dashboardTheme.palette.borderStrong,
+        shadowColor: "#000000",
+        shadowOpacity: 0.26,
+      }
+    : undefined;
+  const burgundyRaisedStyle = isBurgundyCosmos
+    ? {
+        backgroundColor: dashboardTheme.palette.surfaceRaised,
+        borderColor: dashboardTheme.palette.border,
+      }
+    : undefined;
+
+  const { width, height } = useWindowDimensions();
   const wide = width >= 760;
 
   const selectedVisual = detailSheet.service
-    ? resolveServiceVisual(detailSheet.service.name)
+    ? resolveServiceVisual(
+        detailSheet.service.name,
+        detailSheet.service.icon_key
+      )
     : DEFAULT_SERVICE_VISUAL;
 
   return (
     <DashboardThemeBackground style={styles.root}>
       <ScrollView
-        showsVerticalScrollIndicator={false}
+        style={[
+          styles.mainScroll,
+          Platform.OS === "web" && {
+            maxHeight: Math.max(440, height - 64),
+          },
+        ]}
+        scrollEnabled
+        nestedScrollEnabled
+        showsVerticalScrollIndicator={Platform.OS === "web"}
         keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
@@ -920,12 +1030,12 @@ export default function ServiceCenterCompositionV2({
           wide && styles.contentWide,
         ]}
       >
-        <View style={styles.hero}>
+        <View style={[styles.hero, burgundySurfaceStyle]}>
           <View style={styles.heroGlow} />
 
           <View style={styles.heroHeader}>
             <View style={styles.heroCopy}>
-              <Text style={styles.overline}>{overline}</Text>
+              <Text style={[styles.overline, { color: brandAccent }]}>{overline}</Text>
               <Text style={styles.title}>{title}</Text>
               <Text style={styles.subtitle}>{subtitle}</Text>
             </View>
@@ -933,7 +1043,7 @@ export default function ServiceCenterCompositionV2({
             <ActionPill
               label={labels.addService}
               icon="add"
-              tone="purple"
+              tone={isBurgundyCosmos ? "burgundy" : "purple"}
               onPress={onOpenCreate}
             />
           </View>
@@ -985,6 +1095,7 @@ export default function ServiceCenterCompositionV2({
                   shadowOffset: { width: 0, height: 9 },
                   elevation: 7,
                 },
+                isBurgundyCosmos && burgundySurfaceStyle,
                 wide ? styles.kpiWide : styles.kpiMobile,
               ]}
             >
@@ -1053,12 +1164,26 @@ export default function ServiceCenterCompositionV2({
           </View>
         ) : null}
 
-        <View style={styles.controlsCard}>
-          <View style={styles.searchWrap}>
+        <View
+          style={[
+            styles.controlsCard,
+            isBurgundyCosmos && burgundySurfaceStyle,
+          ]}
+        >
+          <View
+            style={[
+              styles.searchWrap,
+              isBurgundyCosmos && burgundyRaisedStyle,
+            ]}
+          >
             <Ionicons
               name="search"
               size={18}
-              color="#8e97c6"
+              color={
+                isBurgundyCosmos
+                  ? dashboardTheme.palette.textTertiary
+                  : "#8e97c6"
+              }
               style={styles.searchIcon}
             />
 
@@ -1066,8 +1191,17 @@ export default function ServiceCenterCompositionV2({
               value={searchValue}
               onChangeText={onSearchChange}
               placeholder={labels.searchPlaceholder}
-              placeholderTextColor="#8088b2"
-              style={styles.searchInput}
+              placeholderTextColor={
+                isBurgundyCosmos
+                  ? dashboardTheme.palette.textTertiary
+                  : "#8088b2"
+              }
+              style={[
+                styles.searchInput,
+                isBurgundyCosmos && {
+                  color: dashboardTheme.palette.textPrimary,
+                },
+              ]}
             />
           </View>
 
@@ -1085,13 +1219,34 @@ export default function ServiceCenterCompositionV2({
                   onPress={() => onFilterChange(filter.key)}
                   style={[
                     styles.filterChip,
+                    isBurgundyCosmos && {
+                      backgroundColor:
+                        dashboardTheme.palette.surfaceRaised,
+                      borderColor: dashboardTheme.palette.border,
+                    },
                     active && styles.filterChipActive,
+                    active &&
+                      isBurgundyCosmos && {
+                        backgroundColor:
+                          dashboardTheme.palette.royalGlow,
+                        borderColor:
+                          dashboardTheme.palette.royal,
+                      },
                   ]}
                 >
                   <Text
                     style={[
                       styles.filterText,
+                      isBurgundyCosmos && {
+                        color:
+                          dashboardTheme.palette.textSecondary,
+                      },
                       active && styles.filterTextActive,
+                      active &&
+                        isBurgundyCosmos && {
+                          color:
+                            dashboardTheme.palette.textPrimary,
+                        },
                     ]}
                   >
                     {filter.label}
@@ -1155,7 +1310,7 @@ export default function ServiceCenterCompositionV2({
             <ActionPill
               label={labels.addService}
               icon="add"
-              tone="purple"
+              tone={isBurgundyCosmos ? "burgundy" : "purple"}
               onPress={onOpenCreate}
               style={styles.emptyAction}
             />
@@ -1184,7 +1339,7 @@ export default function ServiceCenterCompositionV2({
 
       <SheetShell
         visible={createSheet.visible}
-        tone="purple"
+        tone={isBurgundyCosmos ? "burgundy" : "purple"}
         title={labels.createTitle}
         subtitle={labels.createSubtitle}
         onClose={createSheet.onClose}
@@ -1205,7 +1360,7 @@ export default function ServiceCenterCompositionV2({
                 : labels.create
             }
             icon="add"
-            tone="purple"
+            tone={isBurgundyCosmos ? "burgundy" : "purple"}
             disabled={createSheet.loading}
             onPress={createSheet.onSubmit}
             style={styles.flexAction}
@@ -1419,6 +1574,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#040508",
   },
+  mainScroll: {
+    flex: 1,
+    minHeight: 0,
+  },
   content: {
     width: "100%",
     alignSelf: "center",
@@ -1510,6 +1669,15 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
+  },
+  actionBurgundy: {
+    backgroundColor: "#7A69EF",
+    borderColor: "rgba(232,201,122,0.30)",
+    shadowColor: "#D65A88",
+    shadowOpacity: 0.34,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 12,
   },
   actionSecondary: {
     backgroundColor: "rgba(255,255,255,0.05)",
@@ -1981,6 +2149,12 @@ const styles = StyleSheet.create({
     bottom: -175,
     left: -105,
     backgroundColor: "rgba(101, 78, 220, 0.18)",
+  },
+  sheetBurgundyGlowTop: {
+    backgroundColor: "rgba(214,90,136,0.22)",
+  },
+  sheetBurgundyGlowBottom: {
+    backgroundColor: "rgba(232,201,122,0.10)",
   },
   sheetHandle: {
     width: 42,

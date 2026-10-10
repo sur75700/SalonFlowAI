@@ -31,7 +31,9 @@ export function SalonFlowWebBrandSync() {
     const source =
       selectedThemeId === "royal_gold_cosmos"
         ? ASSETS["royal-gold"]
-        : ASSETS["royal-cosmos"];
+        : selectedThemeId === "burgundy_cosmos"
+          ? ASSETS.burgundy
+          : ASSETS["royal-cosmos"];
     const uri = Asset.fromModule(source).uri;
     if (!uri) return;
 
@@ -66,7 +68,9 @@ export default function SalonFlowBrandMark({
     variant === "auto"
       ? selectedThemeId === "royal_gold_cosmos"
         ? "royal-gold"
-        : "royal-cosmos"
+        : selectedThemeId === "burgundy_cosmos"
+          ? "burgundy"
+          : "royal-cosmos"
       : variant;
 
   return (

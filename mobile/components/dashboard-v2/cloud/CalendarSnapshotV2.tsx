@@ -69,7 +69,13 @@ function CalendarSnapshotV2({ title, dateLabel, events, emptyLabel }: CalendarSn
             },
           ]}
         >
-          <Text style={styles.dateChipText} numberOfLines={1}>
+          <Text
+            style={[
+              styles.dateChipText,
+              { color: theme.palette.textSecondary },
+            ]}
+            numberOfLines={1}
+          >
             {dateLabel}
           </Text>
         </View>
@@ -87,18 +93,44 @@ function CalendarSnapshotV2({ title, dateLabel, events, emptyLabel }: CalendarSn
             return (
               <View key={event.id} style={[styles.row, isLast && styles.rowLast]}>
                 <View style={styles.timeCol}>
-                  <Text style={styles.timeText} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.timeText,
+                      { color: theme.palette.gold },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {event.time}
                   </Text>
                 </View>
 
                 <View style={styles.rail}>
                   <View style={[styles.railDot, { backgroundColor: tone.fg }]} />
-                  {!isLast && <View style={styles.railLine} />}
+                  {!isLast && (
+                    <View
+                      style={[
+                        styles.railLine,
+                        {
+                          backgroundColor:
+                            theme.palette.borderStrong,
+                        },
+                      ]}
+                    />
+                  )}
                 </View>
 
                 <View style={styles.detailsCol}>
-                  <View style={[styles.detailsCard, { borderLeftColor: tone.fg }]}>
+                  <View
+                    style={[
+                      styles.detailsCard,
+                      {
+                        backgroundColor:
+                          theme.palette.surfaceRaised,
+                        borderColor: theme.palette.border,
+                        borderLeftColor: tone.fg,
+                      },
+                    ]}
+                  >
                     <Text style={styles.clientName} numberOfLines={1}>
                       {event.clientName}
                     </Text>
@@ -134,8 +166,9 @@ function CalendarSnapshotV2({ title, dateLabel, events, emptyLabel }: CalendarSn
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
-    padding: 18,
+    borderRadius: 28,
+    padding: 22,
+    minHeight: 184,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
@@ -146,7 +179,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.textPrimary,
   },
@@ -157,7 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.border,
-    maxWidth: 150,
+    maxWidth: 320,
   },
   dateChipText: {
     fontSize: 12,
@@ -165,22 +198,22 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   timeline: {
-    marginTop: 18,
+    marginTop: 22,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   rowLast: {
     marginBottom: 0,
   },
   timeCol: {
-    width: 52,
-    paddingTop: 2,
+    width: 72,
+    paddingTop: 4,
   },
   timeText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     color: colors.textTertiary,
   },
   rail: {
@@ -207,13 +240,14 @@ const styles = StyleSheet.create({
   },
   detailsCard: {
     backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
     borderLeftWidth: 3,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
   clientName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: colors.textPrimary,
   },
@@ -243,7 +277,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   emptyText: {
-    marginTop: 18,
+    marginTop: 22,
+    paddingVertical: 22,
     fontSize: 13,
     lineHeight: 19,
     color: colors.textSecondary,

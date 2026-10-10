@@ -1,6 +1,7 @@
 export type DashboardThemeId =
   | "royal_cosmos"
-  | "royal_gold_cosmos";
+  | "royal_gold_cosmos"
+  | "burgundy_cosmos";
 
 export type DashboardThemePalette = Readonly<{
   surface: string;
@@ -119,6 +120,42 @@ export const DASHBOARD_THEMES: Readonly<
       gridLine: "rgba(255,249,234,0.07)",
     },
   },
+  burgundy_cosmos: {
+    id: "burgundy_cosmos",
+    backgroundFallback: "#12060B",
+    overlay: {
+      darkVeil: "rgba(10,2,8,0.58)",
+      toneVeil: "rgba(96,18,50,0.22)",
+      bottomDepth: "rgba(33,5,19,0.26)",
+    },
+    palette: {
+      surface: "rgba(18,7,16,0.90)",
+      surfaceRaised: "rgba(38,12,29,0.92)",
+      border: "rgba(232,201,122,0.14)",
+      borderStrong: "rgba(232,201,122,0.30)",
+      royal: "#D65A88",
+      royalGlow: "rgba(214,90,136,0.28)",
+      gold: "#E8C97A",
+      goldGlow: "rgba(232,201,122,0.20)",
+      textPrimary: "#FFF7F4",
+      textSecondary: "#C9B7C1",
+      textTertiary: "#8C7280",
+      positive: "#3FCF8E",
+      positiveSoft: "rgba(63,207,142,0.14)",
+      neutral: "#F2B84B",
+      neutralSoft: "rgba(242,184,75,0.14)",
+      negative: "#F2617A",
+      negativeSoft: "rgba(242,97,122,0.14)",
+      warning: "#F2B84B",
+      danger: "#F2617A",
+      neutralAccent: "#D889FF",
+      cosmosBlue: "#B985FF",
+      cosmosViolet: "#A86BFF",
+      cosmosMagenta: "#E05A9D",
+      gridLine: "rgba(255,247,244,0.06)",
+    },
+  },
+
 });
 
 export const DASHBOARD_THEME_IDS:
@@ -126,6 +163,7 @@ export const DASHBOARD_THEME_IDS:
     Object.freeze([
       "royal_cosmos",
       "royal_gold_cosmos",
+      "burgundy_cosmos",
     ]);
 
 export function isDashboardThemeId(

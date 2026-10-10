@@ -33,6 +33,11 @@ const backgroundSources:
       require(
         "../../../assets/backgrounds/royal-gold-cosmos.jpg"
       ),
+
+    burgundy_cosmos:
+      require(
+        "../../../assets/backgrounds/burgundy-cosmos.png"
+      ),
   };
 
 export default function DashboardThemeBackground({

@@ -1,5 +1,19 @@
+import fs from "fs";
+import path from "path";
 import { selectNextBestActions } from "../../lib/dashboard/nextBestAction";
 import type { IntelligenceDecisionResponse } from "../../types/intelligence";
+
+const mobileRoot = path.resolve(__dirname, "../..");
+const nextBestActionComponentSource = fs.readFileSync(
+  path.join(
+    mobileRoot,
+    "components",
+    "dashboard-v2",
+    "cloud",
+    "NextBestActionV2.tsx",
+  ),
+  "utf8",
+);
 
 function decision(
   recommendationCount = 1,
@@ -121,5 +135,21 @@ describe("selectNextBestActions", () => {
     const actions = selectNextBestActions(source);
     expect(JSON.stringify(source)).toBe(before);
     expect(actions.every((action) => typeof action.destination === "string")).toBe(true);
+  });
+});
+
+describe("NextBestActionV2 operational presentation contract", () => {
+  it("bridges recommendation description, evidence, impact and confidence into one action surface", () => {
+    expect(nextBestActionComponentSource).toContain("action.description");
+    expect(nextBestActionComponentSource).toContain("leadEvidence?.description");
+    expect(nextBestActionComponentSource).toContain("formatImpact(action)");
+    expect(nextBestActionComponentSource).toContain("action.confidence.score");
+  });
+
+  it("keeps CTA execution explicit and tied to the already-selected real destination", () => {
+    expect(nextBestActionComponentSource).toContain("onActionPress(action)");
+    expect(nextBestActionComponentSource).toContain('testID={`next-best-action-${action.code}`}');
+    expect(nextBestActionComponentSource).not.toContain("router.push(");
+    expect(nextBestActionComponentSource).not.toContain("api.post(");
   });
 });
