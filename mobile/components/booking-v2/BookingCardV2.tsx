@@ -22,6 +22,12 @@ export interface BookingCardV2Props {
   clientFallbackLabel?: string;
   serviceName?: string;
   serviceFallbackLabel?: string;
+  /** Persisted client lifecycle projected into the booking card. */
+  clientStatus?: 'new' | 'active' | 'returning' | 'vip' | 'inactive';
+  /** Service icon identity projected from the service catalog. */
+  serviceIconKey?: string | null;
+  /** Pre-formatted price snapshot; presentation only. */
+  priceLabel?: string;
   status: BookingStatus;
   /** Pre-translated display label — this component never calls t() itself. */
   statusLabel: string;

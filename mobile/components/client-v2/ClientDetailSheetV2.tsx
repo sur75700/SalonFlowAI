@@ -144,27 +144,41 @@ export default function ClientDetailSheetV2({
   onClose,
 }: ClientDetailSheetV2Props) {
   const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
-  const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
-  const burgundySurfaceStyle = isBurgundyCosmos
-    ? {
-        backgroundColor: dashboardTheme.palette.surface,
-        borderColor: dashboardTheme.palette.borderStrong,
-        shadowColor: "#000000",
-        shadowOpacity: 0.26,
-      }
-    : undefined;
-  const burgundyRaisedStyle = isBurgundyCosmos
-    ? {
-        backgroundColor: dashboardTheme.palette.surfaceRaised,
-        borderColor: dashboardTheme.palette.border,
-      }
-    : undefined;
+  const activeSurfaceStyle = {
+    backgroundColor: dashboardTheme.palette.surface,
+    borderColor: dashboardTheme.palette.borderStrong,
+  };
+  const activeRaisedStyle = {
+    backgroundColor: dashboardTheme.palette.surfaceRaised,
+    borderColor: dashboardTheme.palette.border,
+  };
+  const modalAccentColor =
+    selectedThemeId === 'royal_gold_cosmos'
+      ? dashboardTheme.palette.gold
+      : dashboardTheme.palette.royal;
+  const activeAccentStyle = {
+    borderColor: modalAccentColor,
+    shadowColor: modalAccentColor,
+  };
 
   const t: ClientDetailSheetV2Labels = { ...DEFAULT_CLIENT_DETAIL_SHEET_LABELS, ...labels };
   const { width } = useWindowDimensions();
   const isDesktop = width >= 860;
   const isEdit = mode === 'edit';
   const interactive = !disabled && !loading;
+  const priorityStatus = client?.status === 'vip' || client?.status === 'new';
+  const priorityPalette = client ? getStatusPalette(client.status) : null;
+  const priorityGlowStyle =
+    priorityStatus && priorityPalette
+      ? {
+          borderColor: priorityPalette.fg,
+          shadowColor: priorityPalette.fg,
+          shadowOpacity: 0.42,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 0 },
+          elevation: 10,
+        }
+      : undefined;
 
   return (
     <Modal
@@ -173,17 +187,47 @@ export default function ClientDetailSheetV2({
       animationType={isDesktop ? 'fade' : 'slide'}
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, isDesktop && styles.overlayDesktop]}>
         <Pressable
-          style={styles.backdrop}
+          style={[styles.backdrop, isDesktop && styles.backdropDesktop]}
           onPress={interactive ? onClose : undefined}
           accessibilityRole="button"
           accessibilityLabel={t.closeAction}
         />
         <View
-          style={[styles.panel, burgundySurfaceStyle, isDesktop ? styles.panelDesktop : styles.panelMobile]}
+          style={[
+            styles.panel,
+            activeSurfaceStyle,
+            isDesktop ? styles.panelDesktop : styles.panelMobile,
+            isDesktop && activeAccentStyle,
+          ]}
           accessibilityViewIsModal
         >
+          {isDesktop && (
+            <>
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.desktopModalOrbPrimary,
+                  { backgroundColor: dashboardTheme.palette.royalGlow, borderColor: dashboardTheme.palette.borderStrong },
+                ]}
+              />
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.desktopModalOrbSecondary,
+                  { backgroundColor: dashboardTheme.palette.goldGlow, borderColor: dashboardTheme.palette.border },
+                ]}
+              />
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.desktopModalCrown,
+                  { backgroundColor: modalAccentColor, shadowColor: modalAccentColor },
+                ]}
+              />
+            </>
+          )}
           {!isDesktop && <View style={styles.dragHandle} />}
 
           <View style={styles.header}>
@@ -223,7 +267,15 @@ export default function ClientDetailSheetV2({
                 <View
                   style={[
                     styles.avatar,
-                    { borderColor: client.status === 'vip' ? theme.color.gold : theme.color.violet },
+                    {
+                      borderColor:
+                        client.status === 'vip'
+                          ? theme.color.gold
+                          : client.status === 'new'
+                            ? theme.color.cyan
+                            : dashboardTheme.palette.royal,
+                    },
+                    priorityGlowStyle,
                   ]}
                 >
                   <Text style={styles.avatarText}>{client.initials}</Text>
@@ -238,7 +290,7 @@ export default function ClientDetailSheetV2({
                         placeholder={t.namePlaceholder}
                         placeholderTextColor={theme.color.textTertiary}
                         editable={interactive}
-                        style={styles.input}
+                        style={[styles.input, activeRaisedStyle]}
                         accessibilityLabel={t.nameField}
                       />
                       {!!formErrors?.name && <Text style={styles.errorText}>{formErrors.name}</Text>}
@@ -247,7 +299,13 @@ export default function ClientDetailSheetV2({
                     <View
                       style={[
                         styles.statusBadge,
-                        { backgroundColor: getStatusPalette(client.status).bg, alignSelf: 'flex-start' },
+                        {
+                          backgroundColor: getStatusPalette(client.status).bg,
+                          borderColor: getStatusPalette(client.status).fg,
+                          alignSelf: 'flex-start',
+                        },
+                        priorityStatus && styles.statusBadgePriority,
+                        priorityGlowStyle,
                       ]}
                     >
                       <Text style={[styles.statusBadgeText, { color: getStatusPalette(client.status).fg }]}>
@@ -275,8 +333,15 @@ export default function ClientDetailSheetV2({
                           accessibilityLabel={option.label}
                           style={({ pressed }: { pressed: boolean }) => [
                             styles.statusOption,
-                            { borderColor: active ? palette.fg : theme.color.border },
+                            { borderColor: active ? palette.fg : dashboardTheme.palette.border },
                             active && { backgroundColor: palette.bg },
+                            active && (option.key === 'vip' || option.key === 'new') && {
+                              shadowColor: palette.fg,
+                              shadowOpacity: 0.42,
+                              shadowRadius: 14,
+                              shadowOffset: { width: 0, height: 0 },
+                              elevation: 8,
+                            },
                             pressed && interactive && styles.statusOptionPressed,
                           ]}
                         >
@@ -301,7 +366,7 @@ export default function ClientDetailSheetV2({
                       placeholderTextColor={theme.color.textTertiary}
                       editable={interactive}
                       keyboardType="phone-pad"
-                      style={styles.input}
+                      style={[styles.input, activeRaisedStyle]}
                       accessibilityLabel={t.phoneField}
                     />
                     {!!formErrors?.phone && <Text style={styles.errorText}>{formErrors.phone}</Text>}
@@ -323,7 +388,7 @@ export default function ClientDetailSheetV2({
                       editable={interactive}
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      style={styles.input}
+                      style={[styles.input, activeRaisedStyle]}
                       accessibilityLabel={t.emailField}
                     />
                     {!!formErrors?.email && <Text style={styles.errorText}>{formErrors.email}</Text>}
@@ -334,19 +399,19 @@ export default function ClientDetailSheetV2({
               </View>
 
               <View style={styles.statsGrid}>
-                <View style={styles.statChip}>
+                <View style={[styles.statChip, activeRaisedStyle]}>
                   <Text style={styles.statLabel}>{t.lastVisitField}</Text>
                   <Text style={styles.statValue}>{client.lastVisitLabel || '—'}</Text>
                 </View>
-                <View style={styles.statChip}>
+                <View style={[styles.statChip, activeRaisedStyle]}>
                   <Text style={styles.statLabel}>{t.upcomingAppointmentField}</Text>
                   <Text style={styles.statValue}>{client.upcomingAppointmentLabel || t.noUpcomingAppointment}</Text>
                 </View>
-                <View style={styles.statChip}>
+                <View style={[styles.statChip, activeRaisedStyle]}>
                   <Text style={styles.statLabel}>{t.visitCountField}</Text>
                   <Text style={styles.statValue}>{client.visitCountLabel || '—'}</Text>
                 </View>
-                <View style={styles.statChip}>
+                <View style={[styles.statChip, activeRaisedStyle]}>
                   <Text style={styles.statLabel}>{t.lifetimeValueField}</Text>
                   <Text style={styles.statValue}>{client.lifetimeValueLabel || '—'}</Text>
                 </View>
@@ -364,7 +429,7 @@ export default function ClientDetailSheetV2({
                       editable={interactive}
                       multiline
                       numberOfLines={4}
-                      style={[styles.input, styles.textArea]}
+                      style={[styles.input, activeRaisedStyle, styles.textArea]}
                       accessibilityLabel={t.notesField}
                     />
                     {!!formErrors?.notes && <Text style={styles.errorText}>{formErrors.notes}</Text>}
@@ -417,18 +482,73 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
   },
+  overlayDesktop: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 28,
+  },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(4,4,10,0.6)',
+  },
+  backdropDesktop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(2, 2, 12, 0.76)',
   },
   panel: {
     backgroundColor: theme.color.surface,
     borderColor: theme.color.borderStrong,
   },
+  desktopModalOrbPrimary: {
+    position: 'absolute',
+    top: -148,
+    right: -88,
+    width: 310,
+    height: 310,
+    borderRadius: 155,
+    borderWidth: 1,
+    opacity: 0.9,
+  },
+  desktopModalOrbSecondary: {
+    position: 'absolute',
+    bottom: -176,
+    left: -110,
+    width: 290,
+    height: 290,
+    borderRadius: 145,
+    borderWidth: 1,
+    opacity: 0.72,
+  },
+  desktopModalCrown: {
+    position: 'absolute',
+    top: 0,
+    left: 96,
+    right: 96,
+    height: 2,
+    borderRadius: 999,
+    shadowOpacity: 0.95,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
   panelDesktop: {
-    width: 420,
-    borderLeftWidth: 1,
-    height: '100%',
+    width: '100%',
+    maxWidth: 760,
+    minHeight: 590,
+    height: 690,
+    maxHeight: '88%',
+    flex: 0,
+    alignSelf: 'center',
+    overflow: 'hidden',
+    borderRadius: 30,
+    borderWidth: 1,
+    shadowOpacity: 0.46,
+    shadowRadius: 38,
+    shadowOffset: { width: 0, height: 22 },
+    elevation: 24,
+    zIndex: 1,
   },
   panelMobile: {
     position: 'absolute',
@@ -456,15 +576,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.space.xl,
-    paddingTop: theme.space.lg,
-    paddingBottom: theme.space.md,
+    paddingTop: theme.space.xl,
+    paddingBottom: theme.space.lg,
     borderBottomWidth: 1,
     borderBottomColor: theme.color.border,
   },
   headerTitle: {
     color: theme.color.textPrimary,
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     flexShrink: 1,
     marginRight: theme.space.md,
   },
@@ -509,8 +629,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    width: 52,
-    height: 52,
+    width: 58,
+    height: 58,
     borderRadius: theme.radius.lg,
     borderWidth: 1.5,
     alignItems: 'center',
@@ -524,8 +644,13 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     paddingHorizontal: theme.space.md,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: theme.radius.pill,
+    borderWidth: 1,
+  },
+  statusBadgePriority: {
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: 6,
   },
   statusBadgeText: {
     fontSize: 12,

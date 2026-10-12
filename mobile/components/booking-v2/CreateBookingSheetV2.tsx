@@ -170,7 +170,23 @@ function SelectField({
  */
 function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
   const { selectedThemeId, theme: dashboardTheme } = useDashboardTheme();
+  const isRoyalCosmos = selectedThemeId === "royal_cosmos";
   const isBurgundyCosmos = selectedThemeId === "burgundy_cosmos";
+  const royalSurfaceStyle = isRoyalCosmos
+    ? {
+        backgroundColor: "rgba(8, 11, 31, 0.94)",
+        borderColor: "rgba(151, 133, 255, 0.66)",
+        shadowColor: dashboardTheme.palette.royal,
+        shadowOpacity: 0.34,
+        shadowRadius: 38,
+      }
+    : undefined;
+  const royalRaisedStyle = isRoyalCosmos
+    ? {
+        backgroundColor: "rgba(20, 23, 58, 0.86)",
+        borderColor: "rgba(139, 114, 255, 0.34)",
+      }
+    : undefined;
   const burgundySurfaceStyle = isBurgundyCosmos
     ? {
         backgroundColor: dashboardTheme.palette.surface,
@@ -251,7 +267,14 @@ function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={isSheet ? styles.sheetOuter : styles.panelOuter}
         >
-          <Animated.View style={[isSheet ? styles.sheet : styles.panel, burgundySurfaceStyle, containerAnimatedStyle]}>
+          <Animated.View
+            style={[
+              isSheet ? styles.sheet : styles.panel,
+              royalSurfaceStyle,
+              burgundySurfaceStyle,
+              containerAnimatedStyle,
+            ]}
+          >
             {!isSheet ? (
               <View pointerEvents="none" style={styles.desktopModalCrown} />
             ) : null}
@@ -307,7 +330,7 @@ function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
               <TextInput
                 value={bookingTimeValue}
                 onChangeText={onChangeBookingTime}
-                style={styles.textInput}
+                style={[styles.textInput, royalRaisedStyle, burgundyRaisedStyle]}
                 placeholderTextColor={colors.textTertiary}
               />
 
@@ -334,7 +357,12 @@ function CreateBookingSheetV2(props: CreateBookingSheetV2Props) {
                 placeholderTextColor={colors.textTertiary}
                 multiline
                 numberOfLines={3}
-                style={[styles.textInput, styles.notesInput]}
+                style={[
+                  styles.textInput,
+                  styles.notesInput,
+                  royalRaisedStyle,
+                  burgundyRaisedStyle,
+                ]}
               />
             </ScrollView>
 

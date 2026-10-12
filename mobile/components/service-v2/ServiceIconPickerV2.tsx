@@ -8,6 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+import { useAppPreferences } from "../../hooks/useAppPreferences";
 
 export const SERVICE_ICON_OPTIONS = [
   { key: "", icon: "sparkles-outline", label: "Auto" },
@@ -29,7 +30,68 @@ export const SERVICE_ICON_OPTIONS = [
   { key: "kids", icon: "happy-outline", label: "Kids" },
   { key: "body", icon: "body-outline", label: "Body" },
   { key: "skincare", icon: "water-outline", label: "Skincare" },
+  { key: "car_wash", icon: "water-outline", label: "Car Wash" },
+  { key: "detailing", icon: "car-sport-outline", label: "Detailing" },
+  { key: "interior", icon: "car-outline", label: "Interior" },
+  { key: "ceramic", icon: "shield-checkmark-outline", label: "Ceramic" },
+  { key: "paint", icon: "color-palette-outline", label: "Paint" },
+  { key: "polish", icon: "sparkles-outline", label: "Polish" },
+  { key: "tint", icon: "layers-outline", label: "Tint" },
+  { key: "wheels", icon: "disc-outline", label: "Wheels" },
+  { key: "engine", icon: "construct-outline", label: "Engine" },
+  { key: "protection", icon: "shield-outline", label: "Protection" },
 ] as const;
+
+const SERVICE_ICON_COPY = {
+  en: {
+    eyebrow: "SERVICE ICON",
+    helper: "Choose a premium symbol clients will recognize instantly.",
+  },
+  hy: {
+    eyebrow: "ԾԱՌԱՅՈՒԹՅԱՆ ՊԱՏԿԵՐԱԿ",
+    helper: "Ընտրեք պրեմիում պատկերակ, որը հաճախորդը միանգամից կճանաչի։",
+  },
+  ru: {
+    eyebrow: "ИКОНКА УСЛУГИ",
+    helper: "Выберите премиальный символ, который клиент узнает сразу.",
+  },
+  fr: {
+    eyebrow: "ICÔNE DU SERVICE",
+    helper: "Choisissez un symbole premium immédiatement reconnaissable.",
+  },
+} as const;
+
+const SERVICE_ICON_LABELS: Record<string, Record<string, string>> = {
+  auto: { en: "Automatic", hy: "Ավտոմատ", ru: "Авто", fr: "Auto" },
+  haircut: { en: "Haircut", hy: "Սանրվածք", ru: "Стрижка", fr: "Coupe" },
+  styling: { en: "Styling", hy: "Հարդարում", ru: "Укладка", fr: "Coiffage" },
+  color: { en: "Color", hy: "Ներկում", ru: "Окрашивание", fr: "Coloration" },
+  makeup: { en: "Makeup", hy: "Դիմահարդարում", ru: "Макияж", fr: "Maquillage" },
+  nails: { en: "Nails", hy: "Եղունգներ", ru: "Ногти", fr: "Ongles" },
+  brows: { en: "Brows", hy: "Հոնքեր", ru: "Брови", fr: "Sourcils" },
+  facial: { en: "Facial", hy: "Դեմքի խնամք", ru: "Лицо", fr: "Soin visage" },
+  spa: { en: "Spa", hy: "Սպա", ru: "Спа", fr: "Spa" },
+  massage: { en: "Massage", hy: "Մերսում", ru: "Массаж", fr: "Massage" },
+  bridal: { en: "Bridal", hy: "Հարսանեկան", ru: "Свадебное", fr: "Mariage" },
+  waxing: { en: "Waxing", hy: "Դեպիլյացիա", ru: "Воск", fr: "Épilation" },
+  laser: { en: "Laser", hy: "Լազեր", ru: "Лазер", fr: "Laser" },
+  barber: { en: "Barber", hy: "Բարբեր", ru: "Барбер", fr: "Barbier" },
+  wellness: { en: "Wellness", hy: "Վելնես", ru: "Велнес", fr: "Bien-être" },
+  premium: { en: "Premium", hy: "Պրեմիում", ru: "Премиум", fr: "Premium" },
+  kids: { en: "Kids", hy: "Երեխաներ", ru: "Дети", fr: "Enfants" },
+  body: { en: "Body", hy: "Մարմին", ru: "Тело", fr: "Corps" },
+  skincare: { en: "Skincare", hy: "Մաշկի խնամք", ru: "Уход за кожей", fr: "Peau" },
+  car_wash: { en: "Car Wash", hy: "Ավտոլվացում", ru: "Автомойка", fr: "Lavage auto" },
+  detailing: { en: "Detailing", hy: "Դիթեյլինգ", ru: "Детейлинг", fr: "Detailing" },
+  interior: { en: "Interior", hy: "Սրահ", ru: "Салон авто", fr: "Intérieur" },
+  ceramic: { en: "Ceramic", hy: "Կերամիկա", ru: "Керамика", fr: "Céramique" },
+  paint: { en: "Paint", hy: "Ներկ", ru: "Краска", fr: "Peinture" },
+  polish: { en: "Polish", hy: "Փայլեցում", ru: "Полировка", fr: "Polissage" },
+  tint: { en: "Tint", hy: "Մգեցում", ru: "Тонировка", fr: "Teinte" },
+  wheels: { en: "Wheels", hy: "Անիվներ", ru: "Колёса", fr: "Roues" },
+  engine: { en: "Engine", hy: "Շարժիչ", ru: "Двигатель", fr: "Moteur" },
+  protection: { en: "Protection", hy: "Պաշտպանություն", ru: "Защита", fr: "Protection" },
+};
 
 export type ServiceIconKey =
   (typeof SERVICE_ICON_OPTIONS)[number]["key"];
@@ -54,6 +116,11 @@ export default function ServiceIconPickerV2({
   onChange: (value: ServiceIconKey) => void;
 }) {
   const { selectedThemeId, theme } = useDashboardTheme();
+  const { locale } = useAppPreferences();
+  const language = ["en", "hy", "ru", "fr"].includes(locale)
+    ? locale
+    : "en";
+  const copy = SERVICE_ICON_COPY[language as keyof typeof SERVICE_ICON_COPY];
   const accent =
     selectedThemeId === "royal_gold_cosmos"
       ? theme.palette.gold
@@ -68,7 +135,7 @@ export default function ServiceIconPickerV2({
             { color: theme.palette.textTertiary },
           ]}
         >
-          SERVICE ICON
+          {copy.eyebrow}
         </Text>
         <Text
           style={[
@@ -76,19 +143,22 @@ export default function ServiceIconPickerV2({
             { color: theme.palette.textSecondary },
           ]}
         >
-          Choose the symbol clients will recognize.
+          {copy.helper}
         </Text>
       </View>
 
       <View style={styles.grid}>
         {SERVICE_ICON_OPTIONS.map((option) => {
           const selected = value === option.key;
+          const labelKey = option.key || "auto";
+          const localizedLabel =
+            SERVICE_ICON_LABELS[labelKey]?.[language] ?? option.label;
 
           return (
             <Pressable
               key={option.key || "auto"}
               accessibilityRole="button"
-              accessibilityLabel={`Service icon: ${option.label}`}
+              accessibilityLabel={`${copy.eyebrow}: ${localizedLabel}`}
               accessibilityState={{ selected, disabled }}
               disabled={disabled}
               onPress={() => onChange(option.key)}
@@ -143,7 +213,7 @@ export default function ServiceIconPickerV2({
                   },
                 ]}
               >
-                {option.label}
+                {localizedLabel}
               </Text>
 
               {selected ? (
@@ -190,8 +260,8 @@ const styles = StyleSheet.create({
   },
   option: {
     position: "relative",
-    width: 88,
-    minHeight: 82,
+    width: 92,
+    minHeight: 86,
     borderWidth: 1,
     borderRadius: 18,
     paddingHorizontal: 8,

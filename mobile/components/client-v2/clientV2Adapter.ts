@@ -57,11 +57,19 @@ export function buildClientRecordV2(
   const email = normalizeOptional(client.email);
   const notes = normalizeOptional(client.notes);
 
-  /*
-   * ClientItem currently has no persisted lifecycle/status field.
-   * Keep the fallback isolated here until the API exposes one.
-   */
-  const status = options.resolveStatus?.(client) ?? 'active';
+  const persistedStatus: ClientStatus | undefined =
+    client.status === 'new' ||
+    client.status === 'active' ||
+    client.status === 'returning' ||
+    client.status === 'vip' ||
+    client.status === 'inactive'
+      ? client.status
+      : undefined;
+
+  const status =
+    options.resolveStatus?.(client) ??
+    persistedStatus ??
+    'active';
 
   return {
     id: client.id,

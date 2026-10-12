@@ -311,6 +311,7 @@ export default function ClientV2Screen() {
       phone,
       email: email || null,
       notes: notes || null,
+      status: detailValues.status,
     });
 
     if (updated) {

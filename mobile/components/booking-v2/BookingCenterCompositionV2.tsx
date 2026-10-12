@@ -7,6 +7,7 @@ import BookingSummaryStripV2, { BookingSummaryStat } from './BookingSummaryStrip
 import BookingStatusFilterV2, { BookingFilterOption, BookingFilterValue } from './BookingStatusFilterV2';
 import BookingListSectionV2 from './BookingListSectionV2';
 import CreateBookingSheetV2, { BookingSelectOption, CreateBookingQuickAction } from './CreateBookingSheetV2';
+import BookingDetailSheetV2 from './BookingDetailSheetV2';
 import { BookingCardV2Props } from './BookingCardV2';
 
 export interface BookingListItem extends BookingCardV2Props {
@@ -63,7 +64,21 @@ export interface BookingCenterCompositionV2Props {
   registrySectionTitle: string;
   emptyLabel: string;
 
-  // create panel
+  // read-only appointment detail panel
+  detailPanelVisible: boolean;
+  detailItem: BookingListItem | null;
+  onCloseDetailPanel: () => void;
+  detailPanelTitle: string;
+  detailPanelSubtitle?: string;
+  detailCloseLabel: string;
+  detailClientLabel: string;
+  detailServiceLabel: string;
+  detailBookingTimeLabel: string;
+  detailNotesLabel: string;
+  detailPriceLabel: string;
+  detailNewClientLabel: string;
+
+  // create/edit panel
   createPanelVisible: boolean;
   onOpenCreatePanel: () => void;
   onCloseCreatePanel: () => void;
@@ -210,6 +225,22 @@ function BookingCenterCompositionV2(props: BookingCenterCompositionV2Props) {
             )}
           </View>
         </ScrollView>
+
+        <BookingDetailSheetV2
+          visible={props.detailPanelVisible}
+          onRequestClose={props.onCloseDetailPanel}
+          layout={isDesktop ? 'panel' : 'sheet'}
+          title={props.detailPanelTitle}
+          subtitle={props.detailPanelSubtitle}
+          closeLabel={props.detailCloseLabel}
+          clientLabel={props.detailClientLabel}
+          serviceLabel={props.detailServiceLabel}
+          bookingTimeLabel={props.detailBookingTimeLabel}
+          notesLabel={props.detailNotesLabel}
+          priceLabel={props.detailPriceLabel}
+          newClientLabel={props.detailNewClientLabel}
+          item={props.detailItem}
+        />
 
         <CreateBookingSheetV2
           visible={props.createPanelVisible}

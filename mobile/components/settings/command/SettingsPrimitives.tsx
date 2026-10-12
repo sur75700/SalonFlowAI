@@ -41,6 +41,7 @@ export function SettingsSectionShell({
         {
           backgroundColor: theme.palette.surface,
           borderColor: theme.palette.borderStrong,
+          shadowColor: settingsAccent,
         },
       ]}
     >
@@ -334,6 +335,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     padding: 22,
     gap: 14,
+    shadowOpacity: 0.16,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 12,
   },
 
   shellAura: {

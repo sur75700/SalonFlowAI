@@ -8,12 +8,20 @@ export type SummaryData = {
   today_appointments: number;
 };
 
+export type ClientLifecycleStatus =
+  | "new"
+  | "active"
+  | "returning"
+  | "vip"
+  | "inactive";
+
 export type ClientItem = {
   id: string;
   full_name: string;
   phone: string;
   email?: string | null;
   notes?: string | null;
+  status?: ClientLifecycleStatus;
   created_at?: string;
   updated_at?: string | null;
 };

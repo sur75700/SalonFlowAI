@@ -1,7 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useDashboardTheme } from '../../../hooks/useDashboardTheme';
+import DashboardThemeBackground from './DashboardThemeBackground';
 import type {
   ClientRetentionPulseModel,
 } from '../../../lib/dashboard/finalEnrichment';
@@ -56,6 +66,7 @@ function ClientRetentionPulseV2({
   labels,
 }: ClientRetentionPulseV2Props) {
   const { theme } = useDashboardTheme();
+  const [expanded, setExpanded] = React.useState(false);
 
   const stateText =
     model.state === 'loading'
@@ -67,29 +78,52 @@ function ClientRetentionPulseV2({
           : null;
 
   return (
-    <View
-      accessible
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.palette.surface,
-          borderColor: theme.palette.border,
-        },
-      ]}
-    >
+    <>
+      <Pressable
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={labels.title}
+        onPress={() => setExpanded(true)}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            backgroundColor: theme.palette.surface,
+            borderColor: theme.palette.border,
+            shadowColor: theme.palette.royal,
+          },
+          pressed && styles.cardPressed,
+        ]}
+      >
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
           <Text style={styles.title}>{labels.title}</Text>
           <Text style={styles.subtitle}>{labels.subtitle}</Text>
         </View>
-        {model.state === 'available' || model.state === 'refreshing' ? (
-          <View style={styles.badge}>
-            <View style={styles.badgeDot} />
-            <Text style={styles.badgeText}>
-              {model.state === 'available' ? labels.live : labels.refreshing}
-            </Text>
+        <View style={styles.headerActions}>
+          {model.state === 'available' || model.state === 'refreshing' ? (
+            <View style={styles.badge}>
+              <View style={styles.badgeDot} />
+              <Text style={styles.badgeText}>
+                {model.state === 'available' ? labels.live : labels.refreshing}
+              </Text>
+            </View>
+          ) : null}
+          <View
+            style={[
+              styles.expandButton,
+              {
+                borderColor: theme.palette.borderStrong,
+                backgroundColor: theme.palette.royalGlow,
+              },
+            ]}
+          >
+            <Ionicons
+              name="expand-outline"
+              size={15}
+              color={theme.palette.royal}
+            />
           </View>
-        ) : null}
+        </View>
       </View>
 
       {stateText ? (
@@ -150,7 +184,122 @@ function ClientRetentionPulseV2({
           <Text style={styles.footnote}>{labels.overlapNote}</Text>
         </>
       )}
-    </View>
+      </Pressable>
+
+      <Modal
+        visible={expanded}
+        transparent
+        animationType="fade"
+        presentationStyle="overFullScreen"
+        onRequestClose={() => setExpanded(false)}
+      >
+        <DashboardThemeBackground style={styles.modalRoot}>
+          <SafeAreaView style={styles.modalSafe}>
+            <Pressable
+              style={styles.modalBackdrop}
+              onPress={() => setExpanded(false)}
+              accessibilityRole="button"
+              accessibilityLabel={labels.title}
+            />
+
+            <View
+              accessibilityViewIsModal
+              style={[
+                styles.modalPanel,
+                {
+                  backgroundColor: theme.palette.surface,
+                  borderColor: theme.palette.borderStrong,
+                  shadowColor: theme.palette.royal,
+                },
+              ]}
+            >
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.modalAura,
+                  { backgroundColor: theme.palette.royalGlow },
+                ]}
+              />
+
+              <View style={styles.modalHeader}>
+                <View style={styles.headerCopy}>
+                  <Text style={styles.modalTitle}>{labels.title}</Text>
+                  <Text style={styles.modalSubtitle}>{labels.subtitle}</Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={labels.title}
+                  hitSlop={8}
+                  onPress={() => setExpanded(false)}
+                  style={({ pressed }) => [
+                    styles.modalClose,
+                    {
+                      borderColor: theme.palette.borderStrong,
+                      backgroundColor: theme.palette.surfaceRaised,
+                    },
+                    pressed && styles.modalClosePressed,
+                  ]}
+                >
+                  <Ionicons
+                    name="close"
+                    size={20}
+                    color={theme.palette.textPrimary}
+                  />
+                </Pressable>
+              </View>
+
+              <ScrollView
+                showsVerticalScrollIndicator
+                contentContainerStyle={styles.modalContent}
+              >
+                {stateText ? (
+                  <View style={styles.stateBox}>
+                    <Text style={styles.stateText}>{stateText}</Text>
+                  </View>
+                ) : (
+                  <>
+                    <View
+                      style={[
+                        styles.expandedPrimaryRow,
+                        {
+                          borderColor: theme.palette.borderStrong,
+                          backgroundColor: theme.palette.surfaceRaised,
+                        },
+                      ]}
+                    >
+                      <View style={styles.primaryMetric}>
+                        <Text style={styles.primaryLabel}>{labels.returningRatio}</Text>
+                        <Text style={styles.expandedPrimaryValue}>
+                          {displayPercent(model.returningRatioPercent)}
+                        </Text>
+                      </View>
+                      <View style={[styles.primaryDivider, { backgroundColor: theme.palette.border }]} />
+                      <View style={styles.primaryMetric}>
+                        <Text style={styles.primaryLabel}>{labels.riskScore}</Text>
+                        <Text style={styles.expandedPrimaryValue}>
+                          {displayPercent(model.riskScore)}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.expandedMetricGrid}>
+                      <MetricChip label={labels.singleAppointment} value={displayNumber(model.singleAppointmentClients)} accent={colors.gold} />
+                      <MetricChip label={labels.repeatHistory} value={displayNumber(model.repeatHistoryClients)} accent={colors.green} />
+                      <MetricChip label={labels.inactive} value={displayNumber(model.inactiveClients)} accent={colors.amber} />
+                      <MetricChip label={labels.atRisk} value={displayNumber(model.atRiskClients)} accent={colors.amber} />
+                      <MetricChip label={labels.highRisk} value={displayNumber(model.highRiskClients)} accent={colors.red} />
+                      <MetricChip label={labels.lost} value={displayNumber(model.lostClients)} accent={colors.red} />
+                    </View>
+
+                    <Text style={styles.modalFootnote}>{labels.overlapNote}</Text>
+                  </>
+                )}
+              </ScrollView>
+            </View>
+          </SafeAreaView>
+        </DashboardThemeBackground>
+      </Modal>
+    </>
   );
 }
 
@@ -179,6 +328,125 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 24,
     padding: 18,
+    shadowOpacity: 0.16,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 14 },
+  },
+  cardPressed: {
+    transform: [{ scale: 0.995 }],
+    shadowOpacity: 0.28,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  expandButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 11,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalRoot: {
+    flex: 1,
+  },
+  modalSafe: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(2, 3, 12, 0.64)',
+  },
+  modalPanel: {
+    width: '100%',
+    maxWidth: 980,
+    maxHeight: '92%',
+    borderRadius: 30,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowOpacity: 0.28,
+    shadowRadius: 38,
+    shadowOffset: { width: 0, height: 22 },
+    elevation: 24,
+  },
+  modalAura: {
+    position: 'absolute',
+    width: 460,
+    height: 460,
+    borderRadius: 999,
+    right: -180,
+    top: -260,
+    opacity: 0.72,
+  },
+  modalHeader: {
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 16,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 18,
+  },
+  modalTitle: {
+    color: colors.textPrimary,
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+  },
+  modalSubtitle: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 5,
+    maxWidth: 720,
+  },
+  modalClose: {
+    width: 42,
+    height: 42,
+    borderRadius: 15,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalClosePressed: {
+    opacity: 0.75,
+    transform: [{ scale: 0.97 }],
+  },
+  modalContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 26,
+  },
+  expandedPrimaryRow: {
+    flexDirection: 'row',
+    marginTop: 4,
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 20,
+  },
+  expandedPrimaryValue: {
+    color: colors.textPrimary,
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: '900',
+    marginTop: 7,
+  },
+  expandedMetricGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 14,
+  },
+  modalFootnote: {
+    color: colors.textTertiary,
+    fontSize: 11,
+    lineHeight: 17,
+    marginTop: 14,
   },
   headerRow: {
     flexDirection: 'row',

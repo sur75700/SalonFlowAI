@@ -12,6 +12,8 @@ import {
 } from "react-native";
 
 import { t } from "../../lib/i18n";
+import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
 
 import type {
   ReportFormat,
@@ -83,6 +85,12 @@ export default function ReportExportSheet({
   onClose,
   onExport,
 }: Props) {
+  const { selectedThemeId, theme } = useDashboardTheme();
+  const accent =
+    selectedThemeId === "royal_gold_cosmos"
+      ? theme.palette.gold
+      : theme.palette.royal;
+
   const [
     busyFormat,
     setBusyFormat,
@@ -116,7 +124,8 @@ export default function ReportExportSheet({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.root}>
+      <DashboardThemeBackground>
+        <View style={styles.root}>
         <Pressable
           style={
             StyleSheet.absoluteFill
@@ -131,7 +140,14 @@ export default function ReportExportSheet({
 
         <View
           accessibilityViewIsModal
-          style={styles.sheet}
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.palette.surface,
+              borderColor: theme.palette.borderStrong,
+              shadowColor: accent,
+            },
+          ]}
         >
           <View style={styles.handle} />
 
@@ -216,11 +232,12 @@ export default function ReportExportSheet({
                     styles.formatCard,
                     {
                       backgroundColor:
-                        visual.surface,
-                    },
-                    busy && {
-                      borderColor:
-                        visual.accent,
+                        theme.palette.surfaceRaised,
+                      borderColor: busy
+                        ? visual.accent
+                        : theme.palette.border,
+                      shadowColor: visual.accent,
+                      shadowOpacity: busy ? 0.28 : 0.12,
                     },
                   ]}
                 >
@@ -297,7 +314,8 @@ export default function ReportExportSheet({
             })}
           </ScrollView>
         </View>
-      </View>
+        </View>
+      </DashboardThemeBackground>
     </Modal>
   );
 }
@@ -307,7 +325,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor:
-      "rgba(2,3,13,0.80)",
+      "rgba(2,3,13,0.58)",
   },
 
   sheet: {

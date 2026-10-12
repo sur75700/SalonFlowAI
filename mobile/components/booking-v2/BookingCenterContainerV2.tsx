@@ -22,6 +22,23 @@ type CompositionProps = React.ComponentProps<
   typeof BookingCenterCompositionV2
 >;
 
+// V20L_BOOKING_DEMO_NOTE_I18N_FINAL
+// Localizes only the two known demo fixture notes at presentation time.
+// Real user-entered appointment notes are never translated or rewritten.
+function localizeDemoAppointmentNote(value: string, locale: string): string {
+  const normalized = value.trim();
+
+  if (normalized === "Demo upcoming appointment.") {
+    return t("Demo Upcoming Appointment Note", locale as any);
+  }
+
+  if (normalized === "Demo historical appointment.") {
+    return t("Demo Historical Appointment Note", locale as any);
+  }
+
+  return value;
+}
+
 function toLocalDateTimeInput(value: string): string {
   const date = new Date(value);
 
@@ -84,6 +101,11 @@ export default function BookingCenterContainerV2() {
       null
     );
 
+  const [detailAppointment, setDetailAppointment] =
+    useState<(typeof appointmentsData.appointments)[number] | null>(
+      null
+    );
+
   const filterOptions =
     useMemo<CompositionProps["statusFilterOptions"]>(
       () => [
@@ -107,14 +129,45 @@ export default function BookingCenterContainerV2() {
       [locale]
     );
 
+  const clientStatusById = useMemo(
+    () =>
+      new Map(
+        appointmentsData.clients.map((client) => [
+          client.id,
+          client.status,
+        ] as const)
+      ),
+    [appointmentsData.clients]
+  );
+
+  const serviceIconKeyById = useMemo(
+    () =>
+      new Map(
+        appointmentsData.services.map((service) => [
+          service.id,
+          service.icon_key,
+        ] as const)
+      ),
+    [appointmentsData.services]
+  );
+
   const bookingRecords = useMemo(
     () =>
       appointmentsData.appointments.map((appointment) => ({
         appointment,
         item: buildBookingListItemV2(appointment, {
           locale,
+          clientStatus: clientStatusById.get(appointment.client_id),
+          serviceIconKey: appointment.service_id
+            ? serviceIconKeyById.get(appointment.service_id)
+            : undefined,
+
+          onOpen: (item) => {
+            setDetailAppointment(item);
+          },
 
           onEdit: (item) => {
+            setDetailAppointment(null);
             setEditingAppointment(item);
             setSelectedClientId(item.client_id);
             setSelectedServiceId(item.service_id ?? undefined);
@@ -150,9 +203,29 @@ export default function BookingCenterContainerV2() {
     [
       appointmentsData.appointments,
       appointmentMutations.deleteAppointment,
+      clientStatusById,
       locale,
+      serviceIconKeyById,
     ]
   );
+
+  const detailBookingItem =
+    useMemo<CompositionProps["detailItem"]>(() => {
+      if (!detailAppointment) return null;
+
+      return buildBookingListItemV2(detailAppointment, {
+        locale,
+        clientStatus: clientStatusById.get(detailAppointment.client_id),
+        serviceIconKey: detailAppointment.service_id
+          ? serviceIconKeyById.get(detailAppointment.service_id)
+          : undefined,
+      });
+    }, [
+      clientStatusById,
+      detailAppointment,
+      locale,
+      serviceIconKeyById,
+    ]);
 
   const filteredRecords = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -425,8 +498,36 @@ export default function BookingCenterContainerV2() {
         "No appointments scheduled for today.",
         locale as any
       )}
+      detailPanelVisible={Boolean(detailBookingItem)}
+      detailItem={detailBookingItem}
+      onCloseDetailPanel={() => {
+        setDetailAppointment(null);
+      }}
+      detailPanelTitle={t(
+        "Appointment Details",
+        locale as any
+      )}
+      detailPanelSubtitle={t(
+        "Appointment Details Subtitle",
+        locale as any
+      )}
+      detailCloseLabel={t("Close", locale as any)}
+      detailClientLabel={t("Client", locale as any)}
+      detailServiceLabel={t("Service", locale as any)}
+      detailBookingTimeLabel={t(
+        "Booking Time",
+        locale as any
+      )}
+      detailNotesLabel={t("Notes", locale as any)}
+      detailPriceLabel={t("Price", locale as any)}
+      detailNewClientLabel={t(
+        "Client V2 New",
+        locale as any
+      )}
+
       createPanelVisible={createPanelVisible}
       onOpenCreatePanel={() => {
+        setDetailAppointment(null);
         resetCreateForm();
         setCreatePanelVisible(true);
       }}
@@ -468,7 +569,7 @@ export default function BookingCenterContainerV2() {
       onChangeBookingTime={setBookingTime}
       quickActions={quickActions}
       notesLabel={t("Notes", locale as any)}
-      notesValue={notes}
+      notesValue={localizeDemoAppointmentNote(notes, locale)}
       onChangeNotes={setNotes}
       notesPlaceholder={t(
         "Booking Notes Placeholder",

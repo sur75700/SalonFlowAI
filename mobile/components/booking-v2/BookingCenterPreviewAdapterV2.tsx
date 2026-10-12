@@ -196,6 +196,18 @@ function BookingCenterPreviewAdapterV2() {
       upcomingSectionSubtitle={t('Upcoming Bookings Subtitle', locale as any)}
       registrySectionTitle={t('Booking Registry', locale as any)}
       emptyLabel={emptyLabel}
+      detailPanelVisible={false}
+      detailItem={null}
+      onCloseDetailPanel={() => {}}
+      detailPanelTitle={t('Appointment Details', locale as any)}
+      detailPanelSubtitle={t('Appointment Details Subtitle', locale as any)}
+      detailCloseLabel={t('Close', locale as any)}
+      detailClientLabel={t('Client', locale as any)}
+      detailServiceLabel={t('Service', locale as any)}
+      detailBookingTimeLabel={t('Booking Time', locale as any)}
+      detailNotesLabel={t('Notes', locale as any)}
+      detailPriceLabel={t('Price', locale as any)}
+      detailNewClientLabel={t('Client V2 New', locale as any)}
       createPanelVisible={createPanelVisible}
       onOpenCreatePanel={() => setCreatePanelVisible(true)}
       onCloseCreatePanel={() => setCreatePanelVisible(false)}

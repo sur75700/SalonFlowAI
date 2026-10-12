@@ -14,6 +14,9 @@ from app.api.services import normalize_service_icon_key
 class V18IdentityAvatarServiceIconTests(unittest.TestCase):
     def test_service_icon_whitelist(self):
         self.assertEqual(normalize_service_icon_key("HairCut"), "haircut")
+        self.assertEqual(normalize_service_icon_key("Detailing"), "detailing")
+        self.assertEqual(normalize_service_icon_key("car_wash"), "car_wash")
+        self.assertEqual(normalize_service_icon_key("Ceramic"), "ceramic")
         self.assertIsNone(normalize_service_icon_key(""))
         with self.assertRaises(HTTPException):
             normalize_service_icon_key("totally-unknown-icon")

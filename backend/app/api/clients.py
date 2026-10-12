@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Literal
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,17 +10,21 @@ from app.db.mongo import get_database
 
 router = APIRouter()
 
+ClientStatus = Literal["new", "active", "returning", "vip", "inactive"]
+
 class ClientCreate(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=5, max_length=32)
     email: EmailStr | None = None
     notes: str | None = None
+    status: ClientStatus = "new"
 
 class ClientUpdate(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=5, max_length=32)
     email: EmailStr | None = None
     notes: str | None = None
+    status: ClientStatus | None = None
 
 @router.post("/", status_code=201)
 async def create_client(payload: ClientCreate, auth: dict = Depends(require_auth)):
@@ -43,6 +48,7 @@ async def create_client(payload: ClientCreate, auth: dict = Depends(require_auth
         "phone": doc["phone"],
         "email": doc.get("email"),
         "notes": doc.get("notes"),
+        "status": doc.get("status") or "new",
         "created_at": doc["created_at"],
     }
 
@@ -67,6 +73,7 @@ async def list_clients(auth: dict = Depends(require_auth)):
                 "phone": doc.get("phone"),
                 "email": doc.get("email"),
                 "notes": doc.get("notes"),
+                "status": doc.get("status") or "active",
                 "created_at": doc.get("created_at"),
                 "updated_at": doc.get("updated_at"),
             }
@@ -87,17 +94,20 @@ async def update_client(client_id: str, payload: ClientUpdate, auth: dict = Depe
     if not owner_id or not ObjectId.is_valid(owner_id):
         raise HTTPException(status_code=401, detail="Invalid token")
 
+    update_fields = {
+        "full_name": payload.full_name,
+        "phone": payload.phone,
+        "email": payload.email,
+        "notes": payload.notes,
+        "updated_at": datetime.now(UTC).isoformat(),
+    }
+
+    if payload.status is not None:
+        update_fields["status"] = payload.status
+
     result = await db.clients.update_one(
         {"_id": ObjectId(client_id), "owner_id": owner_id},
-        {
-            "$set": {
-                "full_name": payload.full_name,
-                "phone": payload.phone,
-                "email": payload.email,
-                "notes": payload.notes,
-                "updated_at": datetime.now(UTC).isoformat(),
-            }
-        },
+        {"$set": update_fields},
     )
 
     if result.matched_count == 0:
@@ -111,6 +121,7 @@ async def update_client(client_id: str, payload: ClientUpdate, auth: dict = Depe
         "phone": doc.get("phone"),
         "email": doc.get("email"),
         "notes": doc.get("notes"),
+        "status": doc.get("status") or "active",
         "created_at": doc.get("created_at"),
         "updated_at": doc.get("updated_at"),
     }

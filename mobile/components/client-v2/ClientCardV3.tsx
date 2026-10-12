@@ -190,15 +190,19 @@ function ClientCardV3({
         shadowOpacity: 0.26,
       }
     : undefined;
-  const burgundyRaisedStyle = isBurgundyCosmos
-    ? {
-        backgroundColor: dashboardTheme.palette.surfaceRaised,
-        borderColor: dashboardTheme.palette.border,
-      }
-    : undefined;
-
   const t: ClientCardV3Labels = { ...DEFAULT_CLIENT_CARD_LABELS, ...labels };
   const palette = getStatusPalette(status);
+  const isPriorityClient = status === 'vip' || status === 'new';
+  const priorityClientStyle = isPriorityClient
+    ? {
+        borderColor: palette.fg,
+        shadowColor: palette.fg,
+        shadowOpacity: status === 'vip' ? 0.30 : 0.24,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 10,
+      }
+    : undefined;
   const isRow = layout === 'row';
   const isCompact = layout === 'compact';
   const interactive = !disabled && !loading;
@@ -239,6 +243,7 @@ function ClientCardV3({
       style={({ pressed }: { pressed: boolean }) => [
         styles.card,
         burgundySurfaceStyle,
+        priorityClientStyle,
         isRow && styles.cardRow,
         isCompact && styles.cardCompact,
         selected && styles.cardSelected,
@@ -250,7 +255,21 @@ function ClientCardV3({
         <View
           style={[
             styles.avatar,
-            { borderColor: status === 'vip' ? theme.color.gold : theme.color.violet },
+            {
+              borderColor:
+                status === 'vip'
+                  ? theme.color.gold
+                  : status === 'new'
+                    ? theme.color.cyan
+                    : theme.color.violet,
+            },
+            isPriorityClient && {
+              shadowColor: palette.fg,
+              shadowOpacity: 0.42,
+              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: 8,
+            },
           ]}
         >
           <Text style={styles.avatarText}>{initials}</Text>
@@ -267,7 +286,17 @@ function ClientCardV3({
               </View>
             )}
           </View>
-          <View style={[styles.badge, { backgroundColor: palette.bg, alignSelf: 'flex-start' }]}>
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: palette.bg,
+                borderColor: isPriorityClient ? palette.fg : 'transparent',
+                alignSelf: 'flex-start',
+              },
+              isPriorityClient && styles.priorityBadge,
+            ]}
+          >
             <Text style={[styles.badgeText, { color: palette.fg }]}>{statusLabel}</Text>
           </View>
         </View>
@@ -465,6 +494,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.space.sm,
     paddingVertical: 3,
     borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  priorityBadge: {
+    paddingHorizontal: theme.space.md,
+    paddingVertical: 4,
   },
   badgeText: {
     fontSize: 11,

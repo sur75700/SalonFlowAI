@@ -717,6 +717,12 @@ const dict: Record<string, string> = {
 
 const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
   en: {
+    "Demo Upcoming Appointment Note": "Demo upcoming appointment.",
+    "Demo Historical Appointment Note": "Demo historical appointment.",
+    "Open Appointment": "Open appointment",
+    "Appointment Details": "Appointment details",
+    "Appointment Details Subtitle": "Review this appointment. Use Edit only when you want to make changes.",
+    "Close": "Close",
     "Low": "Low",
     "Medium": "Medium",
     "High": "High",
@@ -826,6 +832,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "No Supported Actions Subtitle": "SalonFlowAI will show an action only when the current Intelligence decision contains supported evidence and expected impact.",
   },
   fr: {
+    "Demo Upcoming Appointment Note": "Réservation de démonstration à venir.",
+    "Demo Historical Appointment Note": "Réservation de démonstration passée.",
+    "Open Appointment": "Ouvrir la réservation",
+    "Appointment Details": "Détails de la réservation",
+    "Appointment Details Subtitle": "Consultez la réservation. Utilisez « Modifier » uniquement pour apporter des changements.",
+    "Close": "Fermer",
     "Low": "Faible",
     "Medium": "Moyen",
     "High": "Élevé",
@@ -1208,7 +1220,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Action Connect Integration": "Connecter intégration",
     "Action Edit Workspace Brand": "Modifier la marque",
 
-  
+
   "Nav Core": "Core",
   "Nav AI": "AI",
   "Nav Revenue": "Revenue",
@@ -1709,6 +1721,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   hy: {
+    "Demo Upcoming Appointment Note": "Դեմո առաջիկա ամրագրում։",
+    "Demo Historical Appointment Note": "Դեմո նախորդ ամրագրում։",
+    "Open Appointment": "Բացել ամրագրումը",
+    "Appointment Details": "Ամրագրման մանրամասներ",
+    "Appointment Details Subtitle": "Դիտեք ամրագրման տվյալները։ Փոփոխությունների համար օգտագործեք « Փոխել » կոճակը։",
+    "Close": "Փակել",
     "Low": "Ցածր",
     "Medium": "Միջին",
     "High": "Բարձր",
@@ -2098,7 +2116,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Action Connect Integration": "Միացնել ինտեգրացիա",
     "Action Edit Workspace Brand": "Խմբագրել բրենդը",
 
-  
+
   "Nav Core": "Core",
   "Nav AI": "AI",
   "Nav Revenue": "Revenue",
@@ -2534,6 +2552,12 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
 
   },
   ru: {
+    "Demo Upcoming Appointment Note": "Демо предстоящей записи.",
+    "Demo Historical Appointment Note": "Демо предыдущей записи.",
+    "Open Appointment": "Открыть запись",
+    "Appointment Details": "Детали записи",
+    "Appointment Details Subtitle": "Просмотрите данные записи. Для изменений используйте кнопку «Редактировать».",
+    "Close": "Закрыть",
     "Low": "Низкий",
     "Medium": "Средний",
     "High": "Высокий",
@@ -2923,7 +2947,7 @@ const localeOverrides: Record<AppLanguage, Partial<Record<string, string>>> = {
     "Action Connect Integration": "Подключить интеграцию",
     "Action Edit Workspace Brand": "Редактировать бренд",
 
-  
+
   "Nav Core": "Core",
   "Nav AI": "AI",
   "Nav Revenue": "Revenue",

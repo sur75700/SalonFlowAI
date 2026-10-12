@@ -28,6 +28,16 @@ SERVICE_ICON_KEYS = frozenset({
     "kids",
     "body",
     "skincare",
+    "car_wash",
+    "detailing",
+    "interior",
+    "ceramic",
+    "paint",
+    "polish",
+    "tint",
+    "wheels",
+    "engine",
+    "protection",
 })
 
 

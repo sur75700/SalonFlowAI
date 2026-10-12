@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { useDashboardTheme } from "../../hooks/useDashboardTheme";
+import DashboardThemeBackground from "../dashboard-v2/cloud/DashboardThemeBackground";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppPreferences } from "../../hooks/useAppPreferences";
@@ -759,7 +760,8 @@ export default function AnalyticsInsightSheetV2({
       presentationStyle="overFullScreen"
       onRequestClose={onClose}
     >
-      <View style={styles.modalRoot}>
+      <DashboardThemeBackground>
+        <View style={styles.modalRoot}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t("Close intelligence details")}
@@ -1168,7 +1170,8 @@ export default function AnalyticsInsightSheetV2({
             </Pressable>
           </View>
         </View>
-      </View>
+        </View>
+      </DashboardThemeBackground>
     </Modal>
   );
 }
@@ -1182,7 +1185,7 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(2,4,10,0.82)",
+    backgroundColor: "rgba(2,4,10,0.58)",
   },
   sheet: {
     width: "100%",
@@ -1190,7 +1193,11 @@ const styles = StyleSheet.create({
     maxHeight: "94%",
     borderRadius: 28,
     borderWidth: 1,
-    backgroundColor: "rgba(9,14,28,0.99)",
+    backgroundColor: "rgba(9,14,28,0.90)",
+    shadowColor: "#8C7CFF",
+    shadowOpacity: 0.24,
+    shadowRadius: 34,
+    shadowOffset: { width: 0, height: 20 },
     overflow: "hidden",
   },
   sheetWide: {

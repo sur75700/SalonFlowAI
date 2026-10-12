@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { api, authHeaders, isAuthError } from "../lib/api";
 import { getErrorMessage } from "../lib/errors";
-import type { AppointmentStatus } from "../types/models";
+import type { AppointmentStatus, ClientLifecycleStatus } from "../types/models";
 
 type MutationBaseArgs = {
   token: string;
@@ -18,7 +18,9 @@ type CreateClientInput = {
   notes?: string | null;
 };
 
-type UpdateClientInput = CreateClientInput;
+type UpdateClientInput = CreateClientInput & {
+  status?: ClientLifecycleStatus;
+};
 
 type CreateServiceInput = {
   name: string;
